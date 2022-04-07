@@ -38,6 +38,10 @@ import (
 	services_probes_database "echo-starter/internal/services/probes/database"
 	services_probes_oidc "echo-starter/internal/services/probes/oidc"
 
+	// OIDC
+	//----------------------------------------------------------------------------------------------------------------------
+	services_handlers_api_discovery "echo-starter/internal/services/handlers/api/discovery"
+
 	// ACCOUNTS
 	//----------------------------------------------------------------------------------------------------------------------
 	services_handlers_accounts "echo-starter/internal/services/handlers/accounts"
@@ -295,6 +299,9 @@ func (s *Startup) addAppHandlers(builder *di.Builder) {
 	services_handlers_error.AddScopedIHandler(builder)
 	services_handlers_about.AddScopedIHandler(builder)
 
+	// OIDC
+	//----------------------------------------------------------------------------------------------------------------------
+	services_handlers_api_discovery.AddScopedIHandler(builder)
 	// ACCOUNT SERVICES
 	//----------------------------------------------------------------------------------------------------------------------
 	services_handlers_accounts.AddScopedIHandler(builder)
