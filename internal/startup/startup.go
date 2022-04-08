@@ -49,6 +49,7 @@ import (
 	// OIDC
 	//----------------------------------------------------------------------------------------------------------------------
 	services_handlers_api_discovery "echo-starter/internal/services/handlers/api/discovery"
+	services_handlers_api_discoveryjwks "echo-starter/internal/services/handlers/api/discoveryjwks"
 
 	// ACCOUNTS
 	//----------------------------------------------------------------------------------------------------------------------
@@ -331,6 +332,8 @@ func (s *Startup) addAppHandlers(builder *di.Builder) {
 	// OIDC
 	//----------------------------------------------------------------------------------------------------------------------
 	services_handlers_api_discovery.AddScopedIHandler(builder)
+	services_handlers_api_discoveryjwks.AddScopedIHandler(builder)
+
 	// ACCOUNT SERVICES
 	//----------------------------------------------------------------------------------------------------------------------
 	services_handlers_accounts.AddScopedIHandler(builder)

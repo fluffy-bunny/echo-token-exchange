@@ -6,7 +6,9 @@ import (
 	"echo-starter/internal/models"
 	"encoding/json"
 	"reflect"
+	"time"
 
+	linq "github.com/ahmetb/go-linq"
 	contracts_logger "github.com/fluffy-bunny/grpcdotnetgo/pkg/contracts/logger"
 	di "github.com/fluffy-bunny/sarulabsdi"
 )
@@ -39,4 +41,21 @@ func (s *service) Ctor() {
 }
 func (s *service) GetSigningKeys() ([]*models.SigningKey, error) {
 	return s.signingKeys, nil
+}
+
+func (s *service) GetPublicWebKeys() ([]*models.PublicJwk, error) {
+	var jwks []*models.PublicJwk
+	now := time.Now()
+	linq.From(s.signingKeys).Where(func(c interface{}) bool {
+		signingKey := c.(*models.SigningKey)
+		if now.After(signingKey.NotBefore) && now.Before(signingKey.NotAfter) {
+			return true
+		}
+		return false
+	}).Select(func(c interface{}) interface{} {
+		signingKey := c.(*models.SigningKey)
+		return &signingKey.PublicJwk
+	}).ToSlice(&jwks)
+	return jwks, nil
+
 }

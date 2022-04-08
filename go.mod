@@ -5,6 +5,7 @@ go 1.18
 //replace github.com/fluffy-bunny/grpcdotnetgo => ../grpcdotnetgo
 
 require (
+	github.com/ahmetb/go-linq v3.0.0+incompatible
 	github.com/ahmetb/go-linq/v3 v3.2.0
 	github.com/catmullet/go-workers v1.4.1
 	github.com/cheekybits/genny v1.0.0

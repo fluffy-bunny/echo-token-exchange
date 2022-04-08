@@ -16,6 +16,7 @@ func BuildGrpcEntrypointPermissionsClaimsMap() map[string]*middleware_oidc.Entry
 	// health check is open to anyone
 	entryPointClaimsBuilder.WithGrpcEntrypointPermissionsClaimsMapOpen(wellknown.HealthzPath)
 	entryPointClaimsBuilder.WithGrpcEntrypointPermissionsClaimsMapOpen(wellknown.WellKnownOpenIDCOnfiguationPath)
+	entryPointClaimsBuilder.WithGrpcEntrypointPermissionsClaimsMapOpen(wellknown.WellKnownJWKS)
 
 	entryPointClaimsBuilder.WithGrpcEntrypointPermissionsClaimsMapOpen(wellknown.WebHookPath)
 

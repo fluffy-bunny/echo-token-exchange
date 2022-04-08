@@ -10,5 +10,6 @@ type (
 	// ISigningKeyStore ...
 	ISigningKeyStore interface {
 		GetSigningKeys() ([]*models.SigningKey, error)
+		GetPublicWebKeys() ([]*models.PublicJwk, error)
 	}
 )
