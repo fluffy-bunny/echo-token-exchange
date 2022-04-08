@@ -118,7 +118,7 @@ func assertImplementation() {
 }
 
 func NewStartup() echo_contracts_startup.IStartup {
-	data, err := ioutil.ReadFile("./secrets/signing-keys.json")
+	data, err := ioutil.ReadFile("./static/secrets/signing-keys.json")
 	if err == nil {
 		log.Error().Msg("DO NOT USE THIS IN PRODUCTION: Using signing keys from file")
 		os.Setenv("SIGNING_KEYS", string(data))
@@ -180,9 +180,7 @@ func (s *Startup) getSessionStore() sessions.Store {
 	}
 }
 func (s *Startup) RegisterStaticRoutes(e *echo.Echo) error {
-	e.Static("/css", "./css")
-	e.Static("/assets", "./assets")
-	e.Static("/js", "./js")
+	e.Static("/static", "./static")
 	return nil
 }
 

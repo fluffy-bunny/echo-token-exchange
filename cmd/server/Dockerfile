@@ -20,16 +20,8 @@ COPY --from=stage1 /etc/passwd /etc/passwd
 
 
 WORKDIR /app
-RUN mkdir /css
-RUN mkdir /js
-RUN mkdir /assets
-RUN mkdir /templates
-RUN mkdir /secrets
-COPY css/ ./css/
-COPY js/ ./js/
-COPY assets/ ./assets/
-COPY templates/ ./templates/
-COPY secrets/ ./secrets/
+RUN mkdir /static
+COPY static/ ./static/
 COPY server ./
 
 

@@ -9,7 +9,7 @@ require (
 	github.com/catmullet/go-workers v1.4.1
 	github.com/cheekybits/genny v1.0.0
 	github.com/containerd/containerd v1.6.1
-	github.com/fluffy-bunny/grpcdotnetgo v0.1.244
+	github.com/fluffy-bunny/grpcdotnetgo v0.1.246
 	github.com/fluffy-bunny/sarulabsdi v0.1.63
 	github.com/go-oauth2/oauth2/v4 v4.4.3
 	github.com/go-oauth2/redis/v4 v4.1.1
