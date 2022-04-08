@@ -20,6 +20,7 @@ env:
   BUILD_PATH: './cmd/server'
   DOCKER_IMAGE_NAME: 'echo-token-exchange'
   
+  
 jobs:
   pre_flight:
     runs-on: ubuntu-latest
