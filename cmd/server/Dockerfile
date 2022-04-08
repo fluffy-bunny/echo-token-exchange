@@ -24,10 +24,12 @@ RUN mkdir /css
 RUN mkdir /js
 RUN mkdir /assets
 RUN mkdir /templates
+RUN mkdir /secrets
 COPY css/ ./css/
 COPY js/ ./js/
 COPY assets/ ./assets/
 COPY templates/ ./templates/
+COPY secrets/ ./secrets/
 COPY server ./
 
 

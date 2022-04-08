@@ -7,6 +7,7 @@ import (
 	"echo-starter/internal/wellknown"
 	"encoding/base64"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"strconv"
 
@@ -37,6 +38,13 @@ import (
 	services_handlers_ready "echo-starter/internal/services/handlers/ready"
 	services_probes_database "echo-starter/internal/services/probes/database"
 	services_probes_oidc "echo-starter/internal/services/probes/oidc"
+
+	// OAuth2
+	//----------------------------------------------------------------------------------------------------------------------
+	services_go_oauth2_client_stores_inmemory "echo-starter/internal/services/go-oauth2/oauth2/client_stores/inmemory"
+	services_go_oauth2_keystore "echo-starter/internal/services/go-oauth2/oauth2/keystore"
+	services_go_oauth2_token_stores_inmemory "echo-starter/internal/services/go-oauth2/oauth2/token_stores/inmemory"
+	services_go_oauth2_token_stores_redis "echo-starter/internal/services/go-oauth2/oauth2/token_stores/redis"
 
 	// OIDC
 	//----------------------------------------------------------------------------------------------------------------------
@@ -110,6 +118,11 @@ func assertImplementation() {
 }
 
 func NewStartup() echo_contracts_startup.IStartup {
+	data, err := ioutil.ReadFile("./secrets/signing-keys.json")
+	if err == nil {
+		log.Error().Msg("DO NOT USE THIS IN PRODUCTION: Using signing keys from file")
+		os.Setenv("SIGNING_KEYS", string(data))
+	}
 	return &Startup{
 		config: &tex_config.Config{},
 		ctrl:   gomock.NewController(nil),
@@ -298,6 +311,24 @@ func (s *Startup) addAppHandlers(builder *di.Builder) {
 	services_handlers_deep.AddScopedIHandler(builder)
 	services_handlers_error.AddScopedIHandler(builder)
 	services_handlers_about.AddScopedIHandler(builder)
+
+	// OAuth2
+	//----------------------------------------------------------------------------------------------------------------------
+	switch s.config.TokenStoreProvider {
+	case "inmemory":
+		services_go_oauth2_token_stores_inmemory.AddSingletonITokenStore(builder)
+	case "redis":
+		services_go_oauth2_token_stores_redis.AddSingletonITokenStore(builder)
+	default:
+		panic("token store provider not supported")
+	}
+	switch s.config.ClientStoreProvider {
+	case "inmemory":
+		services_go_oauth2_client_stores_inmemory.AddSingletonIClientStore(builder)
+	default:
+		panic("client store provider not supported")
+	}
+	services_go_oauth2_keystore.AddSingletonISigningKeyStore(builder)
 
 	// OIDC
 	//----------------------------------------------------------------------------------------------------------------------

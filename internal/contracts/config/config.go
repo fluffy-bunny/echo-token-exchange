@@ -1,5 +1,7 @@
 package config
 
+import "reflect"
+
 const (
 	Environment_Development = "Development"
 )
@@ -49,10 +51,15 @@ type (
 
 		// github,oidc
 		AuthProvider string `json:"authProvider" mapstructure:"AUTH_PROVIDER"`
+		SigningKeys  string `json:"signingKeys" mapstructure:"SIGNING_KEYS"`
+
+		ClientStoreProvider string `json:"clientStoreProvider" mapstructure:"CLIENT_STORE_PROVIDER"`
+		TokenStoreProvider  string `json:"tokenStoreProvider" mapstructure:"TOKEN_STORE_PROVIDER"`
 	}
 )
 
 var (
+	ReflectConfigType = reflect.TypeOf((*Config)(nil))
 	// ConfigDefaultJSON default json
 	ConfigDefaultJSON = []byte(`
 {
@@ -83,7 +90,10 @@ var (
 	"GRAPHQL_ENDPOINT": "https://countries.trevorblades.com/",
 	"SESSION_ENGINE": "cookie",
 	"REDIS_URL": "localhost:6379",
-	"REDIS_PASSWORD": ""
+	"REDIS_PASSWORD": "",
+	"CLIENT_STORE_PROVIDER": "inmemory",
+	"TOKEN_STORE_PROVIDER": "inmemory",
+	"SIGNING_KEYS": ""
 
 
 }
