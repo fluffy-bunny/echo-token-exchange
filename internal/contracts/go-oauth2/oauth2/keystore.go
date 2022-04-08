@@ -9,7 +9,7 @@ import "echo-starter/internal/models"
 type (
 	// ISigningKeyStore ...
 	ISigningKeyStore interface {
-		GetSigningKeys() ([]*models.SigningKey, error)
+		GetSigningKey() (*models.SigningKey, error)
 		GetPublicWebKeys() ([]*models.PublicJwk, error)
 	}
 )

@@ -39,8 +39,22 @@ func (s *service) Ctor() {
 	}
 	s.signingKeys = signingKeys
 }
-func (s *service) GetSigningKeys() ([]*models.SigningKey, error) {
-	return s.signingKeys, nil
+func (s *service) GetSigningKey() (*models.SigningKey, error) {
+	var signingKeys []*models.SigningKey
+	now := time.Now()
+	linq.From(s.signingKeys).Where(func(c interface{}) bool {
+		signingKey := c.(*models.SigningKey)
+		if now.After(signingKey.NotBefore) && now.Before(signingKey.NotAfter) {
+			return true
+		}
+		return false
+	}).Select(func(c interface{}) interface{} {
+		signingKey := c.(*models.SigningKey)
+		return signingKey
+	}).ToSlice(&signingKeys)
+	// return the last one.
+	return signingKeys[len(signingKeys)-1], nil
+
 }
 
 func (s *service) GetPublicWebKeys() ([]*models.PublicJwk, error) {
