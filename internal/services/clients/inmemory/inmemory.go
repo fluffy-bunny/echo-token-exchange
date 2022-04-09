@@ -28,12 +28,14 @@ var reflectType = reflect.TypeOf((*service)(nil))
 func AddSingletonIClientStore(builder *di.Builder, clients []models.Client) {
 	contracts_clients.AddSingletonIClientStoreByFunc(builder, reflectType, func(ctn di.Container) (interface{}, error) {
 
+		cMap := make(map[string]models.Client)
+		for _, client := range clients {
+			cMap[client.ClientID] = client
+		}
+
 		obj := &service{
 			clients:    clients,
-			clientsMap: make(map[string]models.Client),
-		}
-		for _, client := range clients {
-			obj.clientsMap[client.ClientID] = client
+			clientsMap: cMap,
 		}
 		return obj, nil
 	})

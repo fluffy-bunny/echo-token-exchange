@@ -2,6 +2,7 @@ package startup
 
 import (
 	"echo-starter/internal"
+	"echo-starter/internal/models"
 	"echo-starter/internal/utils"
 	"errors"
 	"fmt"
@@ -37,10 +38,19 @@ func (s *Startup) loadTestClients() (err error) {
 	if err != nil {
 		return
 	}
-
-	err = clientsConfig.UnmarshalKey("clients", &(s.clients))
+	var clients []models.Client
+	err = clientsConfig.UnmarshalKey("clients", &clients)
 	if err != nil {
 		return
 	}
+
+	// need to set the secret has as the original has them in the open
+	for ic := range clients {
+		for idx := range clients[ic].ClientSecrets {
+			hash, _ := utils.GeneratePasswordHash(clients[ic].ClientSecrets[idx].Value)
+			clients[ic].ClientSecrets[idx].Value = hash
+		}
+	}
+	s.clients = clients
 	return
 }
