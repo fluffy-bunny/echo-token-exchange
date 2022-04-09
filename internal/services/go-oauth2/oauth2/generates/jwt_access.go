@@ -10,6 +10,7 @@ import (
 	"github.com/go-oauth2/oauth2/v4/errors"
 	"github.com/golang-jwt/jwt"
 	"github.com/google/uuid"
+	"github.com/rs/xid"
 )
 
 type CustomClaims struct {
@@ -69,6 +70,7 @@ func (a *JWTAccessGenerate) Token(ctx context.Context, data *oauth2.GenerateBasi
 
 	claims := &JWTAccessClaims{
 		StandardClaims: jwt.StandardClaims{
+			Id:        xid.New().String(),
 			Audience:  a.Audience,
 			Issuer:    a.Issuer,
 			Subject:   data.UserID,
