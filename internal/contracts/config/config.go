@@ -1,6 +1,10 @@
 package config
 
-import "reflect"
+import (
+	"reflect"
+
+	"github.com/go-oauth2/oauth2/v4"
+)
 
 const (
 	Environment_Development = "Development"
@@ -53,8 +57,10 @@ type (
 		AuthProvider string `json:"authProvider" mapstructure:"AUTH_PROVIDER"`
 		SigningKeys  string `json:"signingKeys" mapstructure:"SIGNING_KEYS"`
 
-		ClientStoreProvider string `json:"clientStoreProvider" mapstructure:"CLIENT_STORE_PROVIDER"`
-		TokenStoreProvider  string `json:"tokenStoreProvider" mapstructure:"TOKEN_STORE_PROVIDER"`
+		ClientStoreProvider string             `json:"clientStoreProvider" mapstructure:"CLIENT_STORE_PROVIDER"`
+		TokenStoreProvider  string             `json:"tokenStoreProvider" mapstructure:"TOKEN_STORE_PROVIDER"`
+		AllowedGrantTypes   []oauth2.GrantType `json:"allowedGrantTypes" mapstructure:"ALLOWED_GRANT_TYPES"`
+		TokenType           string             `json:"tokenType" mapstructure:"TOKEN_TYPE"`
 	}
 )
 
@@ -93,7 +99,9 @@ var (
 	"REDIS_PASSWORD": "",
 	"CLIENT_STORE_PROVIDER": "inmemory",
 	"TOKEN_STORE_PROVIDER": "inmemory",
-	"SIGNING_KEYS": ""
+	"SIGNING_KEYS": "",
+	"ALLOWED_GRANT_TYPES": "client_credentials,refresh_token,urn:ietf:params:oauth:grant-type:token-exchange",
+	"TOKEN_TYPE": "Bearer"
 
 
 }

@@ -50,6 +50,7 @@ import (
 	//----------------------------------------------------------------------------------------------------------------------
 	services_handlers_api_discovery "echo-starter/internal/services/handlers/api/discovery"
 	services_handlers_api_discoveryjwks "echo-starter/internal/services/handlers/api/discoveryjwks"
+	services_handlers_api_token "echo-starter/internal/services/handlers/api/token"
 
 	// ACCOUNTS
 	//----------------------------------------------------------------------------------------------------------------------
@@ -333,6 +334,7 @@ func (s *Startup) addAppHandlers(builder *di.Builder) {
 	//----------------------------------------------------------------------------------------------------------------------
 	services_handlers_api_discovery.AddScopedIHandler(builder)
 	services_handlers_api_discoveryjwks.AddScopedIHandler(builder)
+	services_handlers_api_token.AddScopedIHandler(builder)
 
 	// ACCOUNT SERVICES
 	//----------------------------------------------------------------------------------------------------------------------

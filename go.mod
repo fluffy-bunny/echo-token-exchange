@@ -15,6 +15,7 @@ require (
 	github.com/go-oauth2/oauth2/v4 v4.4.3
 	github.com/go-oauth2/redis/v4 v4.1.1
 	github.com/go-redis/redis/v8 v8.11.5
+	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/golang/mock v1.6.0
 	github.com/google/uuid v1.3.0
 	github.com/gorilla/securecookie v1.1.1
@@ -36,6 +37,7 @@ require (
 require (
 	github.com/Microsoft/go-winio v0.5.1 // indirect
 	github.com/Microsoft/hcsshim v0.9.2 // indirect
+	github.com/alexedwards/argon2id v0.0.0-20211130144151-3585854a6387 // indirect
 	github.com/bamzi/jobrunner v1.0.0 // indirect
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/containerd/cgroups v1.0.3 // indirect
@@ -56,7 +58,6 @@ require (
 	github.com/gogo/googleapis v1.4.1 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/gogo/status v1.1.0 // indirect
-	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/gorilla/context v1.1.1 // indirect
