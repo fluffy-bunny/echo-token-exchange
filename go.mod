@@ -29,6 +29,7 @@ require (
 	github.com/rs/xid v1.4.0
 	github.com/rs/zerolog v1.26.1
 	github.com/spf13/cobra v1.4.0
+	github.com/spf13/viper v1.10.1
 	github.com/stretchr/testify v1.7.1
 	github.com/theTardigrade/golang-passwordGenerator v1.0.4
 	github.com/tufin/asciitree v0.0.0-20210127111056-bf70173ef677
@@ -97,7 +98,6 @@ require (
 	github.com/spf13/cast v1.4.1 // indirect
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
-	github.com/spf13/viper v1.10.1 // indirect
 	github.com/subosito/gotenv v1.2.0 // indirect
 	github.com/tidwall/btree v0.0.0-20191029221954-400434d76274 // indirect
 	github.com/tidwall/buntdb v1.1.2 // indirect
