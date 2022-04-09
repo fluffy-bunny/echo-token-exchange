@@ -4,6 +4,7 @@ import (
 	"context"
 	echostarter_auth "echo-starter/internal/auth"
 	tex_config "echo-starter/internal/contracts/config"
+	"echo-starter/internal/models"
 	"echo-starter/internal/wellknown"
 	"encoding/base64"
 	"fmt"
@@ -28,6 +29,7 @@ import (
 	"github.com/gorilla/securecookie"
 
 	services_auth_cookie_token_store "echo-starter/internal/services/auth/cookie_token_store"
+	services_clients_inmemory "echo-starter/internal/services/clients/inmemory"
 
 	services_auth_session_token_store "echo-starter/internal/services/auth/session_token_store"
 	services_handlers_api_webhook "echo-starter/internal/services/handlers/api/webhook"
@@ -111,8 +113,9 @@ import (
 
 type Startup struct {
 	echo_contracts_startup.CommonStartup
-	config *tex_config.Config
-	ctrl   *gomock.Controller
+	config  *tex_config.Config
+	ctrl    *gomock.Controller
+	clients []models.Client
 }
 
 func assertImplementation() {
@@ -125,10 +128,13 @@ func NewStartup() echo_contracts_startup.IStartup {
 		log.Error().Msg("DO NOT USE THIS IN PRODUCTION: Using signing keys from file")
 		os.Setenv("SIGNING_KEYS", string(data))
 	}
-	return &Startup{
+
+	startup := &Startup{
 		config: &tex_config.Config{},
 		ctrl:   gomock.NewController(nil),
 	}
+	startup.loadTestClients()
+	return startup
 }
 
 func (s *Startup) getSessionStore() sessions.Store {
@@ -329,7 +335,7 @@ func (s *Startup) addAppHandlers(builder *di.Builder) {
 		panic("client store provider not supported")
 	}
 	services_go_oauth2_keystore.AddSingletonISigningKeyStore(builder)
-
+	services_clients_inmemory.AddSingletonIClientStore(builder, s.clients)
 	// OIDC
 	//----------------------------------------------------------------------------------------------------------------------
 	services_handlers_api_discovery.AddScopedIHandler(builder)

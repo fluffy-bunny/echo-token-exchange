@@ -11,7 +11,6 @@ import (
 	"time"
 
 	contracts_config "echo-starter/internal/contracts/config"
-	"echo-starter/internal/utils/ecdsa"
 
 	contracts_logger "github.com/fluffy-bunny/grpcdotnetgo/pkg/contracts/logger"
 	"github.com/golang-jwt/jwt"
@@ -74,14 +73,14 @@ func (s *service) Ctor() {
 	if err != nil {
 		panic(err)
 	}
-
-	privateKey, publicKey, err := ecdsa.DecodePrivatePem(signingKey.Password, signingKey.PrivateKey)
-	if err != nil {
-		panic(err)
-	}
-	encPriv, _, err := ecdsa.Encode("", privateKey, publicKey)
-
-	s.Manager.MapAccessGenerate(generates.NewJWTAccessGenerate(signingKey.Kid, []byte(encPriv), jwt.SigningMethodES256))
+	/*
+		privateKey, publicKey, err := ecdsa.DecodePrivatePem(signingKey.Password, signingKey.PrivateKey)
+		if err != nil {
+			panic(err)
+		}
+		encPriv, _, err := ecdsa.Encode("", privateKey, publicKey)
+	*/
+	s.Manager.MapAccessGenerate(generates.NewJWTAccessGenerate(signingKey.Kid, []byte(signingKey.PrivateKey), jwt.SigningMethodES256))
 
 }
 func (s *service) GetMiddleware() []echo.MiddlewareFunc {
@@ -98,6 +97,7 @@ func (s *service) _clientInfoHandler(r *http.Request) (clientID, clientSecret st
 	if !match {
 		err = errors.ErrInvalidClient
 	}
+	clientSecret = client.GetSecret()
 	return
 }
 func (s *service) Do(c echo.Context) error {
