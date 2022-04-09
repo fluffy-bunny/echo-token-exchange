@@ -16,6 +16,7 @@ import (
 	contracts_logger "github.com/fluffy-bunny/grpcdotnetgo/pkg/contracts/logger"
 	"github.com/golang-jwt/jwt"
 
+	contracts_clients "echo-starter/internal/contracts/clients"
 	contracts_go_oauth2_oauth2 "echo-starter/internal/contracts/go-oauth2/oauth2"
 
 	contracts_handler "github.com/fluffy-bunny/grpcdotnetgo/pkg/echo/contracts/handler"
@@ -25,7 +26,7 @@ import (
 
 	"echo-starter/internal/services/go-oauth2/oauth2/generates"
 
-	"github.com/go-oauth2/oauth2/v4/manage"
+	"echo-starter/internal/services/go-oauth2/oauth2/manage"
 
 	oauth2_server "github.com/go-oauth2/oauth2/v4/server"
 	"github.com/labstack/echo/v4"
@@ -37,6 +38,7 @@ type (
 		Logger                      contracts_logger.ILogger                    `inject:""`
 		TokenStore                  contracts_go_oauth2_oauth2.ITokenStore      `inject:""`
 		ClientStore                 contracts_go_oauth2_oauth2.IClientStore     `inject:""`
+		ClientStore2                contracts_clients.IClientStore              `inject:""`
 		SigningKeyStore             contracts_go_oauth2_oauth2.ISigningKeyStore `inject:""`
 		ClientInfoHandler           oauth2_server.ClientInfoHandler
 		InternalErrorHandler        oauth2_server.InternalErrorHandler

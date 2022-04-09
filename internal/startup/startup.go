@@ -5,7 +5,7 @@ import (
 	echostarter_auth "echo-starter/internal/auth"
 	contracts_config "echo-starter/internal/contracts/config"
 	"echo-starter/internal/models"
-	"echo-starter/internal/utils"
+
 	"echo-starter/internal/wellknown"
 	"encoding/base64"
 	"fmt"
@@ -374,7 +374,7 @@ func (s *Startup) addAppHandlers(builder *di.Builder) {
 
 func (s *Startup) ConfigureServices(builder *di.Builder) error {
 	dst := &contracts_config.Config{}
-	utils.PrettyPrintRedacted(s.config, dst)
+	core_utils.PrettyPrintRedacted(s.config, dst)
 
 	// add our config as a sigleton object
 	di.AddSingletonTypeByObj(builder, s.config)
