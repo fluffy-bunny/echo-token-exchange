@@ -1,8 +1,8 @@
 package discovery
 
 import (
+	"echo-starter/internal/utils"
 	"echo-starter/internal/wellknown"
-	"fmt"
 	"net/http"
 	"reflect"
 
@@ -40,12 +40,9 @@ func (s *service) GetMiddleware() []echo.MiddlewareFunc {
 func (s *service) Do(c echo.Context) error {
 	return s.get(c)
 }
-func getMyRootPath(c echo.Context) string {
-	return fmt.Sprintf("%s://%s", c.Scheme(), c.Request().Host)
-}
 
 func (s *service) get(c echo.Context) error {
-	rootPath := getMyRootPath(c)
+	rootPath := utils.GetMyRootPath(c)
 	discovery := models.DiscoveryDocument{
 		Issuer:             rootPath,
 		TokenEndpoint:      rootPath + wellknown.OAuth2TokenPath,

@@ -2,6 +2,7 @@ package token
 
 import (
 	"context"
+	"echo-starter/internal/models"
 	"echo-starter/internal/utils"
 	"echo-starter/internal/wellknown"
 	"encoding/json"
@@ -21,8 +22,11 @@ import (
 	di "github.com/fluffy-bunny/sarulabsdi"
 	"github.com/go-oauth2/oauth2/v4"
 	"github.com/go-oauth2/oauth2/v4/errors"
-	"github.com/go-oauth2/oauth2/v4/generates"
+
+	"echo-starter/internal/services/go-oauth2/oauth2/generates"
+
 	"github.com/go-oauth2/oauth2/v4/manage"
+
 	oauth2_server "github.com/go-oauth2/oauth2/v4/server"
 	"github.com/labstack/echo/v4"
 )
@@ -43,7 +47,8 @@ type (
 		RefreshingValidationHandler oauth2_server.RefreshingValidationHandler
 		ExtensionFieldsHandler      oauth2_server.ExtensionFieldsHandler
 
-		Manager *manage.Manager
+		Manager    *manage.Manager
+		signingKey *models.SigningKey
 	}
 )
 
@@ -73,6 +78,7 @@ func (s *service) Ctor() {
 	if err != nil {
 		panic(err)
 	}
+	s.signingKey = signingKey
 	/*
 		privateKey, publicKey, err := ecdsa.DecodePrivatePem(signingKey.Password, signingKey.PrivateKey)
 		if err != nil {
@@ -80,7 +86,6 @@ func (s *service) Ctor() {
 		}
 		encPriv, _, err := ecdsa.Encode("", privateKey, publicKey)
 	*/
-	s.Manager.MapAccessGenerate(generates.NewJWTAccessGenerate(signingKey.Kid, []byte(signingKey.PrivateKey), jwt.SigningMethodES256))
 
 }
 func (s *service) GetMiddleware() []echo.MiddlewareFunc {
@@ -101,6 +106,12 @@ func (s *service) _clientInfoHandler(r *http.Request) (clientID, clientSecret st
 	return
 }
 func (s *service) Do(c echo.Context) error {
+	rootPath := utils.GetMyRootPath(c)
+	jwtGenerator := generates.NewJWTAccessGenerate(s.signingKey.Kid, []byte(s.signingKey.PrivateKey), jwt.SigningMethodES256)
+	jwtGenerator.Issuer = rootPath
+	jwtGenerator.Audience = rootPath //TODO this should be in the client_id
+	s.Manager.MapAccessGenerate(jwtGenerator)
+
 	return s.processRequest(c)
 }
 func getMyRootPath(c echo.Context) string {
