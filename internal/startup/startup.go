@@ -28,6 +28,7 @@ import (
 
 	"github.com/gorilla/securecookie"
 
+	services_apiresources_inmemory "echo-starter/internal/services/apiresources/inmemory"
 	services_auth_cookie_token_store "echo-starter/internal/services/auth/cookie_token_store"
 	services_clients_inmemory "echo-starter/internal/services/clients/inmemory"
 
@@ -113,9 +114,10 @@ import (
 
 type Startup struct {
 	echo_contracts_startup.CommonStartup
-	config  *tex_config.Config
-	ctrl    *gomock.Controller
-	clients []models.Client
+	config       *tex_config.Config
+	ctrl         *gomock.Controller
+	clients      []models.Client
+	apiResources []models.APIResource
 }
 
 func assertImplementation() {
@@ -133,7 +135,18 @@ func NewStartup() echo_contracts_startup.IStartup {
 		config: &tex_config.Config{},
 		ctrl:   gomock.NewController(nil),
 	}
+	hooks := &echo_contracts_startup.Hooks{
+		PostBuildHook: func(container di.Container) error {
+			if startup.config.ApplicationEnvironment == "Development" {
+				di.Dump(container)
+			}
+			return nil
+		}}
+
+	startup.AddHooks(hooks)
+
 	startup.loadTestClients()
+	startup.loadApiResources()
 	return startup
 }
 
@@ -336,6 +349,7 @@ func (s *Startup) addAppHandlers(builder *di.Builder) {
 	}
 	services_go_oauth2_keystore.AddSingletonISigningKeyStore(builder)
 	services_clients_inmemory.AddSingletonIClientStore(builder, s.clients)
+	services_apiresources_inmemory.AddSingletonIAPIResources(builder, s.apiResources)
 	// OIDC
 	//----------------------------------------------------------------------------------------------------------------------
 	services_handlers_api_discovery.AddScopedIHandler(builder)
