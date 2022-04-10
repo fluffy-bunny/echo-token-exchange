@@ -31,6 +31,7 @@ import (
 
 	services_apiresources_inmemory "echo-starter/internal/services/apiresources/inmemory"
 	services_auth_cookie_token_store "echo-starter/internal/services/auth/cookie_token_store"
+	services_clients_clientrequest "echo-starter/internal/services/clients/clientrequest"
 	services_clients_inmemory "echo-starter/internal/services/clients/inmemory"
 
 	services_auth_session_token_store "echo-starter/internal/services/auth/session_token_store"
@@ -350,6 +351,7 @@ func (s *Startup) addAppHandlers(builder *di.Builder) {
 	}
 	services_go_oauth2_keystore.AddSingletonISigningKeyStore(builder)
 	services_clients_inmemory.AddSingletonIClientStore(builder, s.clients)
+	services_clients_clientrequest.AddScopedIClientRequest(builder)
 	services_apiresources_inmemory.AddSingletonIAPIResources(builder, s.apiResources)
 	// OIDC
 	//----------------------------------------------------------------------------------------------------------------------

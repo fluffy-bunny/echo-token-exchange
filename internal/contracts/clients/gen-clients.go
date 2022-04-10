@@ -836,3 +836,553 @@ func _getImplementedIClientRequestNames(implementedTypes ...reflect.Type) string
 	}
 	return builder.String()
 }
+
+// ReflectTypeIClientRequestInternal used when your service claims to implement IClientRequestInternal
+var ReflectTypeIClientRequestInternal = di.GetInterfaceReflectType((*IClientRequestInternal)(nil))
+
+// AddSingletonIClientRequestInternal adds a type that implements IClientRequestInternal
+func AddSingletonIClientRequestInternal(builder *di.Builder, implType reflect.Type, implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeIClientRequestInternal)
+	_logAddIClientRequestInternal("SINGLETON", implType, _getImplementedIClientRequestInternalNames(implementedTypes...),
+		_logIClientRequestInternalExtra{
+			Name:  "DI-BY",
+			Value: "type",
+		})
+	di.AddSingleton(builder, implType, implementedTypes...)
+}
+
+// AddSingletonIClientRequestInternalWithMetadata adds a type that implements IClientRequestInternal
+func AddSingletonIClientRequestInternalWithMetadata(builder *di.Builder, implType reflect.Type, metaData map[string]interface{}, implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeIClientRequestInternal)
+	_logAddIClientRequestInternal("SINGLETON", implType, _getImplementedIClientRequestInternalNames(implementedTypes...),
+		_logIClientRequestInternalExtra{
+			Name:  "DI-BY",
+			Value: "type",
+		},
+		_logIClientRequestInternalExtra{
+			Name:  "DI-M",
+			Value: metaData,
+		})
+	di.AddSingletonWithMetadata(builder, implType, metaData, implementedTypes...)
+}
+
+// AddSingletonIClientRequestInternalByObj adds a prebuilt obj
+func AddSingletonIClientRequestInternalByObj(builder *di.Builder, obj interface{}, implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeIClientRequestInternal)
+	_logAddIClientRequestInternal("SINGLETON", reflect.TypeOf(obj), _getImplementedIClientRequestInternalNames(implementedTypes...),
+		_logIClientRequestInternalExtra{
+			Name:  "DI-BY",
+			Value: "obj",
+		})
+	di.AddSingletonWithImplementedTypesByObj(builder, obj, implementedTypes...)
+}
+
+// AddSingletonIClientRequestInternalByObjWithMetadata adds a prebuilt obj
+func AddSingletonIClientRequestInternalByObjWithMetadata(builder *di.Builder, obj interface{}, metaData map[string]interface{}, implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeIClientRequestInternal)
+	_logAddIClientRequestInternal("SINGLETON", reflect.TypeOf(obj), _getImplementedIClientRequestInternalNames(implementedTypes...),
+		_logIClientRequestInternalExtra{
+			Name:  "DI-BY",
+			Value: "obj",
+		},
+		_logIClientRequestInternalExtra{
+			Name:  "DI-M",
+			Value: metaData,
+		})
+
+	di.AddSingletonWithImplementedTypesByObjWithMetadata(builder, obj, metaData, implementedTypes...)
+}
+
+// AddSingletonIClientRequestInternalByFunc adds a type by a custom func
+func AddSingletonIClientRequestInternalByFunc(builder *di.Builder, implType reflect.Type, build func(ctn di.Container) (interface{}, error), implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeIClientRequestInternal)
+	_logAddIClientRequestInternal("SINGLETON", implType, _getImplementedIClientRequestInternalNames(implementedTypes...),
+		_logIClientRequestInternalExtra{
+			Name:  "DI-BY",
+			Value: "func",
+		})
+	di.AddSingletonWithImplementedTypesByFunc(builder, implType, build, implementedTypes...)
+}
+
+// AddSingletonIClientRequestInternalByFuncWithMetadata adds a type by a custom func
+func AddSingletonIClientRequestInternalByFuncWithMetadata(builder *di.Builder, implType reflect.Type, build func(ctn di.Container) (interface{}, error), metaData map[string]interface{}, implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeIClientRequestInternal)
+	_logAddIClientRequestInternal("SINGLETON", implType, _getImplementedIClientRequestInternalNames(implementedTypes...),
+		_logIClientRequestInternalExtra{
+			Name:  "DI-BY",
+			Value: "func",
+		},
+		_logIClientRequestInternalExtra{
+			Name:  "DI-M",
+			Value: metaData,
+		})
+
+	di.AddSingletonWithImplementedTypesByFuncWithMetadata(builder, implType, build, metaData, implementedTypes...)
+}
+
+// AddTransientIClientRequestInternal adds a type that implements IClientRequestInternal
+func AddTransientIClientRequestInternal(builder *di.Builder, implType reflect.Type, implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeIClientRequestInternal)
+	_logAddIClientRequestInternal("TRANSIENT", implType, _getImplementedIClientRequestInternalNames(implementedTypes...),
+		_logIClientRequestInternalExtra{
+			Name:  "DI-BY",
+			Value: "type",
+		})
+
+	di.AddTransientWithImplementedTypes(builder, implType, implementedTypes...)
+}
+
+// AddTransientIClientRequestInternalWithMetadata adds a type that implements IClientRequestInternal
+func AddTransientIClientRequestInternalWithMetadata(builder *di.Builder, implType reflect.Type, metaData map[string]interface{}, implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeIClientRequestInternal)
+	_logAddIClientRequestInternal("TRANSIENT", implType, _getImplementedIClientRequestInternalNames(implementedTypes...),
+		_logIClientRequestInternalExtra{
+			Name:  "DI-BY",
+			Value: "type",
+		},
+		_logIClientRequestInternalExtra{
+			Name:  "DI-M",
+			Value: metaData,
+		})
+
+	di.AddTransientWithImplementedTypesWithMetadata(builder, implType, metaData, implementedTypes...)
+}
+
+// AddTransientIClientRequestInternalByFunc adds a type by a custom func
+func AddTransientIClientRequestInternalByFunc(builder *di.Builder, implType reflect.Type, build func(ctn di.Container) (interface{}, error), implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeIClientRequestInternal)
+	_logAddIClientRequestInternal("TRANSIENT", implType, _getImplementedIClientRequestInternalNames(implementedTypes...),
+		_logIClientRequestInternalExtra{
+			Name:  "DI-BY",
+			Value: "func",
+		})
+
+	di.AddTransientWithImplementedTypesByFunc(builder, implType, build, implementedTypes...)
+}
+
+// AddTransientIClientRequestInternalByFuncWithMetadata adds a type by a custom func
+func AddTransientIClientRequestInternalByFuncWithMetadata(builder *di.Builder, implType reflect.Type, build func(ctn di.Container) (interface{}, error), metaData map[string]interface{}, implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeIClientRequestInternal)
+	_logAddIClientRequestInternal("TRANSIENT", implType, _getImplementedIClientRequestInternalNames(implementedTypes...),
+		_logIClientRequestInternalExtra{
+			Name:  "DI-BY",
+			Value: "func",
+		},
+		_logIClientRequestInternalExtra{
+			Name:  "DI-M",
+			Value: metaData,
+		})
+
+	di.AddTransientWithImplementedTypesByFuncWithMetadata(builder, implType, build, metaData, implementedTypes...)
+}
+
+// AddScopedIClientRequestInternal adds a type that implements IClientRequestInternal
+func AddScopedIClientRequestInternal(builder *di.Builder, implType reflect.Type, implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeIClientRequestInternal)
+	_logAddIClientRequestInternal("SCOPED", implType, _getImplementedIClientRequestInternalNames(implementedTypes...),
+		_logIClientRequestInternalExtra{
+			Name:  "DI-BY",
+			Value: "type",
+		})
+	di.AddScopedWithImplementedTypes(builder, implType, implementedTypes...)
+}
+
+// AddScopedIClientRequestInternalWithMetadata adds a type that implements IClientRequestInternal
+func AddScopedIClientRequestInternalWithMetadata(builder *di.Builder, implType reflect.Type, metaData map[string]interface{}, implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeIClientRequestInternal)
+	_logAddIClientRequestInternal("SCOPED", implType, _getImplementedIClientRequestInternalNames(implementedTypes...),
+		_logIClientRequestInternalExtra{
+			Name:  "DI-BY",
+			Value: "type",
+		},
+		_logIClientRequestInternalExtra{
+			Name:  "DI-M",
+			Value: metaData,
+		})
+	di.AddScopedWithImplementedTypesWithMetadata(builder, implType, metaData, implementedTypes...)
+}
+
+// AddScopedIClientRequestInternalByFunc adds a type by a custom func
+func AddScopedIClientRequestInternalByFunc(builder *di.Builder, implType reflect.Type, build func(ctn di.Container) (interface{}, error), implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeIClientRequestInternal)
+	_logAddIClientRequestInternal("SCOPED", implType, _getImplementedIClientRequestInternalNames(implementedTypes...),
+		_logIClientRequestInternalExtra{
+			Name:  "DI-BY",
+			Value: "func",
+		})
+	di.AddScopedWithImplementedTypesByFunc(builder, implType, build, implementedTypes...)
+}
+
+// AddScopedIClientRequestInternalByFuncWithMetadata adds a type by a custom func
+func AddScopedIClientRequestInternalByFuncWithMetadata(builder *di.Builder, implType reflect.Type, build func(ctn di.Container) (interface{}, error), metaData map[string]interface{}, implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeIClientRequestInternal)
+	_logAddIClientRequestInternal("SCOPED", implType, _getImplementedIClientRequestInternalNames(implementedTypes...),
+		_logIClientRequestInternalExtra{
+			Name:  "DI-BY",
+			Value: "func",
+		},
+		_logIClientRequestInternalExtra{
+			Name:  "DI-M",
+			Value: metaData,
+		})
+
+	di.AddScopedWithImplementedTypesByFuncWithMetadata(builder, implType, build, metaData, implementedTypes...)
+}
+
+// RemoveAllIClientRequestInternal removes all IClientRequestInternal from the DI
+func RemoveAllIClientRequestInternal(builder *di.Builder) {
+	builder.RemoveAllByType(ReflectTypeIClientRequestInternal)
+}
+
+// GetIClientRequestInternalFromContainer alternative to SafeGetIClientRequestInternalFromContainer but panics of object is not present
+func GetIClientRequestInternalFromContainer(ctn di.Container) IClientRequestInternal {
+	return ctn.GetByType(ReflectTypeIClientRequestInternal).(IClientRequestInternal)
+}
+
+// GetManyIClientRequestInternalFromContainer alternative to SafeGetManyIClientRequestInternalFromContainer but panics of object is not present
+func GetManyIClientRequestInternalFromContainer(ctn di.Container) []IClientRequestInternal {
+	objs := ctn.GetManyByType(ReflectTypeIClientRequestInternal)
+	var results []IClientRequestInternal
+	for _, obj := range objs {
+		results = append(results, obj.(IClientRequestInternal))
+	}
+	return results
+}
+
+// SafeGetIClientRequestInternalFromContainer trys to get the object by type, will not panic, returns nil and error
+func SafeGetIClientRequestInternalFromContainer(ctn di.Container) (IClientRequestInternal, error) {
+	obj, err := ctn.SafeGetByType(ReflectTypeIClientRequestInternal)
+	if err != nil {
+		return nil, err
+	}
+	return obj.(IClientRequestInternal), nil
+}
+
+// GetIClientRequestInternalDefinition returns that last definition registered that this container can provide
+func GetIClientRequestInternalDefinition(ctn di.Container) *di.Def {
+	def := ctn.GetDefinitionByType(ReflectTypeIClientRequestInternal)
+	return def
+}
+
+// GetIClientRequestInternalDefinitions returns all definitions that this container can provide
+func GetIClientRequestInternalDefinitions(ctn di.Container) []*di.Def {
+	defs := ctn.GetDefinitionsByType(ReflectTypeIClientRequestInternal)
+	return defs
+}
+
+// SafeGetManyIClientRequestInternalFromContainer trys to get the object by type, will not panic, returns nil and error
+func SafeGetManyIClientRequestInternalFromContainer(ctn di.Container) ([]IClientRequestInternal, error) {
+	objs, err := ctn.SafeGetManyByType(ReflectTypeIClientRequestInternal)
+	if err != nil {
+		return nil, err
+	}
+	var results []IClientRequestInternal
+	for _, obj := range objs {
+		results = append(results, obj.(IClientRequestInternal))
+	}
+	return results, nil
+}
+
+type _logIClientRequestInternalExtra struct {
+	Name  string
+	Value interface{}
+}
+
+func _logAddIClientRequestInternal(scopeType string, implType reflect.Type, interfaces string, extra ..._logIClientRequestInternalExtra) {
+	infoEvent := log.Info().
+		Str("DI", scopeType).
+		Str("DI-I", interfaces).
+		Str("DI-B", implType.Elem().String())
+
+	for _, extra := range extra {
+		infoEvent = infoEvent.Interface(extra.Name, extra.Value)
+	}
+
+	infoEvent.Send()
+
+}
+func _getImplementedIClientRequestInternalNames(implementedTypes ...reflect.Type) string {
+	builder := strings.Builder{}
+	for idx, implementedType := range implementedTypes {
+		builder.WriteString(implementedType.Name())
+		if idx < len(implementedTypes)-1 {
+			builder.WriteString(", ")
+		}
+	}
+	return builder.String()
+}
+
+// ReflectTypeIClientTokenRequestInternal used when your service claims to implement IClientTokenRequestInternal
+var ReflectTypeIClientTokenRequestInternal = di.GetInterfaceReflectType((*IClientTokenRequestInternal)(nil))
+
+// AddSingletonIClientTokenRequestInternal adds a type that implements IClientTokenRequestInternal
+func AddSingletonIClientTokenRequestInternal(builder *di.Builder, implType reflect.Type, implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeIClientTokenRequestInternal)
+	_logAddIClientTokenRequestInternal("SINGLETON", implType, _getImplementedIClientTokenRequestInternalNames(implementedTypes...),
+		_logIClientTokenRequestInternalExtra{
+			Name:  "DI-BY",
+			Value: "type",
+		})
+	di.AddSingleton(builder, implType, implementedTypes...)
+}
+
+// AddSingletonIClientTokenRequestInternalWithMetadata adds a type that implements IClientTokenRequestInternal
+func AddSingletonIClientTokenRequestInternalWithMetadata(builder *di.Builder, implType reflect.Type, metaData map[string]interface{}, implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeIClientTokenRequestInternal)
+	_logAddIClientTokenRequestInternal("SINGLETON", implType, _getImplementedIClientTokenRequestInternalNames(implementedTypes...),
+		_logIClientTokenRequestInternalExtra{
+			Name:  "DI-BY",
+			Value: "type",
+		},
+		_logIClientTokenRequestInternalExtra{
+			Name:  "DI-M",
+			Value: metaData,
+		})
+	di.AddSingletonWithMetadata(builder, implType, metaData, implementedTypes...)
+}
+
+// AddSingletonIClientTokenRequestInternalByObj adds a prebuilt obj
+func AddSingletonIClientTokenRequestInternalByObj(builder *di.Builder, obj interface{}, implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeIClientTokenRequestInternal)
+	_logAddIClientTokenRequestInternal("SINGLETON", reflect.TypeOf(obj), _getImplementedIClientTokenRequestInternalNames(implementedTypes...),
+		_logIClientTokenRequestInternalExtra{
+			Name:  "DI-BY",
+			Value: "obj",
+		})
+	di.AddSingletonWithImplementedTypesByObj(builder, obj, implementedTypes...)
+}
+
+// AddSingletonIClientTokenRequestInternalByObjWithMetadata adds a prebuilt obj
+func AddSingletonIClientTokenRequestInternalByObjWithMetadata(builder *di.Builder, obj interface{}, metaData map[string]interface{}, implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeIClientTokenRequestInternal)
+	_logAddIClientTokenRequestInternal("SINGLETON", reflect.TypeOf(obj), _getImplementedIClientTokenRequestInternalNames(implementedTypes...),
+		_logIClientTokenRequestInternalExtra{
+			Name:  "DI-BY",
+			Value: "obj",
+		},
+		_logIClientTokenRequestInternalExtra{
+			Name:  "DI-M",
+			Value: metaData,
+		})
+
+	di.AddSingletonWithImplementedTypesByObjWithMetadata(builder, obj, metaData, implementedTypes...)
+}
+
+// AddSingletonIClientTokenRequestInternalByFunc adds a type by a custom func
+func AddSingletonIClientTokenRequestInternalByFunc(builder *di.Builder, implType reflect.Type, build func(ctn di.Container) (interface{}, error), implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeIClientTokenRequestInternal)
+	_logAddIClientTokenRequestInternal("SINGLETON", implType, _getImplementedIClientTokenRequestInternalNames(implementedTypes...),
+		_logIClientTokenRequestInternalExtra{
+			Name:  "DI-BY",
+			Value: "func",
+		})
+	di.AddSingletonWithImplementedTypesByFunc(builder, implType, build, implementedTypes...)
+}
+
+// AddSingletonIClientTokenRequestInternalByFuncWithMetadata adds a type by a custom func
+func AddSingletonIClientTokenRequestInternalByFuncWithMetadata(builder *di.Builder, implType reflect.Type, build func(ctn di.Container) (interface{}, error), metaData map[string]interface{}, implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeIClientTokenRequestInternal)
+	_logAddIClientTokenRequestInternal("SINGLETON", implType, _getImplementedIClientTokenRequestInternalNames(implementedTypes...),
+		_logIClientTokenRequestInternalExtra{
+			Name:  "DI-BY",
+			Value: "func",
+		},
+		_logIClientTokenRequestInternalExtra{
+			Name:  "DI-M",
+			Value: metaData,
+		})
+
+	di.AddSingletonWithImplementedTypesByFuncWithMetadata(builder, implType, build, metaData, implementedTypes...)
+}
+
+// AddTransientIClientTokenRequestInternal adds a type that implements IClientTokenRequestInternal
+func AddTransientIClientTokenRequestInternal(builder *di.Builder, implType reflect.Type, implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeIClientTokenRequestInternal)
+	_logAddIClientTokenRequestInternal("TRANSIENT", implType, _getImplementedIClientTokenRequestInternalNames(implementedTypes...),
+		_logIClientTokenRequestInternalExtra{
+			Name:  "DI-BY",
+			Value: "type",
+		})
+
+	di.AddTransientWithImplementedTypes(builder, implType, implementedTypes...)
+}
+
+// AddTransientIClientTokenRequestInternalWithMetadata adds a type that implements IClientTokenRequestInternal
+func AddTransientIClientTokenRequestInternalWithMetadata(builder *di.Builder, implType reflect.Type, metaData map[string]interface{}, implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeIClientTokenRequestInternal)
+	_logAddIClientTokenRequestInternal("TRANSIENT", implType, _getImplementedIClientTokenRequestInternalNames(implementedTypes...),
+		_logIClientTokenRequestInternalExtra{
+			Name:  "DI-BY",
+			Value: "type",
+		},
+		_logIClientTokenRequestInternalExtra{
+			Name:  "DI-M",
+			Value: metaData,
+		})
+
+	di.AddTransientWithImplementedTypesWithMetadata(builder, implType, metaData, implementedTypes...)
+}
+
+// AddTransientIClientTokenRequestInternalByFunc adds a type by a custom func
+func AddTransientIClientTokenRequestInternalByFunc(builder *di.Builder, implType reflect.Type, build func(ctn di.Container) (interface{}, error), implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeIClientTokenRequestInternal)
+	_logAddIClientTokenRequestInternal("TRANSIENT", implType, _getImplementedIClientTokenRequestInternalNames(implementedTypes...),
+		_logIClientTokenRequestInternalExtra{
+			Name:  "DI-BY",
+			Value: "func",
+		})
+
+	di.AddTransientWithImplementedTypesByFunc(builder, implType, build, implementedTypes...)
+}
+
+// AddTransientIClientTokenRequestInternalByFuncWithMetadata adds a type by a custom func
+func AddTransientIClientTokenRequestInternalByFuncWithMetadata(builder *di.Builder, implType reflect.Type, build func(ctn di.Container) (interface{}, error), metaData map[string]interface{}, implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeIClientTokenRequestInternal)
+	_logAddIClientTokenRequestInternal("TRANSIENT", implType, _getImplementedIClientTokenRequestInternalNames(implementedTypes...),
+		_logIClientTokenRequestInternalExtra{
+			Name:  "DI-BY",
+			Value: "func",
+		},
+		_logIClientTokenRequestInternalExtra{
+			Name:  "DI-M",
+			Value: metaData,
+		})
+
+	di.AddTransientWithImplementedTypesByFuncWithMetadata(builder, implType, build, metaData, implementedTypes...)
+}
+
+// AddScopedIClientTokenRequestInternal adds a type that implements IClientTokenRequestInternal
+func AddScopedIClientTokenRequestInternal(builder *di.Builder, implType reflect.Type, implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeIClientTokenRequestInternal)
+	_logAddIClientTokenRequestInternal("SCOPED", implType, _getImplementedIClientTokenRequestInternalNames(implementedTypes...),
+		_logIClientTokenRequestInternalExtra{
+			Name:  "DI-BY",
+			Value: "type",
+		})
+	di.AddScopedWithImplementedTypes(builder, implType, implementedTypes...)
+}
+
+// AddScopedIClientTokenRequestInternalWithMetadata adds a type that implements IClientTokenRequestInternal
+func AddScopedIClientTokenRequestInternalWithMetadata(builder *di.Builder, implType reflect.Type, metaData map[string]interface{}, implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeIClientTokenRequestInternal)
+	_logAddIClientTokenRequestInternal("SCOPED", implType, _getImplementedIClientTokenRequestInternalNames(implementedTypes...),
+		_logIClientTokenRequestInternalExtra{
+			Name:  "DI-BY",
+			Value: "type",
+		},
+		_logIClientTokenRequestInternalExtra{
+			Name:  "DI-M",
+			Value: metaData,
+		})
+	di.AddScopedWithImplementedTypesWithMetadata(builder, implType, metaData, implementedTypes...)
+}
+
+// AddScopedIClientTokenRequestInternalByFunc adds a type by a custom func
+func AddScopedIClientTokenRequestInternalByFunc(builder *di.Builder, implType reflect.Type, build func(ctn di.Container) (interface{}, error), implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeIClientTokenRequestInternal)
+	_logAddIClientTokenRequestInternal("SCOPED", implType, _getImplementedIClientTokenRequestInternalNames(implementedTypes...),
+		_logIClientTokenRequestInternalExtra{
+			Name:  "DI-BY",
+			Value: "func",
+		})
+	di.AddScopedWithImplementedTypesByFunc(builder, implType, build, implementedTypes...)
+}
+
+// AddScopedIClientTokenRequestInternalByFuncWithMetadata adds a type by a custom func
+func AddScopedIClientTokenRequestInternalByFuncWithMetadata(builder *di.Builder, implType reflect.Type, build func(ctn di.Container) (interface{}, error), metaData map[string]interface{}, implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeIClientTokenRequestInternal)
+	_logAddIClientTokenRequestInternal("SCOPED", implType, _getImplementedIClientTokenRequestInternalNames(implementedTypes...),
+		_logIClientTokenRequestInternalExtra{
+			Name:  "DI-BY",
+			Value: "func",
+		},
+		_logIClientTokenRequestInternalExtra{
+			Name:  "DI-M",
+			Value: metaData,
+		})
+
+	di.AddScopedWithImplementedTypesByFuncWithMetadata(builder, implType, build, metaData, implementedTypes...)
+}
+
+// RemoveAllIClientTokenRequestInternal removes all IClientTokenRequestInternal from the DI
+func RemoveAllIClientTokenRequestInternal(builder *di.Builder) {
+	builder.RemoveAllByType(ReflectTypeIClientTokenRequestInternal)
+}
+
+// GetIClientTokenRequestInternalFromContainer alternative to SafeGetIClientTokenRequestInternalFromContainer but panics of object is not present
+func GetIClientTokenRequestInternalFromContainer(ctn di.Container) IClientTokenRequestInternal {
+	return ctn.GetByType(ReflectTypeIClientTokenRequestInternal).(IClientTokenRequestInternal)
+}
+
+// GetManyIClientTokenRequestInternalFromContainer alternative to SafeGetManyIClientTokenRequestInternalFromContainer but panics of object is not present
+func GetManyIClientTokenRequestInternalFromContainer(ctn di.Container) []IClientTokenRequestInternal {
+	objs := ctn.GetManyByType(ReflectTypeIClientTokenRequestInternal)
+	var results []IClientTokenRequestInternal
+	for _, obj := range objs {
+		results = append(results, obj.(IClientTokenRequestInternal))
+	}
+	return results
+}
+
+// SafeGetIClientTokenRequestInternalFromContainer trys to get the object by type, will not panic, returns nil and error
+func SafeGetIClientTokenRequestInternalFromContainer(ctn di.Container) (IClientTokenRequestInternal, error) {
+	obj, err := ctn.SafeGetByType(ReflectTypeIClientTokenRequestInternal)
+	if err != nil {
+		return nil, err
+	}
+	return obj.(IClientTokenRequestInternal), nil
+}
+
+// GetIClientTokenRequestInternalDefinition returns that last definition registered that this container can provide
+func GetIClientTokenRequestInternalDefinition(ctn di.Container) *di.Def {
+	def := ctn.GetDefinitionByType(ReflectTypeIClientTokenRequestInternal)
+	return def
+}
+
+// GetIClientTokenRequestInternalDefinitions returns all definitions that this container can provide
+func GetIClientTokenRequestInternalDefinitions(ctn di.Container) []*di.Def {
+	defs := ctn.GetDefinitionsByType(ReflectTypeIClientTokenRequestInternal)
+	return defs
+}
+
+// SafeGetManyIClientTokenRequestInternalFromContainer trys to get the object by type, will not panic, returns nil and error
+func SafeGetManyIClientTokenRequestInternalFromContainer(ctn di.Container) ([]IClientTokenRequestInternal, error) {
+	objs, err := ctn.SafeGetManyByType(ReflectTypeIClientTokenRequestInternal)
+	if err != nil {
+		return nil, err
+	}
+	var results []IClientTokenRequestInternal
+	for _, obj := range objs {
+		results = append(results, obj.(IClientTokenRequestInternal))
+	}
+	return results, nil
+}
+
+type _logIClientTokenRequestInternalExtra struct {
+	Name  string
+	Value interface{}
+}
+
+func _logAddIClientTokenRequestInternal(scopeType string, implType reflect.Type, interfaces string, extra ..._logIClientTokenRequestInternalExtra) {
+	infoEvent := log.Info().
+		Str("DI", scopeType).
+		Str("DI-I", interfaces).
+		Str("DI-B", implType.Elem().String())
+
+	for _, extra := range extra {
+		infoEvent = infoEvent.Interface(extra.Name, extra.Value)
+	}
+
+	infoEvent.Send()
+
+}
+func _getImplementedIClientTokenRequestInternalNames(implementedTypes ...reflect.Type) string {
+	builder := strings.Builder{}
+	for idx, implementedType := range implementedTypes {
+		builder.WriteString(implementedType.Name())
+		if idx < len(implementedTypes)-1 {
+			builder.WriteString(", ")
+		}
+	}
+	return builder.String()
+}
