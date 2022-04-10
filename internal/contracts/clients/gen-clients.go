@@ -286,3 +286,553 @@ func _getImplementedIClientStoreNames(implementedTypes ...reflect.Type) string {
 	}
 	return builder.String()
 }
+
+// ReflectTypeIClientTokenRequest used when your service claims to implement IClientTokenRequest
+var ReflectTypeIClientTokenRequest = di.GetInterfaceReflectType((*IClientTokenRequest)(nil))
+
+// AddSingletonIClientTokenRequest adds a type that implements IClientTokenRequest
+func AddSingletonIClientTokenRequest(builder *di.Builder, implType reflect.Type, implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeIClientTokenRequest)
+	_logAddIClientTokenRequest("SINGLETON", implType, _getImplementedIClientTokenRequestNames(implementedTypes...),
+		_logIClientTokenRequestExtra{
+			Name:  "DI-BY",
+			Value: "type",
+		})
+	di.AddSingleton(builder, implType, implementedTypes...)
+}
+
+// AddSingletonIClientTokenRequestWithMetadata adds a type that implements IClientTokenRequest
+func AddSingletonIClientTokenRequestWithMetadata(builder *di.Builder, implType reflect.Type, metaData map[string]interface{}, implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeIClientTokenRequest)
+	_logAddIClientTokenRequest("SINGLETON", implType, _getImplementedIClientTokenRequestNames(implementedTypes...),
+		_logIClientTokenRequestExtra{
+			Name:  "DI-BY",
+			Value: "type",
+		},
+		_logIClientTokenRequestExtra{
+			Name:  "DI-M",
+			Value: metaData,
+		})
+	di.AddSingletonWithMetadata(builder, implType, metaData, implementedTypes...)
+}
+
+// AddSingletonIClientTokenRequestByObj adds a prebuilt obj
+func AddSingletonIClientTokenRequestByObj(builder *di.Builder, obj interface{}, implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeIClientTokenRequest)
+	_logAddIClientTokenRequest("SINGLETON", reflect.TypeOf(obj), _getImplementedIClientTokenRequestNames(implementedTypes...),
+		_logIClientTokenRequestExtra{
+			Name:  "DI-BY",
+			Value: "obj",
+		})
+	di.AddSingletonWithImplementedTypesByObj(builder, obj, implementedTypes...)
+}
+
+// AddSingletonIClientTokenRequestByObjWithMetadata adds a prebuilt obj
+func AddSingletonIClientTokenRequestByObjWithMetadata(builder *di.Builder, obj interface{}, metaData map[string]interface{}, implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeIClientTokenRequest)
+	_logAddIClientTokenRequest("SINGLETON", reflect.TypeOf(obj), _getImplementedIClientTokenRequestNames(implementedTypes...),
+		_logIClientTokenRequestExtra{
+			Name:  "DI-BY",
+			Value: "obj",
+		},
+		_logIClientTokenRequestExtra{
+			Name:  "DI-M",
+			Value: metaData,
+		})
+
+	di.AddSingletonWithImplementedTypesByObjWithMetadata(builder, obj, metaData, implementedTypes...)
+}
+
+// AddSingletonIClientTokenRequestByFunc adds a type by a custom func
+func AddSingletonIClientTokenRequestByFunc(builder *di.Builder, implType reflect.Type, build func(ctn di.Container) (interface{}, error), implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeIClientTokenRequest)
+	_logAddIClientTokenRequest("SINGLETON", implType, _getImplementedIClientTokenRequestNames(implementedTypes...),
+		_logIClientTokenRequestExtra{
+			Name:  "DI-BY",
+			Value: "func",
+		})
+	di.AddSingletonWithImplementedTypesByFunc(builder, implType, build, implementedTypes...)
+}
+
+// AddSingletonIClientTokenRequestByFuncWithMetadata adds a type by a custom func
+func AddSingletonIClientTokenRequestByFuncWithMetadata(builder *di.Builder, implType reflect.Type, build func(ctn di.Container) (interface{}, error), metaData map[string]interface{}, implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeIClientTokenRequest)
+	_logAddIClientTokenRequest("SINGLETON", implType, _getImplementedIClientTokenRequestNames(implementedTypes...),
+		_logIClientTokenRequestExtra{
+			Name:  "DI-BY",
+			Value: "func",
+		},
+		_logIClientTokenRequestExtra{
+			Name:  "DI-M",
+			Value: metaData,
+		})
+
+	di.AddSingletonWithImplementedTypesByFuncWithMetadata(builder, implType, build, metaData, implementedTypes...)
+}
+
+// AddTransientIClientTokenRequest adds a type that implements IClientTokenRequest
+func AddTransientIClientTokenRequest(builder *di.Builder, implType reflect.Type, implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeIClientTokenRequest)
+	_logAddIClientTokenRequest("TRANSIENT", implType, _getImplementedIClientTokenRequestNames(implementedTypes...),
+		_logIClientTokenRequestExtra{
+			Name:  "DI-BY",
+			Value: "type",
+		})
+
+	di.AddTransientWithImplementedTypes(builder, implType, implementedTypes...)
+}
+
+// AddTransientIClientTokenRequestWithMetadata adds a type that implements IClientTokenRequest
+func AddTransientIClientTokenRequestWithMetadata(builder *di.Builder, implType reflect.Type, metaData map[string]interface{}, implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeIClientTokenRequest)
+	_logAddIClientTokenRequest("TRANSIENT", implType, _getImplementedIClientTokenRequestNames(implementedTypes...),
+		_logIClientTokenRequestExtra{
+			Name:  "DI-BY",
+			Value: "type",
+		},
+		_logIClientTokenRequestExtra{
+			Name:  "DI-M",
+			Value: metaData,
+		})
+
+	di.AddTransientWithImplementedTypesWithMetadata(builder, implType, metaData, implementedTypes...)
+}
+
+// AddTransientIClientTokenRequestByFunc adds a type by a custom func
+func AddTransientIClientTokenRequestByFunc(builder *di.Builder, implType reflect.Type, build func(ctn di.Container) (interface{}, error), implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeIClientTokenRequest)
+	_logAddIClientTokenRequest("TRANSIENT", implType, _getImplementedIClientTokenRequestNames(implementedTypes...),
+		_logIClientTokenRequestExtra{
+			Name:  "DI-BY",
+			Value: "func",
+		})
+
+	di.AddTransientWithImplementedTypesByFunc(builder, implType, build, implementedTypes...)
+}
+
+// AddTransientIClientTokenRequestByFuncWithMetadata adds a type by a custom func
+func AddTransientIClientTokenRequestByFuncWithMetadata(builder *di.Builder, implType reflect.Type, build func(ctn di.Container) (interface{}, error), metaData map[string]interface{}, implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeIClientTokenRequest)
+	_logAddIClientTokenRequest("TRANSIENT", implType, _getImplementedIClientTokenRequestNames(implementedTypes...),
+		_logIClientTokenRequestExtra{
+			Name:  "DI-BY",
+			Value: "func",
+		},
+		_logIClientTokenRequestExtra{
+			Name:  "DI-M",
+			Value: metaData,
+		})
+
+	di.AddTransientWithImplementedTypesByFuncWithMetadata(builder, implType, build, metaData, implementedTypes...)
+}
+
+// AddScopedIClientTokenRequest adds a type that implements IClientTokenRequest
+func AddScopedIClientTokenRequest(builder *di.Builder, implType reflect.Type, implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeIClientTokenRequest)
+	_logAddIClientTokenRequest("SCOPED", implType, _getImplementedIClientTokenRequestNames(implementedTypes...),
+		_logIClientTokenRequestExtra{
+			Name:  "DI-BY",
+			Value: "type",
+		})
+	di.AddScopedWithImplementedTypes(builder, implType, implementedTypes...)
+}
+
+// AddScopedIClientTokenRequestWithMetadata adds a type that implements IClientTokenRequest
+func AddScopedIClientTokenRequestWithMetadata(builder *di.Builder, implType reflect.Type, metaData map[string]interface{}, implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeIClientTokenRequest)
+	_logAddIClientTokenRequest("SCOPED", implType, _getImplementedIClientTokenRequestNames(implementedTypes...),
+		_logIClientTokenRequestExtra{
+			Name:  "DI-BY",
+			Value: "type",
+		},
+		_logIClientTokenRequestExtra{
+			Name:  "DI-M",
+			Value: metaData,
+		})
+	di.AddScopedWithImplementedTypesWithMetadata(builder, implType, metaData, implementedTypes...)
+}
+
+// AddScopedIClientTokenRequestByFunc adds a type by a custom func
+func AddScopedIClientTokenRequestByFunc(builder *di.Builder, implType reflect.Type, build func(ctn di.Container) (interface{}, error), implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeIClientTokenRequest)
+	_logAddIClientTokenRequest("SCOPED", implType, _getImplementedIClientTokenRequestNames(implementedTypes...),
+		_logIClientTokenRequestExtra{
+			Name:  "DI-BY",
+			Value: "func",
+		})
+	di.AddScopedWithImplementedTypesByFunc(builder, implType, build, implementedTypes...)
+}
+
+// AddScopedIClientTokenRequestByFuncWithMetadata adds a type by a custom func
+func AddScopedIClientTokenRequestByFuncWithMetadata(builder *di.Builder, implType reflect.Type, build func(ctn di.Container) (interface{}, error), metaData map[string]interface{}, implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeIClientTokenRequest)
+	_logAddIClientTokenRequest("SCOPED", implType, _getImplementedIClientTokenRequestNames(implementedTypes...),
+		_logIClientTokenRequestExtra{
+			Name:  "DI-BY",
+			Value: "func",
+		},
+		_logIClientTokenRequestExtra{
+			Name:  "DI-M",
+			Value: metaData,
+		})
+
+	di.AddScopedWithImplementedTypesByFuncWithMetadata(builder, implType, build, metaData, implementedTypes...)
+}
+
+// RemoveAllIClientTokenRequest removes all IClientTokenRequest from the DI
+func RemoveAllIClientTokenRequest(builder *di.Builder) {
+	builder.RemoveAllByType(ReflectTypeIClientTokenRequest)
+}
+
+// GetIClientTokenRequestFromContainer alternative to SafeGetIClientTokenRequestFromContainer but panics of object is not present
+func GetIClientTokenRequestFromContainer(ctn di.Container) IClientTokenRequest {
+	return ctn.GetByType(ReflectTypeIClientTokenRequest).(IClientTokenRequest)
+}
+
+// GetManyIClientTokenRequestFromContainer alternative to SafeGetManyIClientTokenRequestFromContainer but panics of object is not present
+func GetManyIClientTokenRequestFromContainer(ctn di.Container) []IClientTokenRequest {
+	objs := ctn.GetManyByType(ReflectTypeIClientTokenRequest)
+	var results []IClientTokenRequest
+	for _, obj := range objs {
+		results = append(results, obj.(IClientTokenRequest))
+	}
+	return results
+}
+
+// SafeGetIClientTokenRequestFromContainer trys to get the object by type, will not panic, returns nil and error
+func SafeGetIClientTokenRequestFromContainer(ctn di.Container) (IClientTokenRequest, error) {
+	obj, err := ctn.SafeGetByType(ReflectTypeIClientTokenRequest)
+	if err != nil {
+		return nil, err
+	}
+	return obj.(IClientTokenRequest), nil
+}
+
+// GetIClientTokenRequestDefinition returns that last definition registered that this container can provide
+func GetIClientTokenRequestDefinition(ctn di.Container) *di.Def {
+	def := ctn.GetDefinitionByType(ReflectTypeIClientTokenRequest)
+	return def
+}
+
+// GetIClientTokenRequestDefinitions returns all definitions that this container can provide
+func GetIClientTokenRequestDefinitions(ctn di.Container) []*di.Def {
+	defs := ctn.GetDefinitionsByType(ReflectTypeIClientTokenRequest)
+	return defs
+}
+
+// SafeGetManyIClientTokenRequestFromContainer trys to get the object by type, will not panic, returns nil and error
+func SafeGetManyIClientTokenRequestFromContainer(ctn di.Container) ([]IClientTokenRequest, error) {
+	objs, err := ctn.SafeGetManyByType(ReflectTypeIClientTokenRequest)
+	if err != nil {
+		return nil, err
+	}
+	var results []IClientTokenRequest
+	for _, obj := range objs {
+		results = append(results, obj.(IClientTokenRequest))
+	}
+	return results, nil
+}
+
+type _logIClientTokenRequestExtra struct {
+	Name  string
+	Value interface{}
+}
+
+func _logAddIClientTokenRequest(scopeType string, implType reflect.Type, interfaces string, extra ..._logIClientTokenRequestExtra) {
+	infoEvent := log.Info().
+		Str("DI", scopeType).
+		Str("DI-I", interfaces).
+		Str("DI-B", implType.Elem().String())
+
+	for _, extra := range extra {
+		infoEvent = infoEvent.Interface(extra.Name, extra.Value)
+	}
+
+	infoEvent.Send()
+
+}
+func _getImplementedIClientTokenRequestNames(implementedTypes ...reflect.Type) string {
+	builder := strings.Builder{}
+	for idx, implementedType := range implementedTypes {
+		builder.WriteString(implementedType.Name())
+		if idx < len(implementedTypes)-1 {
+			builder.WriteString(", ")
+		}
+	}
+	return builder.String()
+}
+
+// ReflectTypeIClientRequest used when your service claims to implement IClientRequest
+var ReflectTypeIClientRequest = di.GetInterfaceReflectType((*IClientRequest)(nil))
+
+// AddSingletonIClientRequest adds a type that implements IClientRequest
+func AddSingletonIClientRequest(builder *di.Builder, implType reflect.Type, implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeIClientRequest)
+	_logAddIClientRequest("SINGLETON", implType, _getImplementedIClientRequestNames(implementedTypes...),
+		_logIClientRequestExtra{
+			Name:  "DI-BY",
+			Value: "type",
+		})
+	di.AddSingleton(builder, implType, implementedTypes...)
+}
+
+// AddSingletonIClientRequestWithMetadata adds a type that implements IClientRequest
+func AddSingletonIClientRequestWithMetadata(builder *di.Builder, implType reflect.Type, metaData map[string]interface{}, implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeIClientRequest)
+	_logAddIClientRequest("SINGLETON", implType, _getImplementedIClientRequestNames(implementedTypes...),
+		_logIClientRequestExtra{
+			Name:  "DI-BY",
+			Value: "type",
+		},
+		_logIClientRequestExtra{
+			Name:  "DI-M",
+			Value: metaData,
+		})
+	di.AddSingletonWithMetadata(builder, implType, metaData, implementedTypes...)
+}
+
+// AddSingletonIClientRequestByObj adds a prebuilt obj
+func AddSingletonIClientRequestByObj(builder *di.Builder, obj interface{}, implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeIClientRequest)
+	_logAddIClientRequest("SINGLETON", reflect.TypeOf(obj), _getImplementedIClientRequestNames(implementedTypes...),
+		_logIClientRequestExtra{
+			Name:  "DI-BY",
+			Value: "obj",
+		})
+	di.AddSingletonWithImplementedTypesByObj(builder, obj, implementedTypes...)
+}
+
+// AddSingletonIClientRequestByObjWithMetadata adds a prebuilt obj
+func AddSingletonIClientRequestByObjWithMetadata(builder *di.Builder, obj interface{}, metaData map[string]interface{}, implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeIClientRequest)
+	_logAddIClientRequest("SINGLETON", reflect.TypeOf(obj), _getImplementedIClientRequestNames(implementedTypes...),
+		_logIClientRequestExtra{
+			Name:  "DI-BY",
+			Value: "obj",
+		},
+		_logIClientRequestExtra{
+			Name:  "DI-M",
+			Value: metaData,
+		})
+
+	di.AddSingletonWithImplementedTypesByObjWithMetadata(builder, obj, metaData, implementedTypes...)
+}
+
+// AddSingletonIClientRequestByFunc adds a type by a custom func
+func AddSingletonIClientRequestByFunc(builder *di.Builder, implType reflect.Type, build func(ctn di.Container) (interface{}, error), implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeIClientRequest)
+	_logAddIClientRequest("SINGLETON", implType, _getImplementedIClientRequestNames(implementedTypes...),
+		_logIClientRequestExtra{
+			Name:  "DI-BY",
+			Value: "func",
+		})
+	di.AddSingletonWithImplementedTypesByFunc(builder, implType, build, implementedTypes...)
+}
+
+// AddSingletonIClientRequestByFuncWithMetadata adds a type by a custom func
+func AddSingletonIClientRequestByFuncWithMetadata(builder *di.Builder, implType reflect.Type, build func(ctn di.Container) (interface{}, error), metaData map[string]interface{}, implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeIClientRequest)
+	_logAddIClientRequest("SINGLETON", implType, _getImplementedIClientRequestNames(implementedTypes...),
+		_logIClientRequestExtra{
+			Name:  "DI-BY",
+			Value: "func",
+		},
+		_logIClientRequestExtra{
+			Name:  "DI-M",
+			Value: metaData,
+		})
+
+	di.AddSingletonWithImplementedTypesByFuncWithMetadata(builder, implType, build, metaData, implementedTypes...)
+}
+
+// AddTransientIClientRequest adds a type that implements IClientRequest
+func AddTransientIClientRequest(builder *di.Builder, implType reflect.Type, implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeIClientRequest)
+	_logAddIClientRequest("TRANSIENT", implType, _getImplementedIClientRequestNames(implementedTypes...),
+		_logIClientRequestExtra{
+			Name:  "DI-BY",
+			Value: "type",
+		})
+
+	di.AddTransientWithImplementedTypes(builder, implType, implementedTypes...)
+}
+
+// AddTransientIClientRequestWithMetadata adds a type that implements IClientRequest
+func AddTransientIClientRequestWithMetadata(builder *di.Builder, implType reflect.Type, metaData map[string]interface{}, implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeIClientRequest)
+	_logAddIClientRequest("TRANSIENT", implType, _getImplementedIClientRequestNames(implementedTypes...),
+		_logIClientRequestExtra{
+			Name:  "DI-BY",
+			Value: "type",
+		},
+		_logIClientRequestExtra{
+			Name:  "DI-M",
+			Value: metaData,
+		})
+
+	di.AddTransientWithImplementedTypesWithMetadata(builder, implType, metaData, implementedTypes...)
+}
+
+// AddTransientIClientRequestByFunc adds a type by a custom func
+func AddTransientIClientRequestByFunc(builder *di.Builder, implType reflect.Type, build func(ctn di.Container) (interface{}, error), implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeIClientRequest)
+	_logAddIClientRequest("TRANSIENT", implType, _getImplementedIClientRequestNames(implementedTypes...),
+		_logIClientRequestExtra{
+			Name:  "DI-BY",
+			Value: "func",
+		})
+
+	di.AddTransientWithImplementedTypesByFunc(builder, implType, build, implementedTypes...)
+}
+
+// AddTransientIClientRequestByFuncWithMetadata adds a type by a custom func
+func AddTransientIClientRequestByFuncWithMetadata(builder *di.Builder, implType reflect.Type, build func(ctn di.Container) (interface{}, error), metaData map[string]interface{}, implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeIClientRequest)
+	_logAddIClientRequest("TRANSIENT", implType, _getImplementedIClientRequestNames(implementedTypes...),
+		_logIClientRequestExtra{
+			Name:  "DI-BY",
+			Value: "func",
+		},
+		_logIClientRequestExtra{
+			Name:  "DI-M",
+			Value: metaData,
+		})
+
+	di.AddTransientWithImplementedTypesByFuncWithMetadata(builder, implType, build, metaData, implementedTypes...)
+}
+
+// AddScopedIClientRequest adds a type that implements IClientRequest
+func AddScopedIClientRequest(builder *di.Builder, implType reflect.Type, implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeIClientRequest)
+	_logAddIClientRequest("SCOPED", implType, _getImplementedIClientRequestNames(implementedTypes...),
+		_logIClientRequestExtra{
+			Name:  "DI-BY",
+			Value: "type",
+		})
+	di.AddScopedWithImplementedTypes(builder, implType, implementedTypes...)
+}
+
+// AddScopedIClientRequestWithMetadata adds a type that implements IClientRequest
+func AddScopedIClientRequestWithMetadata(builder *di.Builder, implType reflect.Type, metaData map[string]interface{}, implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeIClientRequest)
+	_logAddIClientRequest("SCOPED", implType, _getImplementedIClientRequestNames(implementedTypes...),
+		_logIClientRequestExtra{
+			Name:  "DI-BY",
+			Value: "type",
+		},
+		_logIClientRequestExtra{
+			Name:  "DI-M",
+			Value: metaData,
+		})
+	di.AddScopedWithImplementedTypesWithMetadata(builder, implType, metaData, implementedTypes...)
+}
+
+// AddScopedIClientRequestByFunc adds a type by a custom func
+func AddScopedIClientRequestByFunc(builder *di.Builder, implType reflect.Type, build func(ctn di.Container) (interface{}, error), implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeIClientRequest)
+	_logAddIClientRequest("SCOPED", implType, _getImplementedIClientRequestNames(implementedTypes...),
+		_logIClientRequestExtra{
+			Name:  "DI-BY",
+			Value: "func",
+		})
+	di.AddScopedWithImplementedTypesByFunc(builder, implType, build, implementedTypes...)
+}
+
+// AddScopedIClientRequestByFuncWithMetadata adds a type by a custom func
+func AddScopedIClientRequestByFuncWithMetadata(builder *di.Builder, implType reflect.Type, build func(ctn di.Container) (interface{}, error), metaData map[string]interface{}, implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeIClientRequest)
+	_logAddIClientRequest("SCOPED", implType, _getImplementedIClientRequestNames(implementedTypes...),
+		_logIClientRequestExtra{
+			Name:  "DI-BY",
+			Value: "func",
+		},
+		_logIClientRequestExtra{
+			Name:  "DI-M",
+			Value: metaData,
+		})
+
+	di.AddScopedWithImplementedTypesByFuncWithMetadata(builder, implType, build, metaData, implementedTypes...)
+}
+
+// RemoveAllIClientRequest removes all IClientRequest from the DI
+func RemoveAllIClientRequest(builder *di.Builder) {
+	builder.RemoveAllByType(ReflectTypeIClientRequest)
+}
+
+// GetIClientRequestFromContainer alternative to SafeGetIClientRequestFromContainer but panics of object is not present
+func GetIClientRequestFromContainer(ctn di.Container) IClientRequest {
+	return ctn.GetByType(ReflectTypeIClientRequest).(IClientRequest)
+}
+
+// GetManyIClientRequestFromContainer alternative to SafeGetManyIClientRequestFromContainer but panics of object is not present
+func GetManyIClientRequestFromContainer(ctn di.Container) []IClientRequest {
+	objs := ctn.GetManyByType(ReflectTypeIClientRequest)
+	var results []IClientRequest
+	for _, obj := range objs {
+		results = append(results, obj.(IClientRequest))
+	}
+	return results
+}
+
+// SafeGetIClientRequestFromContainer trys to get the object by type, will not panic, returns nil and error
+func SafeGetIClientRequestFromContainer(ctn di.Container) (IClientRequest, error) {
+	obj, err := ctn.SafeGetByType(ReflectTypeIClientRequest)
+	if err != nil {
+		return nil, err
+	}
+	return obj.(IClientRequest), nil
+}
+
+// GetIClientRequestDefinition returns that last definition registered that this container can provide
+func GetIClientRequestDefinition(ctn di.Container) *di.Def {
+	def := ctn.GetDefinitionByType(ReflectTypeIClientRequest)
+	return def
+}
+
+// GetIClientRequestDefinitions returns all definitions that this container can provide
+func GetIClientRequestDefinitions(ctn di.Container) []*di.Def {
+	defs := ctn.GetDefinitionsByType(ReflectTypeIClientRequest)
+	return defs
+}
+
+// SafeGetManyIClientRequestFromContainer trys to get the object by type, will not panic, returns nil and error
+func SafeGetManyIClientRequestFromContainer(ctn di.Container) ([]IClientRequest, error) {
+	objs, err := ctn.SafeGetManyByType(ReflectTypeIClientRequest)
+	if err != nil {
+		return nil, err
+	}
+	var results []IClientRequest
+	for _, obj := range objs {
+		results = append(results, obj.(IClientRequest))
+	}
+	return results, nil
+}
+
+type _logIClientRequestExtra struct {
+	Name  string
+	Value interface{}
+}
+
+func _logAddIClientRequest(scopeType string, implType reflect.Type, interfaces string, extra ..._logIClientRequestExtra) {
+	infoEvent := log.Info().
+		Str("DI", scopeType).
+		Str("DI-I", interfaces).
+		Str("DI-B", implType.Elem().String())
+
+	for _, extra := range extra {
+		infoEvent = infoEvent.Interface(extra.Name, extra.Value)
+	}
+
+	infoEvent.Send()
+
+}
+func _getImplementedIClientRequestNames(implementedTypes ...reflect.Type) string {
+	builder := strings.Builder{}
+	for idx, implementedType := range implementedTypes {
+		builder.WriteString(implementedType.Name())
+		if idx < len(implementedTypes)-1 {
+			builder.WriteString(", ")
+		}
+	}
+	return builder.String()
+}
