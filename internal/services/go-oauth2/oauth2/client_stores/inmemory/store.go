@@ -2,6 +2,7 @@ package inmemory
 
 import (
 	contracts_go_oauth2_oauth2 "echo-starter/internal/contracts/go-oauth2/oauth2"
+	"echo-starter/internal/utils"
 	"reflect"
 
 	di "github.com/fluffy-bunny/sarulabsdi"
@@ -18,10 +19,13 @@ func AddSingletonIClientStore(builder *di.Builder) {
 	reflectType := reflect.TypeOf((*store.ClientStore)(nil))
 	contracts_go_oauth2_oauth2.AddSingletonIClientStoreByFunc(builder, reflectType, func(ctn di.Container) (interface{}, error) {
 
+		password := "999999"
+		hash, _ := utils.GeneratePasswordHash(password)
+
 		clientStore := store.NewClientStore()
 		clientStore.Set("000000", &models.Client{
 			ID:     "000000",
-			Secret: "999999",
+			Secret: hash,
 			Domain: "http://localhost",
 		})
 		return clientStore, nil

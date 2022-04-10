@@ -1,12 +1,12 @@
-package discovery
+package discoveryjwks
 
 import (
-	"echo-starter/internal/utils"
 	"echo-starter/internal/wellknown"
+	"fmt"
 	"net/http"
 	"reflect"
 
-	"echo-starter/internal/models"
+	contracts_go_oauth2_oauth2 "echo-starter/internal/contracts/go-oauth2/oauth2"
 
 	contracts_handler "github.com/fluffy-bunny/grpcdotnetgo/pkg/echo/contracts/handler"
 	di "github.com/fluffy-bunny/sarulabsdi"
@@ -14,7 +14,9 @@ import (
 )
 
 type (
-	service struct{}
+	service struct {
+		SigningKeyStore contracts_go_oauth2_oauth2.ISigningKeyStore `inject:""`
+	}
 )
 
 func assertImplementation() {
@@ -30,7 +32,7 @@ func AddScopedIHandler(builder *di.Builder) {
 		[]contracts_handler.HTTPVERB{
 			contracts_handler.GET,
 		},
-		wellknown.WellKnownOpenIDCOnfiguationPath)
+		wellknown.WellKnownJWKS)
 }
 
 func (s *service) GetMiddleware() []echo.MiddlewareFunc {
@@ -40,20 +42,13 @@ func (s *service) GetMiddleware() []echo.MiddlewareFunc {
 func (s *service) Do(c echo.Context) error {
 	return s.get(c)
 }
+func getMyRootPath(c echo.Context) string {
+	return fmt.Sprintf("%s://%s", c.Scheme(), c.Request().Host)
+}
 
 func (s *service) get(c echo.Context) error {
-	rootPath := utils.GetMyRootPath(c)
-	discovery := models.DiscoveryDocument{
-		Issuer:             rootPath,
-		TokenEndpoint:      rootPath + wellknown.OAuth2TokenPath,
-		JwksURI:            rootPath + wellknown.WellKnownJWKS,
-		RevocationEndpoint: rootPath + wellknown.OAuth2RevokePath,
-		GrantTypesSupported: []string{
-			"refresh_token",
-			"urn:ietf:params:oauth:grant-type:token-exchange",
-			"client_credentials",
-		},
-	}
-	return c.JSON(http.StatusOK, discovery)
+
+	keys, _ := s.SigningKeyStore.GetPublicWebKeys()
+	return c.JSON(http.StatusOK, keys)
 
 }

@@ -3,7 +3,9 @@ package startup
 import (
 	"context"
 	echostarter_auth "echo-starter/internal/auth"
-	tex_config "echo-starter/internal/contracts/config"
+	contracts_config "echo-starter/internal/contracts/config"
+	"echo-starter/internal/models"
+
 	"echo-starter/internal/wellknown"
 	"encoding/base64"
 	"fmt"
@@ -27,7 +29,9 @@ import (
 
 	"github.com/gorilla/securecookie"
 
+	services_apiresources_inmemory "echo-starter/internal/services/apiresources/inmemory"
 	services_auth_cookie_token_store "echo-starter/internal/services/auth/cookie_token_store"
+	services_clients_inmemory "echo-starter/internal/services/clients/inmemory"
 
 	services_auth_session_token_store "echo-starter/internal/services/auth/session_token_store"
 	services_handlers_api_webhook "echo-starter/internal/services/handlers/api/webhook"
@@ -49,6 +53,8 @@ import (
 	// OIDC
 	//----------------------------------------------------------------------------------------------------------------------
 	services_handlers_api_discovery "echo-starter/internal/services/handlers/api/discovery"
+	services_handlers_api_discoveryjwks "echo-starter/internal/services/handlers/api/discoveryjwks"
+	services_handlers_api_token "echo-starter/internal/services/handlers/api/token"
 
 	// ACCOUNTS
 	//----------------------------------------------------------------------------------------------------------------------
@@ -109,8 +115,10 @@ import (
 
 type Startup struct {
 	echo_contracts_startup.CommonStartup
-	config *tex_config.Config
-	ctrl   *gomock.Controller
+	config       *contracts_config.Config
+	ctrl         *gomock.Controller
+	clients      []models.Client
+	apiResources []models.APIResource
 }
 
 func assertImplementation() {
@@ -118,15 +126,29 @@ func assertImplementation() {
 }
 
 func NewStartup() echo_contracts_startup.IStartup {
-	data, err := ioutil.ReadFile("./secrets/signing-keys.json")
+	data, err := ioutil.ReadFile("./static/secrets/signing-keys.json")
 	if err == nil {
 		log.Error().Msg("DO NOT USE THIS IN PRODUCTION: Using signing keys from file")
 		os.Setenv("SIGNING_KEYS", string(data))
 	}
-	return &Startup{
-		config: &tex_config.Config{},
+
+	startup := &Startup{
+		config: &contracts_config.Config{},
 		ctrl:   gomock.NewController(nil),
 	}
+	hooks := &echo_contracts_startup.Hooks{
+		PostBuildHook: func(container di.Container) error {
+			if startup.config.ApplicationEnvironment == "Development" {
+				di.Dump(container)
+			}
+			return nil
+		}}
+
+	startup.AddHooks(hooks)
+
+	startup.loadTestClients()
+	startup.loadApiResources()
+	return startup
 }
 
 func (s *Startup) getSessionStore() sessions.Store {
@@ -180,9 +202,7 @@ func (s *Startup) getSessionStore() sessions.Store {
 	}
 }
 func (s *Startup) RegisterStaticRoutes(e *echo.Echo) error {
-	e.Static("/css", "./css")
-	e.Static("/assets", "./assets")
-	e.Static("/js", "./js")
+	e.Static("/static", "./static")
 	return nil
 }
 
@@ -199,7 +219,7 @@ func (s *Startup) GetConfigOptions() *core_contracts.ConfigOptions {
 	}
 
 	return &core_contracts.ConfigOptions{
-		RootConfig:             []byte(tex_config.ConfigDefaultJSON),
+		RootConfig:             []byte(contracts_config.ConfigDefaultJSON),
 		Destination:            s.config,
 		LogLevel:               os.Getenv("LOG_LEVEL"),
 		PrettyLog:              prettyLog,
@@ -329,10 +349,14 @@ func (s *Startup) addAppHandlers(builder *di.Builder) {
 		panic("client store provider not supported")
 	}
 	services_go_oauth2_keystore.AddSingletonISigningKeyStore(builder)
-
+	services_clients_inmemory.AddSingletonIClientStore(builder, s.clients)
+	services_apiresources_inmemory.AddSingletonIAPIResources(builder, s.apiResources)
 	// OIDC
 	//----------------------------------------------------------------------------------------------------------------------
 	services_handlers_api_discovery.AddScopedIHandler(builder)
+	services_handlers_api_discoveryjwks.AddScopedIHandler(builder)
+	services_handlers_api_token.AddScopedIHandler(builder)
+
 	// ACCOUNT SERVICES
 	//----------------------------------------------------------------------------------------------------------------------
 	services_handlers_accounts.AddScopedIHandler(builder)
@@ -349,7 +373,9 @@ func (s *Startup) addAppHandlers(builder *di.Builder) {
 }
 
 func (s *Startup) ConfigureServices(builder *di.Builder) error {
-	fmt.Println(core_utils.PrettyJSON(s.config))
+	dst := &contracts_config.Config{}
+	core_utils.PrettyPrintRedacted(s.config, dst)
+
 	// add our config as a sigleton object
 	di.AddSingletonTypeByObj(builder, s.config)
 

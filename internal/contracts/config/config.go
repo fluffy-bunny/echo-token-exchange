@@ -1,6 +1,10 @@
 package config
 
-import "reflect"
+import (
+	"reflect"
+
+	"github.com/go-oauth2/oauth2/v4"
+)
 
 const (
 	Environment_Development = "Development"
@@ -10,7 +14,7 @@ type (
 	oidcConfig struct {
 		Domain       string `json:"domain" mapstructure:"DOMAIN"`
 		ClientID     string `json:"client_id" mapstructure:"CLIENT_ID"`
-		ClientSecret string `json:"client_secret" mapstructure:"CLIENT_SECRET"`
+		ClientSecret string `json:"client_secret" mapstructure:"CLIENT_SECRET" redact:"true"`
 		CallbackURL  string `json:"callback_url" mapstructure:"CALLBACK_URL"`
 	}
 	oauth2Config struct {
@@ -18,7 +22,7 @@ type (
 		ClientID string `json:"client_id" mapstructure:"CLIENT_ID"`
 
 		// ClientSecret is the application's secret.
-		ClientSecret string `json:"client_secret" mapstructure:"CLIENT_SECRET"`
+		ClientSecret string `json:"client_secret" mapstructure:"CLIENT_SECRET" redact:"true"`
 
 		// RedirectURL is the URL to redirect users going through
 		// the OAuth flow, after the resource owner's URLs.
@@ -41,8 +45,8 @@ type (
 		AuthCookieName          string       `json:"authCookieName" mapstructure:"AUTH_COOKIE_NAME"`
 		// session|cookie
 		AuthStore                 string `json:"authStore" mapstructure:"AUTH_STORE"`
-		SecureCookieHashKey       string `json:"secureCookieHashKey" mapstructure:"SECURE_COOKIE_HASH_KEY"`
-		SecureCookieEncryptionKey string `json:"secureCookieEncryptionKey" mapstructure:"SECURE_COOKIE_ENCRYPTION_KEY"`
+		SecureCookieHashKey       string `json:"secureCookieHashKey" mapstructure:"SECURE_COOKIE_HASH_KEY" redact:"true"`
+		SecureCookieEncryptionKey string `json:"secureCookieEncryptionKey" mapstructure:"SECURE_COOKIE_ENCRYPTION_KEY" redact:"true"`
 		GraphQLEndpoint           string `json:"graphQLEndpoint" mapstructure:"GRAPHQL_ENDPOINT"`
 		// cookie|inmemory|redis
 		SessionEngine string `json:"sessionEngine" mapstructure:"SESSION_ENGINE"`
@@ -51,10 +55,12 @@ type (
 
 		// github,oidc
 		AuthProvider string `json:"authProvider" mapstructure:"AUTH_PROVIDER"`
-		SigningKeys  string `json:"signingKeys" mapstructure:"SIGNING_KEYS"`
+		SigningKeys  string `json:"signingKeys" mapstructure:"SIGNING_KEYS" redact:"true"`
 
-		ClientStoreProvider string `json:"clientStoreProvider" mapstructure:"CLIENT_STORE_PROVIDER"`
-		TokenStoreProvider  string `json:"tokenStoreProvider" mapstructure:"TOKEN_STORE_PROVIDER"`
+		ClientStoreProvider string             `json:"clientStoreProvider" mapstructure:"CLIENT_STORE_PROVIDER"`
+		TokenStoreProvider  string             `json:"tokenStoreProvider" mapstructure:"TOKEN_STORE_PROVIDER"`
+		AllowedGrantTypes   []oauth2.GrantType `json:"allowedGrantTypes" mapstructure:"ALLOWED_GRANT_TYPES"`
+		TokenType           string             `json:"tokenType" mapstructure:"TOKEN_TYPE"`
 	}
 )
 
@@ -93,7 +99,9 @@ var (
 	"REDIS_PASSWORD": "",
 	"CLIENT_STORE_PROVIDER": "inmemory",
 	"TOKEN_STORE_PROVIDER": "inmemory",
-	"SIGNING_KEYS": ""
+	"SIGNING_KEYS": "",
+	"ALLOWED_GRANT_TYPES": "client_credentials,refresh_token,urn:ietf:params:oauth:grant-type:token-exchange",
+	"TOKEN_TYPE": "Bearer"
 
 
 }

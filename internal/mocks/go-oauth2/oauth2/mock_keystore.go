@@ -34,17 +34,32 @@ func (m *MockISigningKeyStore) EXPECT() *MockISigningKeyStoreMockRecorder {
 	return m.recorder
 }
 
-// GetSigningKeys mocks base method.
-func (m *MockISigningKeyStore) GetSigningKeys() ([]*models.SigningKey, error) {
+// GetPublicWebKeys mocks base method.
+func (m *MockISigningKeyStore) GetPublicWebKeys() ([]*models.PublicJwk, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetSigningKeys")
-	ret0, _ := ret[0].([]*models.SigningKey)
+	ret := m.ctrl.Call(m, "GetPublicWebKeys")
+	ret0, _ := ret[0].([]*models.PublicJwk)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetSigningKeys indicates an expected call of GetSigningKeys.
-func (mr *MockISigningKeyStoreMockRecorder) GetSigningKeys() *gomock.Call {
+// GetPublicWebKeys indicates an expected call of GetPublicWebKeys.
+func (mr *MockISigningKeyStoreMockRecorder) GetPublicWebKeys() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSigningKeys", reflect.TypeOf((*MockISigningKeyStore)(nil).GetSigningKeys))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPublicWebKeys", reflect.TypeOf((*MockISigningKeyStore)(nil).GetPublicWebKeys))
+}
+
+// GetSigningKey mocks base method.
+func (m *MockISigningKeyStore) GetSigningKey() (*models.SigningKey, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetSigningKey")
+	ret0, _ := ret[0].(*models.SigningKey)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetSigningKey indicates an expected call of GetSigningKey.
+func (mr *MockISigningKeyStoreMockRecorder) GetSigningKey() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSigningKey", reflect.TypeOf((*MockISigningKeyStore)(nil).GetSigningKey))
 }

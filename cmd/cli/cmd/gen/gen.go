@@ -5,6 +5,7 @@ Copyright © 2022 NAME HERE <EMAIL ADDRESS>
 package gen
 
 import (
+	"echo-starter/cmd/cli/cmd/gen/argon2"
 	"echo-starter/cmd/cli/cmd/gen/secrets"
 	"fmt"
 
@@ -39,4 +40,5 @@ func Init(rootCmd *cobra.Command) {
 	// is called directly, e.g.:
 	// genCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 	secrets.Init(genCmd)
+	argon2.Init(genCmd)
 }

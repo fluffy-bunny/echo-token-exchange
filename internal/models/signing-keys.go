@@ -3,14 +3,8 @@ package models
 import "time"
 
 // https://mholt.github.io/json-to-go/
-type SigningKey struct {
-	PrivateKey string    `json:"private_key"`
-	PublicKey  string    `json:"public_key"`
-	NotBefore  time.Time `json:"not_before"`
-	NotAfter   time.Time `json:"not_after"`
-	Password   string    `json:"password"`
-	Kid        string    `json:"kid"`
-	PublicJwk  struct {
+type (
+	PublicJwk struct {
 		Alg string `json:"alg"`
 		Crv string `json:"crv"`
 		Kid string `json:"kid"`
@@ -18,7 +12,7 @@ type SigningKey struct {
 		Use string `json:"use"`
 		X   string `json:"x"`
 		Y   string `json:"y"`
-	} `json:"public_jwk"`
+	}
 	PrivateJwk struct {
 		Alg string `json:"alg"`
 		Crv string `json:"crv"`
@@ -28,5 +22,15 @@ type SigningKey struct {
 		Use string `json:"use"`
 		X   string `json:"x"`
 		Y   string `json:"y"`
-	} `json:"private_jwk"`
-}
+	}
+	SigningKey struct {
+		PrivateKey string     `json:"private_key"`
+		PublicKey  string     `json:"public_key"`
+		NotBefore  time.Time  `json:"not_before"`
+		NotAfter   time.Time  `json:"not_after"`
+		Password   string     `json:"password"`
+		Kid        string     `json:"kid"`
+		PublicJwk  PublicJwk  `json:"public_jwk"`
+		PrivateJwk PrivateJwk `json:"private_jwk"`
+	}
+)
