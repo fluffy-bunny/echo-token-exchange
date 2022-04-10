@@ -51,6 +51,15 @@ type (
 	}
 )
 
+var supportedGrantTypes *core_hashset.StringSet
+
+func init() {
+	supportedGrantTypes = core_hashset.NewStringSet(
+		string(oauth2.ClientCredentials),
+		string(oauth2.Refreshing),
+		"urn:ietf:params:oauth:grant-type:token-exchange")
+}
+
 func assertImplementation() {
 	var _ contracts_handler.IHandler = (*service)(nil)
 }
@@ -140,7 +149,7 @@ func (s *service) processRequest(c echo.Context) error {
 func (s *service) ValidationTokenRequest(r *http.Request) (oauth2.GrantType, *oauth2.TokenGenerateRequest, error) {
 	ctx := r.Context()
 	gt := oauth2.GrantType(r.FormValue("grant_type"))
-	if gt.String() == "" {
+	if !supportedGrantTypes.Contains(string(gt)) {
 		return "", nil, errors.ErrUnsupportedGrantType
 	}
 
@@ -165,6 +174,8 @@ func (s *service) ValidationTokenRequest(r *http.Request) (oauth2.GrantType, *oa
 			return "", nil, errors.ErrInvalidRequest
 		}
 	case "urn:ietf:params:oauth:grant-type:token-exchange":
+	default:
+		return "", nil, errors.ErrUnsupportedGrantType
 	}
 
 	client, found, err := s.ClientStore.GetClient(ctx, clientID)
@@ -179,7 +190,9 @@ func (s *service) ValidationTokenRequest(r *http.Request) (oauth2.GrantType, *oa
 	if !client.AllowedScopesSet.Contains(requestedScopeSet.Values()...) {
 		return "", nil, errors.ErrInvalidScope
 	}
-
+	if !client.AllowedGrantTypesSet.Contains(string(gt)) {
+		return "", nil, errors.ErrInvalidGrant
+	}
 	return gt, tgr, nil
 }
 
