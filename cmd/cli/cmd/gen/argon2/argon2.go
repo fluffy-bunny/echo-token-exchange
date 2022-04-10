@@ -2,21 +2,21 @@
 Copyright © 2022 NAME HERE <EMAIL ADDRESS>
 
 */
-package secrets
+package argon2
 
 import (
+	"echo-starter/internal/utils"
+
 	core_utils "github.com/fluffy-bunny/grpcdotnetgo/pkg/utils"
 
-	"encoding/base64"
 	"fmt"
 
-	"github.com/gorilla/securecookie"
 	"github.com/spf13/cobra"
 )
 
 // genCmd represents the gen command
-var secretCmd = &cobra.Command{
-	Use:   "secrets",
+var passwordsCmd = &cobra.Command{
+	Use:   "argon2",
 	Short: "A brief description of your command",
 	Long: `A longer description that spans multiple lines and likely contains examples
 and usage of using your command. For example:
@@ -25,29 +25,25 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		key := securecookie.GenerateRandomKey(length)
-		encodedString := base64.StdEncoding.EncodeToString(key)
-
 		type output struct {
 			Secret string
-			Length int
-			Encode string // base64 encoded
+			Hash   string
 		}
-		fmt.Println(core_utils.PrettyJSON(&output{
-			Secret: encodedString,
-			Length: length,
-			Encode: "base64",
-		}))
 
+		hash, _ := utils.GeneratePasswordHash(secret)
+		fmt.Println(core_utils.PrettyJSON(output{
+			Secret: secret,
+			Hash:   hash,
+		}))
 	},
 }
-var length int
+var secret string
 
 func Init(rootCmd *cobra.Command) {
-	rootCmd.AddCommand(secretCmd)
+	rootCmd.AddCommand(passwordsCmd)
 
-	secretCmd.Flags().IntVarP(&length, "length", "l", 0, "--length=[32|64]")
-	secretCmd.MarkFlagRequired("length")
+	passwordsCmd.Flags().StringVarP(&secret, "secret", "s", utils.GeneratePassword(), "--secret=mypassword")
+
 	// Here you will define your flags and configuration settings.
 
 	// Cobra supports Persistent Flags which will work for this command

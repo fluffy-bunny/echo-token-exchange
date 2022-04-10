@@ -5,15 +5,18 @@ go 1.18
 //replace github.com/fluffy-bunny/grpcdotnetgo => ../grpcdotnetgo
 
 require (
+	github.com/ahmetb/go-linq v3.0.0+incompatible
 	github.com/ahmetb/go-linq/v3 v3.2.0
+	github.com/alexedwards/argon2id v0.0.0-20211130144151-3585854a6387
 	github.com/catmullet/go-workers v1.4.1
 	github.com/cheekybits/genny v1.0.0
 	github.com/containerd/containerd v1.6.1
-	github.com/fluffy-bunny/grpcdotnetgo v0.1.244
+	github.com/fluffy-bunny/grpcdotnetgo v0.1.248
 	github.com/fluffy-bunny/sarulabsdi v0.1.63
 	github.com/go-oauth2/oauth2/v4 v4.4.3
 	github.com/go-oauth2/redis/v4 v4.1.1
 	github.com/go-redis/redis/v8 v8.11.5
+	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/golang/mock v1.6.0
 	github.com/google/uuid v1.3.0
 	github.com/gorilla/securecookie v1.1.1
@@ -26,8 +29,11 @@ require (
 	github.com/rs/xid v1.4.0
 	github.com/rs/zerolog v1.26.1
 	github.com/spf13/cobra v1.4.0
+	github.com/spf13/viper v1.10.1
 	github.com/stretchr/testify v1.7.1
+	github.com/theTardigrade/golang-passwordGenerator v1.0.4
 	github.com/tufin/asciitree v0.0.0-20210127111056-bf70173ef677
+	github.com/xeipuuv/gojsonschema v1.2.0
 	golang.org/x/oauth2 v0.0.0-20211104180415-d3ed0bb246c8
 	gopkg.in/square/go-jose.v2 v2.6.0
 )
@@ -55,7 +61,6 @@ require (
 	github.com/gogo/googleapis v1.4.1 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/gogo/status v1.1.0 // indirect
-	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/gorilla/context v1.1.1 // indirect
@@ -63,6 +68,7 @@ require (
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/jedib0t/go-pretty/v6 v6.3.0 // indirect
+	github.com/jinzhu/copier v0.3.5 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/klauspost/compress v1.11.13 // indirect
 	github.com/labstack/echo v3.3.10+incompatible // indirect
@@ -93,7 +99,6 @@ require (
 	github.com/spf13/cast v1.4.1 // indirect
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
-	github.com/spf13/viper v1.10.1 // indirect
 	github.com/subosito/gotenv v1.2.0 // indirect
 	github.com/tidwall/btree v0.0.0-20191029221954-400434d76274 // indirect
 	github.com/tidwall/buntdb v1.1.2 // indirect
@@ -107,6 +112,8 @@ require (
 	github.com/tkuchiki/parsetime v0.3.0 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.2.1 // indirect
+	github.com/xeipuuv/gojsonpointer v0.0.0-20180127040702-4e3ac2762d5f // indirect
+	github.com/xeipuuv/gojsonreference v0.0.0-20180127040603-bd5ef7bd5415 // indirect
 	github.com/ziflex/lecho v1.2.0 // indirect
 	go.opencensus.io v0.23.0 // indirect
 	golang.org/x/crypto v0.0.0-20220321153916-2c7772ba3064 // indirect

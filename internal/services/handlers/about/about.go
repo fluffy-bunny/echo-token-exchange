@@ -3,6 +3,7 @@ package about
 import (
 	"echo-starter/internal/templates"
 	"echo-starter/internal/wellknown"
+	"fmt"
 	"net/http"
 	"reflect"
 	"strings"
@@ -45,7 +46,8 @@ func AddScopedIHandler(builder *di.Builder) {
 }
 
 func (s *service) Ctor() {
-	s.SigningKeyStore.GetSigningKeys()
+	key, _ := s.SigningKeyStore.GetSigningKey()
+	fmt.Println(key)
 }
 func (s *service) GetMiddleware() []echo.MiddlewareFunc {
 	return []echo.MiddlewareFunc{}

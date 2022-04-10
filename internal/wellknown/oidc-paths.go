@@ -1,10 +1,5 @@
 package wellknown
 
-import (
-	"github.com/go-oauth2/oauth2/v4"
-	"github.com/go-oauth2/oauth2/v4/store"
-)
-
 const (
 	LoginPath                       = "/login"
 	LogoutPath                      = "/logout"
@@ -18,8 +13,3 @@ const (
 	OAuth2TokenPath  = "/token"
 	OAuth2RevokePath = "/revoke"
 )
-
-func F() oauth2.TokenStore {
-	store, _ := store.NewMemoryTokenStore()
-	return store
-}

@@ -16,6 +16,9 @@ func BuildGrpcEntrypointPermissionsClaimsMap() map[string]*middleware_oidc.Entry
 	// health check is open to anyone
 	entryPointClaimsBuilder.WithGrpcEntrypointPermissionsClaimsMapOpen(wellknown.HealthzPath)
 	entryPointClaimsBuilder.WithGrpcEntrypointPermissionsClaimsMapOpen(wellknown.WellKnownOpenIDCOnfiguationPath)
+	entryPointClaimsBuilder.WithGrpcEntrypointPermissionsClaimsMapOpen(wellknown.WellKnownJWKS)
+	entryPointClaimsBuilder.WithGrpcEntrypointPermissionsClaimsMapOpen(wellknown.OAuth2TokenPath)
+	entryPointClaimsBuilder.WithGrpcEntrypointPermissionsClaimsMapOpen(wellknown.OAuth2RevokePath)
 
 	entryPointClaimsBuilder.WithGrpcEntrypointPermissionsClaimsMapOpen(wellknown.WebHookPath)
 
@@ -29,9 +32,7 @@ func BuildGrpcEntrypointPermissionsClaimsMap() map[string]*middleware_oidc.Entry
 	entryPointClaimsBuilder.WithGrpcEntrypointPermissionsClaimsMapOpen(wellknown.ErrorPath)
 	entryPointClaimsBuilder.WithGrpcEntrypointPermissionsClaimsMapOpen(wellknown.UnauthorizedPath)
 	entryPointClaimsBuilder.WithGrpcEntrypointPermissionsClaimsMapOpen(wellknown.APIDevPath)
-	entryPointClaimsBuilder.WithGrpcEntrypointPermissionsClaimsMapOpen("/css*")
-	entryPointClaimsBuilder.WithGrpcEntrypointPermissionsClaimsMapOpen("/assets*")
-	entryPointClaimsBuilder.WithGrpcEntrypointPermissionsClaimsMapOpen("/js*")
+	entryPointClaimsBuilder.WithGrpcEntrypointPermissionsClaimsMapOpen("/static*")
 
 	// GraphQL
 	//---------------------------------------------------------------------------------------------------
