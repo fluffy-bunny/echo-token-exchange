@@ -6,6 +6,7 @@ import (
 	"github.com/cheekybits/genny/generic"
 	_ "github.com/containerd/containerd" // security vulnerability force pull
 	gennySarulabsdi "github.com/fluffy-bunny/sarulabsdi/genny"
+	_ "github.com/valyala/fasthttp"
 )
 
 /*
