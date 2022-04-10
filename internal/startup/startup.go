@@ -92,6 +92,8 @@ import (
 	core_contracts_session "github.com/fluffy-bunny/grpcdotnetgo/pkg/echo/contracts/session"
 	core_middleware_claimsprincipal "github.com/fluffy-bunny/grpcdotnetgo/pkg/echo/middleware/claimsprincipal"
 
+	middleware_oauth2client "echo-starter/internal/middleware/oauth2client"
+
 	middleware_claimsprincipal "echo-starter/internal/middleware/claimsprincipal"
 	middleware_session "echo-starter/internal/middleware/session"
 	services_claimsprovider "echo-starter/internal/services/claimsprovider"
@@ -353,6 +355,7 @@ func (s *Startup) addAppHandlers(builder *di.Builder) {
 	services_clients_inmemory.AddSingletonIClientStore(builder, s.clients)
 	services_clients_clientrequest.AddScopedIClientRequest(builder)
 	services_apiresources_inmemory.AddSingletonIAPIResources(builder, s.apiResources)
+
 	// OIDC
 	//----------------------------------------------------------------------------------------------------------------------
 	services_handlers_api_discovery.AddScopedIHandler(builder)
@@ -407,6 +410,7 @@ func (s *Startup) Configure(e *echo.Echo, root di.Container) error {
 	// DevelopmentMiddlewareUsingClaimsMap adds all the needed claims so that FinalAuthVerificationMiddlewareUsingClaimsMap succeeds
 	//e.Use(middleware_claimsprincipal.DevelopmentMiddlewareUsingClaimsMap(echostarter_auth.BuildGrpcEntrypointPermissionsClaimsMap(), true))
 	e.Use(middleware_session.EnsureAuthTokenRefresh(s.GetContainer()))
+	e.Use(middleware_oauth2client.AuthenticateOAuth2Client(s.GetContainer()))
 	e.Use(middleware_claimsprincipal.AuthenticatedSessionToClaimsPrincipalMiddleware(root))
 	e.Use(core_middleware_claimsprincipal.FinalAuthVerificationMiddlewareUsingClaimsMap(echostarter_auth.BuildGrpcEntrypointPermissionsClaimsMap(), true))
 	// only after we pass auth do we slide out the auth session
