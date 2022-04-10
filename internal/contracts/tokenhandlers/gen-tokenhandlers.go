@@ -12,55 +12,55 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-// ReflectTypeIClientCredentialsHandler used when your service claims to implement IClientCredentialsHandler
-var ReflectTypeIClientCredentialsHandler = di.GetInterfaceReflectType((*IClientCredentialsHandler)(nil))
+// ReflectTypeITokenHandler used when your service claims to implement ITokenHandler
+var ReflectTypeITokenHandler = di.GetInterfaceReflectType((*ITokenHandler)(nil))
 
-// AddSingletonIClientCredentialsHandler adds a type that implements IClientCredentialsHandler
-func AddSingletonIClientCredentialsHandler(builder *di.Builder, implType reflect.Type, implementedTypes ...reflect.Type) {
-	implementedTypes = append(implementedTypes, ReflectTypeIClientCredentialsHandler)
-	_logAddIClientCredentialsHandler("SINGLETON", implType, _getImplementedIClientCredentialsHandlerNames(implementedTypes...),
-		_logIClientCredentialsHandlerExtra{
+// AddSingletonITokenHandler adds a type that implements ITokenHandler
+func AddSingletonITokenHandler(builder *di.Builder, implType reflect.Type, implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeITokenHandler)
+	_logAddITokenHandler("SINGLETON", implType, _getImplementedITokenHandlerNames(implementedTypes...),
+		_logITokenHandlerExtra{
 			Name:  "DI-BY",
 			Value: "type",
 		})
 	di.AddSingleton(builder, implType, implementedTypes...)
 }
 
-// AddSingletonIClientCredentialsHandlerWithMetadata adds a type that implements IClientCredentialsHandler
-func AddSingletonIClientCredentialsHandlerWithMetadata(builder *di.Builder, implType reflect.Type, metaData map[string]interface{}, implementedTypes ...reflect.Type) {
-	implementedTypes = append(implementedTypes, ReflectTypeIClientCredentialsHandler)
-	_logAddIClientCredentialsHandler("SINGLETON", implType, _getImplementedIClientCredentialsHandlerNames(implementedTypes...),
-		_logIClientCredentialsHandlerExtra{
+// AddSingletonITokenHandlerWithMetadata adds a type that implements ITokenHandler
+func AddSingletonITokenHandlerWithMetadata(builder *di.Builder, implType reflect.Type, metaData map[string]interface{}, implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeITokenHandler)
+	_logAddITokenHandler("SINGLETON", implType, _getImplementedITokenHandlerNames(implementedTypes...),
+		_logITokenHandlerExtra{
 			Name:  "DI-BY",
 			Value: "type",
 		},
-		_logIClientCredentialsHandlerExtra{
+		_logITokenHandlerExtra{
 			Name:  "DI-M",
 			Value: metaData,
 		})
 	di.AddSingletonWithMetadata(builder, implType, metaData, implementedTypes...)
 }
 
-// AddSingletonIClientCredentialsHandlerByObj adds a prebuilt obj
-func AddSingletonIClientCredentialsHandlerByObj(builder *di.Builder, obj interface{}, implementedTypes ...reflect.Type) {
-	implementedTypes = append(implementedTypes, ReflectTypeIClientCredentialsHandler)
-	_logAddIClientCredentialsHandler("SINGLETON", reflect.TypeOf(obj), _getImplementedIClientCredentialsHandlerNames(implementedTypes...),
-		_logIClientCredentialsHandlerExtra{
+// AddSingletonITokenHandlerByObj adds a prebuilt obj
+func AddSingletonITokenHandlerByObj(builder *di.Builder, obj interface{}, implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeITokenHandler)
+	_logAddITokenHandler("SINGLETON", reflect.TypeOf(obj), _getImplementedITokenHandlerNames(implementedTypes...),
+		_logITokenHandlerExtra{
 			Name:  "DI-BY",
 			Value: "obj",
 		})
 	di.AddSingletonWithImplementedTypesByObj(builder, obj, implementedTypes...)
 }
 
-// AddSingletonIClientCredentialsHandlerByObjWithMetadata adds a prebuilt obj
-func AddSingletonIClientCredentialsHandlerByObjWithMetadata(builder *di.Builder, obj interface{}, metaData map[string]interface{}, implementedTypes ...reflect.Type) {
-	implementedTypes = append(implementedTypes, ReflectTypeIClientCredentialsHandler)
-	_logAddIClientCredentialsHandler("SINGLETON", reflect.TypeOf(obj), _getImplementedIClientCredentialsHandlerNames(implementedTypes...),
-		_logIClientCredentialsHandlerExtra{
+// AddSingletonITokenHandlerByObjWithMetadata adds a prebuilt obj
+func AddSingletonITokenHandlerByObjWithMetadata(builder *di.Builder, obj interface{}, metaData map[string]interface{}, implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeITokenHandler)
+	_logAddITokenHandler("SINGLETON", reflect.TypeOf(obj), _getImplementedITokenHandlerNames(implementedTypes...),
+		_logITokenHandlerExtra{
 			Name:  "DI-BY",
 			Value: "obj",
 		},
-		_logIClientCredentialsHandlerExtra{
+		_logITokenHandlerExtra{
 			Name:  "DI-M",
 			Value: metaData,
 		})
@@ -68,26 +68,26 @@ func AddSingletonIClientCredentialsHandlerByObjWithMetadata(builder *di.Builder,
 	di.AddSingletonWithImplementedTypesByObjWithMetadata(builder, obj, metaData, implementedTypes...)
 }
 
-// AddSingletonIClientCredentialsHandlerByFunc adds a type by a custom func
-func AddSingletonIClientCredentialsHandlerByFunc(builder *di.Builder, implType reflect.Type, build func(ctn di.Container) (interface{}, error), implementedTypes ...reflect.Type) {
-	implementedTypes = append(implementedTypes, ReflectTypeIClientCredentialsHandler)
-	_logAddIClientCredentialsHandler("SINGLETON", implType, _getImplementedIClientCredentialsHandlerNames(implementedTypes...),
-		_logIClientCredentialsHandlerExtra{
+// AddSingletonITokenHandlerByFunc adds a type by a custom func
+func AddSingletonITokenHandlerByFunc(builder *di.Builder, implType reflect.Type, build func(ctn di.Container) (interface{}, error), implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeITokenHandler)
+	_logAddITokenHandler("SINGLETON", implType, _getImplementedITokenHandlerNames(implementedTypes...),
+		_logITokenHandlerExtra{
 			Name:  "DI-BY",
 			Value: "func",
 		})
 	di.AddSingletonWithImplementedTypesByFunc(builder, implType, build, implementedTypes...)
 }
 
-// AddSingletonIClientCredentialsHandlerByFuncWithMetadata adds a type by a custom func
-func AddSingletonIClientCredentialsHandlerByFuncWithMetadata(builder *di.Builder, implType reflect.Type, build func(ctn di.Container) (interface{}, error), metaData map[string]interface{}, implementedTypes ...reflect.Type) {
-	implementedTypes = append(implementedTypes, ReflectTypeIClientCredentialsHandler)
-	_logAddIClientCredentialsHandler("SINGLETON", implType, _getImplementedIClientCredentialsHandlerNames(implementedTypes...),
-		_logIClientCredentialsHandlerExtra{
+// AddSingletonITokenHandlerByFuncWithMetadata adds a type by a custom func
+func AddSingletonITokenHandlerByFuncWithMetadata(builder *di.Builder, implType reflect.Type, build func(ctn di.Container) (interface{}, error), metaData map[string]interface{}, implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeITokenHandler)
+	_logAddITokenHandler("SINGLETON", implType, _getImplementedITokenHandlerNames(implementedTypes...),
+		_logITokenHandlerExtra{
 			Name:  "DI-BY",
 			Value: "func",
 		},
-		_logIClientCredentialsHandlerExtra{
+		_logITokenHandlerExtra{
 			Name:  "DI-M",
 			Value: metaData,
 		})
@@ -95,11 +95,11 @@ func AddSingletonIClientCredentialsHandlerByFuncWithMetadata(builder *di.Builder
 	di.AddSingletonWithImplementedTypesByFuncWithMetadata(builder, implType, build, metaData, implementedTypes...)
 }
 
-// AddTransientIClientCredentialsHandler adds a type that implements IClientCredentialsHandler
-func AddTransientIClientCredentialsHandler(builder *di.Builder, implType reflect.Type, implementedTypes ...reflect.Type) {
-	implementedTypes = append(implementedTypes, ReflectTypeIClientCredentialsHandler)
-	_logAddIClientCredentialsHandler("TRANSIENT", implType, _getImplementedIClientCredentialsHandlerNames(implementedTypes...),
-		_logIClientCredentialsHandlerExtra{
+// AddTransientITokenHandler adds a type that implements ITokenHandler
+func AddTransientITokenHandler(builder *di.Builder, implType reflect.Type, implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeITokenHandler)
+	_logAddITokenHandler("TRANSIENT", implType, _getImplementedITokenHandlerNames(implementedTypes...),
+		_logITokenHandlerExtra{
 			Name:  "DI-BY",
 			Value: "type",
 		})
@@ -107,15 +107,15 @@ func AddTransientIClientCredentialsHandler(builder *di.Builder, implType reflect
 	di.AddTransientWithImplementedTypes(builder, implType, implementedTypes...)
 }
 
-// AddTransientIClientCredentialsHandlerWithMetadata adds a type that implements IClientCredentialsHandler
-func AddTransientIClientCredentialsHandlerWithMetadata(builder *di.Builder, implType reflect.Type, metaData map[string]interface{}, implementedTypes ...reflect.Type) {
-	implementedTypes = append(implementedTypes, ReflectTypeIClientCredentialsHandler)
-	_logAddIClientCredentialsHandler("TRANSIENT", implType, _getImplementedIClientCredentialsHandlerNames(implementedTypes...),
-		_logIClientCredentialsHandlerExtra{
+// AddTransientITokenHandlerWithMetadata adds a type that implements ITokenHandler
+func AddTransientITokenHandlerWithMetadata(builder *di.Builder, implType reflect.Type, metaData map[string]interface{}, implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeITokenHandler)
+	_logAddITokenHandler("TRANSIENT", implType, _getImplementedITokenHandlerNames(implementedTypes...),
+		_logITokenHandlerExtra{
 			Name:  "DI-BY",
 			Value: "type",
 		},
-		_logIClientCredentialsHandlerExtra{
+		_logITokenHandlerExtra{
 			Name:  "DI-M",
 			Value: metaData,
 		})
@@ -123,11 +123,11 @@ func AddTransientIClientCredentialsHandlerWithMetadata(builder *di.Builder, impl
 	di.AddTransientWithImplementedTypesWithMetadata(builder, implType, metaData, implementedTypes...)
 }
 
-// AddTransientIClientCredentialsHandlerByFunc adds a type by a custom func
-func AddTransientIClientCredentialsHandlerByFunc(builder *di.Builder, implType reflect.Type, build func(ctn di.Container) (interface{}, error), implementedTypes ...reflect.Type) {
-	implementedTypes = append(implementedTypes, ReflectTypeIClientCredentialsHandler)
-	_logAddIClientCredentialsHandler("TRANSIENT", implType, _getImplementedIClientCredentialsHandlerNames(implementedTypes...),
-		_logIClientCredentialsHandlerExtra{
+// AddTransientITokenHandlerByFunc adds a type by a custom func
+func AddTransientITokenHandlerByFunc(builder *di.Builder, implType reflect.Type, build func(ctn di.Container) (interface{}, error), implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeITokenHandler)
+	_logAddITokenHandler("TRANSIENT", implType, _getImplementedITokenHandlerNames(implementedTypes...),
+		_logITokenHandlerExtra{
 			Name:  "DI-BY",
 			Value: "func",
 		})
@@ -135,15 +135,15 @@ func AddTransientIClientCredentialsHandlerByFunc(builder *di.Builder, implType r
 	di.AddTransientWithImplementedTypesByFunc(builder, implType, build, implementedTypes...)
 }
 
-// AddTransientIClientCredentialsHandlerByFuncWithMetadata adds a type by a custom func
-func AddTransientIClientCredentialsHandlerByFuncWithMetadata(builder *di.Builder, implType reflect.Type, build func(ctn di.Container) (interface{}, error), metaData map[string]interface{}, implementedTypes ...reflect.Type) {
-	implementedTypes = append(implementedTypes, ReflectTypeIClientCredentialsHandler)
-	_logAddIClientCredentialsHandler("TRANSIENT", implType, _getImplementedIClientCredentialsHandlerNames(implementedTypes...),
-		_logIClientCredentialsHandlerExtra{
+// AddTransientITokenHandlerByFuncWithMetadata adds a type by a custom func
+func AddTransientITokenHandlerByFuncWithMetadata(builder *di.Builder, implType reflect.Type, build func(ctn di.Container) (interface{}, error), metaData map[string]interface{}, implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeITokenHandler)
+	_logAddITokenHandler("TRANSIENT", implType, _getImplementedITokenHandlerNames(implementedTypes...),
+		_logITokenHandlerExtra{
 			Name:  "DI-BY",
 			Value: "func",
 		},
-		_logIClientCredentialsHandlerExtra{
+		_logITokenHandlerExtra{
 			Name:  "DI-M",
 			Value: metaData,
 		})
@@ -151,52 +151,52 @@ func AddTransientIClientCredentialsHandlerByFuncWithMetadata(builder *di.Builder
 	di.AddTransientWithImplementedTypesByFuncWithMetadata(builder, implType, build, metaData, implementedTypes...)
 }
 
-// AddScopedIClientCredentialsHandler adds a type that implements IClientCredentialsHandler
-func AddScopedIClientCredentialsHandler(builder *di.Builder, implType reflect.Type, implementedTypes ...reflect.Type) {
-	implementedTypes = append(implementedTypes, ReflectTypeIClientCredentialsHandler)
-	_logAddIClientCredentialsHandler("SCOPED", implType, _getImplementedIClientCredentialsHandlerNames(implementedTypes...),
-		_logIClientCredentialsHandlerExtra{
+// AddScopedITokenHandler adds a type that implements ITokenHandler
+func AddScopedITokenHandler(builder *di.Builder, implType reflect.Type, implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeITokenHandler)
+	_logAddITokenHandler("SCOPED", implType, _getImplementedITokenHandlerNames(implementedTypes...),
+		_logITokenHandlerExtra{
 			Name:  "DI-BY",
 			Value: "type",
 		})
 	di.AddScopedWithImplementedTypes(builder, implType, implementedTypes...)
 }
 
-// AddScopedIClientCredentialsHandlerWithMetadata adds a type that implements IClientCredentialsHandler
-func AddScopedIClientCredentialsHandlerWithMetadata(builder *di.Builder, implType reflect.Type, metaData map[string]interface{}, implementedTypes ...reflect.Type) {
-	implementedTypes = append(implementedTypes, ReflectTypeIClientCredentialsHandler)
-	_logAddIClientCredentialsHandler("SCOPED", implType, _getImplementedIClientCredentialsHandlerNames(implementedTypes...),
-		_logIClientCredentialsHandlerExtra{
+// AddScopedITokenHandlerWithMetadata adds a type that implements ITokenHandler
+func AddScopedITokenHandlerWithMetadata(builder *di.Builder, implType reflect.Type, metaData map[string]interface{}, implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeITokenHandler)
+	_logAddITokenHandler("SCOPED", implType, _getImplementedITokenHandlerNames(implementedTypes...),
+		_logITokenHandlerExtra{
 			Name:  "DI-BY",
 			Value: "type",
 		},
-		_logIClientCredentialsHandlerExtra{
+		_logITokenHandlerExtra{
 			Name:  "DI-M",
 			Value: metaData,
 		})
 	di.AddScopedWithImplementedTypesWithMetadata(builder, implType, metaData, implementedTypes...)
 }
 
-// AddScopedIClientCredentialsHandlerByFunc adds a type by a custom func
-func AddScopedIClientCredentialsHandlerByFunc(builder *di.Builder, implType reflect.Type, build func(ctn di.Container) (interface{}, error), implementedTypes ...reflect.Type) {
-	implementedTypes = append(implementedTypes, ReflectTypeIClientCredentialsHandler)
-	_logAddIClientCredentialsHandler("SCOPED", implType, _getImplementedIClientCredentialsHandlerNames(implementedTypes...),
-		_logIClientCredentialsHandlerExtra{
+// AddScopedITokenHandlerByFunc adds a type by a custom func
+func AddScopedITokenHandlerByFunc(builder *di.Builder, implType reflect.Type, build func(ctn di.Container) (interface{}, error), implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeITokenHandler)
+	_logAddITokenHandler("SCOPED", implType, _getImplementedITokenHandlerNames(implementedTypes...),
+		_logITokenHandlerExtra{
 			Name:  "DI-BY",
 			Value: "func",
 		})
 	di.AddScopedWithImplementedTypesByFunc(builder, implType, build, implementedTypes...)
 }
 
-// AddScopedIClientCredentialsHandlerByFuncWithMetadata adds a type by a custom func
-func AddScopedIClientCredentialsHandlerByFuncWithMetadata(builder *di.Builder, implType reflect.Type, build func(ctn di.Container) (interface{}, error), metaData map[string]interface{}, implementedTypes ...reflect.Type) {
-	implementedTypes = append(implementedTypes, ReflectTypeIClientCredentialsHandler)
-	_logAddIClientCredentialsHandler("SCOPED", implType, _getImplementedIClientCredentialsHandlerNames(implementedTypes...),
-		_logIClientCredentialsHandlerExtra{
+// AddScopedITokenHandlerByFuncWithMetadata adds a type by a custom func
+func AddScopedITokenHandlerByFuncWithMetadata(builder *di.Builder, implType reflect.Type, build func(ctn di.Container) (interface{}, error), metaData map[string]interface{}, implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeITokenHandler)
+	_logAddITokenHandler("SCOPED", implType, _getImplementedITokenHandlerNames(implementedTypes...),
+		_logITokenHandlerExtra{
 			Name:  "DI-BY",
 			Value: "func",
 		},
-		_logIClientCredentialsHandlerExtra{
+		_logITokenHandlerExtra{
 			Name:  "DI-M",
 			Value: metaData,
 		})
@@ -204,66 +204,66 @@ func AddScopedIClientCredentialsHandlerByFuncWithMetadata(builder *di.Builder, i
 	di.AddScopedWithImplementedTypesByFuncWithMetadata(builder, implType, build, metaData, implementedTypes...)
 }
 
-// RemoveAllIClientCredentialsHandler removes all IClientCredentialsHandler from the DI
-func RemoveAllIClientCredentialsHandler(builder *di.Builder) {
-	builder.RemoveAllByType(ReflectTypeIClientCredentialsHandler)
+// RemoveAllITokenHandler removes all ITokenHandler from the DI
+func RemoveAllITokenHandler(builder *di.Builder) {
+	builder.RemoveAllByType(ReflectTypeITokenHandler)
 }
 
-// GetIClientCredentialsHandlerFromContainer alternative to SafeGetIClientCredentialsHandlerFromContainer but panics of object is not present
-func GetIClientCredentialsHandlerFromContainer(ctn di.Container) IClientCredentialsHandler {
-	return ctn.GetByType(ReflectTypeIClientCredentialsHandler).(IClientCredentialsHandler)
+// GetITokenHandlerFromContainer alternative to SafeGetITokenHandlerFromContainer but panics of object is not present
+func GetITokenHandlerFromContainer(ctn di.Container) ITokenHandler {
+	return ctn.GetByType(ReflectTypeITokenHandler).(ITokenHandler)
 }
 
-// GetManyIClientCredentialsHandlerFromContainer alternative to SafeGetManyIClientCredentialsHandlerFromContainer but panics of object is not present
-func GetManyIClientCredentialsHandlerFromContainer(ctn di.Container) []IClientCredentialsHandler {
-	objs := ctn.GetManyByType(ReflectTypeIClientCredentialsHandler)
-	var results []IClientCredentialsHandler
+// GetManyITokenHandlerFromContainer alternative to SafeGetManyITokenHandlerFromContainer but panics of object is not present
+func GetManyITokenHandlerFromContainer(ctn di.Container) []ITokenHandler {
+	objs := ctn.GetManyByType(ReflectTypeITokenHandler)
+	var results []ITokenHandler
 	for _, obj := range objs {
-		results = append(results, obj.(IClientCredentialsHandler))
+		results = append(results, obj.(ITokenHandler))
 	}
 	return results
 }
 
-// SafeGetIClientCredentialsHandlerFromContainer trys to get the object by type, will not panic, returns nil and error
-func SafeGetIClientCredentialsHandlerFromContainer(ctn di.Container) (IClientCredentialsHandler, error) {
-	obj, err := ctn.SafeGetByType(ReflectTypeIClientCredentialsHandler)
+// SafeGetITokenHandlerFromContainer trys to get the object by type, will not panic, returns nil and error
+func SafeGetITokenHandlerFromContainer(ctn di.Container) (ITokenHandler, error) {
+	obj, err := ctn.SafeGetByType(ReflectTypeITokenHandler)
 	if err != nil {
 		return nil, err
 	}
-	return obj.(IClientCredentialsHandler), nil
+	return obj.(ITokenHandler), nil
 }
 
-// GetIClientCredentialsHandlerDefinition returns that last definition registered that this container can provide
-func GetIClientCredentialsHandlerDefinition(ctn di.Container) *di.Def {
-	def := ctn.GetDefinitionByType(ReflectTypeIClientCredentialsHandler)
+// GetITokenHandlerDefinition returns that last definition registered that this container can provide
+func GetITokenHandlerDefinition(ctn di.Container) *di.Def {
+	def := ctn.GetDefinitionByType(ReflectTypeITokenHandler)
 	return def
 }
 
-// GetIClientCredentialsHandlerDefinitions returns all definitions that this container can provide
-func GetIClientCredentialsHandlerDefinitions(ctn di.Container) []*di.Def {
-	defs := ctn.GetDefinitionsByType(ReflectTypeIClientCredentialsHandler)
+// GetITokenHandlerDefinitions returns all definitions that this container can provide
+func GetITokenHandlerDefinitions(ctn di.Container) []*di.Def {
+	defs := ctn.GetDefinitionsByType(ReflectTypeITokenHandler)
 	return defs
 }
 
-// SafeGetManyIClientCredentialsHandlerFromContainer trys to get the object by type, will not panic, returns nil and error
-func SafeGetManyIClientCredentialsHandlerFromContainer(ctn di.Container) ([]IClientCredentialsHandler, error) {
-	objs, err := ctn.SafeGetManyByType(ReflectTypeIClientCredentialsHandler)
+// SafeGetManyITokenHandlerFromContainer trys to get the object by type, will not panic, returns nil and error
+func SafeGetManyITokenHandlerFromContainer(ctn di.Container) ([]ITokenHandler, error) {
+	objs, err := ctn.SafeGetManyByType(ReflectTypeITokenHandler)
 	if err != nil {
 		return nil, err
 	}
-	var results []IClientCredentialsHandler
+	var results []ITokenHandler
 	for _, obj := range objs {
-		results = append(results, obj.(IClientCredentialsHandler))
+		results = append(results, obj.(ITokenHandler))
 	}
 	return results, nil
 }
 
-type _logIClientCredentialsHandlerExtra struct {
+type _logITokenHandlerExtra struct {
 	Name  string
 	Value interface{}
 }
 
-func _logAddIClientCredentialsHandler(scopeType string, implType reflect.Type, interfaces string, extra ..._logIClientCredentialsHandlerExtra) {
+func _logAddITokenHandler(scopeType string, implType reflect.Type, interfaces string, extra ..._logITokenHandlerExtra) {
 	infoEvent := log.Info().
 		Str("DI", scopeType).
 		Str("DI-I", interfaces).
@@ -276,282 +276,7 @@ func _logAddIClientCredentialsHandler(scopeType string, implType reflect.Type, i
 	infoEvent.Send()
 
 }
-func _getImplementedIClientCredentialsHandlerNames(implementedTypes ...reflect.Type) string {
-	builder := strings.Builder{}
-	for idx, implementedType := range implementedTypes {
-		builder.WriteString(implementedType.Name())
-		if idx < len(implementedTypes)-1 {
-			builder.WriteString(", ")
-		}
-	}
-	return builder.String()
-}
-
-// ReflectTypeITokenExchangeHandler used when your service claims to implement ITokenExchangeHandler
-var ReflectTypeITokenExchangeHandler = di.GetInterfaceReflectType((*ITokenExchangeHandler)(nil))
-
-// AddSingletonITokenExchangeHandler adds a type that implements ITokenExchangeHandler
-func AddSingletonITokenExchangeHandler(builder *di.Builder, implType reflect.Type, implementedTypes ...reflect.Type) {
-	implementedTypes = append(implementedTypes, ReflectTypeITokenExchangeHandler)
-	_logAddITokenExchangeHandler("SINGLETON", implType, _getImplementedITokenExchangeHandlerNames(implementedTypes...),
-		_logITokenExchangeHandlerExtra{
-			Name:  "DI-BY",
-			Value: "type",
-		})
-	di.AddSingleton(builder, implType, implementedTypes...)
-}
-
-// AddSingletonITokenExchangeHandlerWithMetadata adds a type that implements ITokenExchangeHandler
-func AddSingletonITokenExchangeHandlerWithMetadata(builder *di.Builder, implType reflect.Type, metaData map[string]interface{}, implementedTypes ...reflect.Type) {
-	implementedTypes = append(implementedTypes, ReflectTypeITokenExchangeHandler)
-	_logAddITokenExchangeHandler("SINGLETON", implType, _getImplementedITokenExchangeHandlerNames(implementedTypes...),
-		_logITokenExchangeHandlerExtra{
-			Name:  "DI-BY",
-			Value: "type",
-		},
-		_logITokenExchangeHandlerExtra{
-			Name:  "DI-M",
-			Value: metaData,
-		})
-	di.AddSingletonWithMetadata(builder, implType, metaData, implementedTypes...)
-}
-
-// AddSingletonITokenExchangeHandlerByObj adds a prebuilt obj
-func AddSingletonITokenExchangeHandlerByObj(builder *di.Builder, obj interface{}, implementedTypes ...reflect.Type) {
-	implementedTypes = append(implementedTypes, ReflectTypeITokenExchangeHandler)
-	_logAddITokenExchangeHandler("SINGLETON", reflect.TypeOf(obj), _getImplementedITokenExchangeHandlerNames(implementedTypes...),
-		_logITokenExchangeHandlerExtra{
-			Name:  "DI-BY",
-			Value: "obj",
-		})
-	di.AddSingletonWithImplementedTypesByObj(builder, obj, implementedTypes...)
-}
-
-// AddSingletonITokenExchangeHandlerByObjWithMetadata adds a prebuilt obj
-func AddSingletonITokenExchangeHandlerByObjWithMetadata(builder *di.Builder, obj interface{}, metaData map[string]interface{}, implementedTypes ...reflect.Type) {
-	implementedTypes = append(implementedTypes, ReflectTypeITokenExchangeHandler)
-	_logAddITokenExchangeHandler("SINGLETON", reflect.TypeOf(obj), _getImplementedITokenExchangeHandlerNames(implementedTypes...),
-		_logITokenExchangeHandlerExtra{
-			Name:  "DI-BY",
-			Value: "obj",
-		},
-		_logITokenExchangeHandlerExtra{
-			Name:  "DI-M",
-			Value: metaData,
-		})
-
-	di.AddSingletonWithImplementedTypesByObjWithMetadata(builder, obj, metaData, implementedTypes...)
-}
-
-// AddSingletonITokenExchangeHandlerByFunc adds a type by a custom func
-func AddSingletonITokenExchangeHandlerByFunc(builder *di.Builder, implType reflect.Type, build func(ctn di.Container) (interface{}, error), implementedTypes ...reflect.Type) {
-	implementedTypes = append(implementedTypes, ReflectTypeITokenExchangeHandler)
-	_logAddITokenExchangeHandler("SINGLETON", implType, _getImplementedITokenExchangeHandlerNames(implementedTypes...),
-		_logITokenExchangeHandlerExtra{
-			Name:  "DI-BY",
-			Value: "func",
-		})
-	di.AddSingletonWithImplementedTypesByFunc(builder, implType, build, implementedTypes...)
-}
-
-// AddSingletonITokenExchangeHandlerByFuncWithMetadata adds a type by a custom func
-func AddSingletonITokenExchangeHandlerByFuncWithMetadata(builder *di.Builder, implType reflect.Type, build func(ctn di.Container) (interface{}, error), metaData map[string]interface{}, implementedTypes ...reflect.Type) {
-	implementedTypes = append(implementedTypes, ReflectTypeITokenExchangeHandler)
-	_logAddITokenExchangeHandler("SINGLETON", implType, _getImplementedITokenExchangeHandlerNames(implementedTypes...),
-		_logITokenExchangeHandlerExtra{
-			Name:  "DI-BY",
-			Value: "func",
-		},
-		_logITokenExchangeHandlerExtra{
-			Name:  "DI-M",
-			Value: metaData,
-		})
-
-	di.AddSingletonWithImplementedTypesByFuncWithMetadata(builder, implType, build, metaData, implementedTypes...)
-}
-
-// AddTransientITokenExchangeHandler adds a type that implements ITokenExchangeHandler
-func AddTransientITokenExchangeHandler(builder *di.Builder, implType reflect.Type, implementedTypes ...reflect.Type) {
-	implementedTypes = append(implementedTypes, ReflectTypeITokenExchangeHandler)
-	_logAddITokenExchangeHandler("TRANSIENT", implType, _getImplementedITokenExchangeHandlerNames(implementedTypes...),
-		_logITokenExchangeHandlerExtra{
-			Name:  "DI-BY",
-			Value: "type",
-		})
-
-	di.AddTransientWithImplementedTypes(builder, implType, implementedTypes...)
-}
-
-// AddTransientITokenExchangeHandlerWithMetadata adds a type that implements ITokenExchangeHandler
-func AddTransientITokenExchangeHandlerWithMetadata(builder *di.Builder, implType reflect.Type, metaData map[string]interface{}, implementedTypes ...reflect.Type) {
-	implementedTypes = append(implementedTypes, ReflectTypeITokenExchangeHandler)
-	_logAddITokenExchangeHandler("TRANSIENT", implType, _getImplementedITokenExchangeHandlerNames(implementedTypes...),
-		_logITokenExchangeHandlerExtra{
-			Name:  "DI-BY",
-			Value: "type",
-		},
-		_logITokenExchangeHandlerExtra{
-			Name:  "DI-M",
-			Value: metaData,
-		})
-
-	di.AddTransientWithImplementedTypesWithMetadata(builder, implType, metaData, implementedTypes...)
-}
-
-// AddTransientITokenExchangeHandlerByFunc adds a type by a custom func
-func AddTransientITokenExchangeHandlerByFunc(builder *di.Builder, implType reflect.Type, build func(ctn di.Container) (interface{}, error), implementedTypes ...reflect.Type) {
-	implementedTypes = append(implementedTypes, ReflectTypeITokenExchangeHandler)
-	_logAddITokenExchangeHandler("TRANSIENT", implType, _getImplementedITokenExchangeHandlerNames(implementedTypes...),
-		_logITokenExchangeHandlerExtra{
-			Name:  "DI-BY",
-			Value: "func",
-		})
-
-	di.AddTransientWithImplementedTypesByFunc(builder, implType, build, implementedTypes...)
-}
-
-// AddTransientITokenExchangeHandlerByFuncWithMetadata adds a type by a custom func
-func AddTransientITokenExchangeHandlerByFuncWithMetadata(builder *di.Builder, implType reflect.Type, build func(ctn di.Container) (interface{}, error), metaData map[string]interface{}, implementedTypes ...reflect.Type) {
-	implementedTypes = append(implementedTypes, ReflectTypeITokenExchangeHandler)
-	_logAddITokenExchangeHandler("TRANSIENT", implType, _getImplementedITokenExchangeHandlerNames(implementedTypes...),
-		_logITokenExchangeHandlerExtra{
-			Name:  "DI-BY",
-			Value: "func",
-		},
-		_logITokenExchangeHandlerExtra{
-			Name:  "DI-M",
-			Value: metaData,
-		})
-
-	di.AddTransientWithImplementedTypesByFuncWithMetadata(builder, implType, build, metaData, implementedTypes...)
-}
-
-// AddScopedITokenExchangeHandler adds a type that implements ITokenExchangeHandler
-func AddScopedITokenExchangeHandler(builder *di.Builder, implType reflect.Type, implementedTypes ...reflect.Type) {
-	implementedTypes = append(implementedTypes, ReflectTypeITokenExchangeHandler)
-	_logAddITokenExchangeHandler("SCOPED", implType, _getImplementedITokenExchangeHandlerNames(implementedTypes...),
-		_logITokenExchangeHandlerExtra{
-			Name:  "DI-BY",
-			Value: "type",
-		})
-	di.AddScopedWithImplementedTypes(builder, implType, implementedTypes...)
-}
-
-// AddScopedITokenExchangeHandlerWithMetadata adds a type that implements ITokenExchangeHandler
-func AddScopedITokenExchangeHandlerWithMetadata(builder *di.Builder, implType reflect.Type, metaData map[string]interface{}, implementedTypes ...reflect.Type) {
-	implementedTypes = append(implementedTypes, ReflectTypeITokenExchangeHandler)
-	_logAddITokenExchangeHandler("SCOPED", implType, _getImplementedITokenExchangeHandlerNames(implementedTypes...),
-		_logITokenExchangeHandlerExtra{
-			Name:  "DI-BY",
-			Value: "type",
-		},
-		_logITokenExchangeHandlerExtra{
-			Name:  "DI-M",
-			Value: metaData,
-		})
-	di.AddScopedWithImplementedTypesWithMetadata(builder, implType, metaData, implementedTypes...)
-}
-
-// AddScopedITokenExchangeHandlerByFunc adds a type by a custom func
-func AddScopedITokenExchangeHandlerByFunc(builder *di.Builder, implType reflect.Type, build func(ctn di.Container) (interface{}, error), implementedTypes ...reflect.Type) {
-	implementedTypes = append(implementedTypes, ReflectTypeITokenExchangeHandler)
-	_logAddITokenExchangeHandler("SCOPED", implType, _getImplementedITokenExchangeHandlerNames(implementedTypes...),
-		_logITokenExchangeHandlerExtra{
-			Name:  "DI-BY",
-			Value: "func",
-		})
-	di.AddScopedWithImplementedTypesByFunc(builder, implType, build, implementedTypes...)
-}
-
-// AddScopedITokenExchangeHandlerByFuncWithMetadata adds a type by a custom func
-func AddScopedITokenExchangeHandlerByFuncWithMetadata(builder *di.Builder, implType reflect.Type, build func(ctn di.Container) (interface{}, error), metaData map[string]interface{}, implementedTypes ...reflect.Type) {
-	implementedTypes = append(implementedTypes, ReflectTypeITokenExchangeHandler)
-	_logAddITokenExchangeHandler("SCOPED", implType, _getImplementedITokenExchangeHandlerNames(implementedTypes...),
-		_logITokenExchangeHandlerExtra{
-			Name:  "DI-BY",
-			Value: "func",
-		},
-		_logITokenExchangeHandlerExtra{
-			Name:  "DI-M",
-			Value: metaData,
-		})
-
-	di.AddScopedWithImplementedTypesByFuncWithMetadata(builder, implType, build, metaData, implementedTypes...)
-}
-
-// RemoveAllITokenExchangeHandler removes all ITokenExchangeHandler from the DI
-func RemoveAllITokenExchangeHandler(builder *di.Builder) {
-	builder.RemoveAllByType(ReflectTypeITokenExchangeHandler)
-}
-
-// GetITokenExchangeHandlerFromContainer alternative to SafeGetITokenExchangeHandlerFromContainer but panics of object is not present
-func GetITokenExchangeHandlerFromContainer(ctn di.Container) ITokenExchangeHandler {
-	return ctn.GetByType(ReflectTypeITokenExchangeHandler).(ITokenExchangeHandler)
-}
-
-// GetManyITokenExchangeHandlerFromContainer alternative to SafeGetManyITokenExchangeHandlerFromContainer but panics of object is not present
-func GetManyITokenExchangeHandlerFromContainer(ctn di.Container) []ITokenExchangeHandler {
-	objs := ctn.GetManyByType(ReflectTypeITokenExchangeHandler)
-	var results []ITokenExchangeHandler
-	for _, obj := range objs {
-		results = append(results, obj.(ITokenExchangeHandler))
-	}
-	return results
-}
-
-// SafeGetITokenExchangeHandlerFromContainer trys to get the object by type, will not panic, returns nil and error
-func SafeGetITokenExchangeHandlerFromContainer(ctn di.Container) (ITokenExchangeHandler, error) {
-	obj, err := ctn.SafeGetByType(ReflectTypeITokenExchangeHandler)
-	if err != nil {
-		return nil, err
-	}
-	return obj.(ITokenExchangeHandler), nil
-}
-
-// GetITokenExchangeHandlerDefinition returns that last definition registered that this container can provide
-func GetITokenExchangeHandlerDefinition(ctn di.Container) *di.Def {
-	def := ctn.GetDefinitionByType(ReflectTypeITokenExchangeHandler)
-	return def
-}
-
-// GetITokenExchangeHandlerDefinitions returns all definitions that this container can provide
-func GetITokenExchangeHandlerDefinitions(ctn di.Container) []*di.Def {
-	defs := ctn.GetDefinitionsByType(ReflectTypeITokenExchangeHandler)
-	return defs
-}
-
-// SafeGetManyITokenExchangeHandlerFromContainer trys to get the object by type, will not panic, returns nil and error
-func SafeGetManyITokenExchangeHandlerFromContainer(ctn di.Container) ([]ITokenExchangeHandler, error) {
-	objs, err := ctn.SafeGetManyByType(ReflectTypeITokenExchangeHandler)
-	if err != nil {
-		return nil, err
-	}
-	var results []ITokenExchangeHandler
-	for _, obj := range objs {
-		results = append(results, obj.(ITokenExchangeHandler))
-	}
-	return results, nil
-}
-
-type _logITokenExchangeHandlerExtra struct {
-	Name  string
-	Value interface{}
-}
-
-func _logAddITokenExchangeHandler(scopeType string, implType reflect.Type, interfaces string, extra ..._logITokenExchangeHandlerExtra) {
-	infoEvent := log.Info().
-		Str("DI", scopeType).
-		Str("DI-I", interfaces).
-		Str("DI-B", implType.Elem().String())
-
-	for _, extra := range extra {
-		infoEvent = infoEvent.Interface(extra.Name, extra.Value)
-	}
-
-	infoEvent.Send()
-
-}
-func _getImplementedITokenExchangeHandlerNames(implementedTypes ...reflect.Type) string {
+func _getImplementedITokenHandlerNames(implementedTypes ...reflect.Type) string {
 	builder := strings.Builder{}
 	for idx, implementedType := range implementedTypes {
 		builder.WriteString(implementedType.Name())
