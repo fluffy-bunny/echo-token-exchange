@@ -83,10 +83,27 @@ func (a *JWTAccessGenerate) Token(ctx context.Context, data *echo_oauth2.Generat
 		scopeInterface = scopes[0]
 	}
 
+	audienceSet := core_hashset.NewStringSet(clientID)
+	apiResourceScopeSet, _ := data.APIResources.GetApiResourceScopes()
+	for _, sc := range scopes {
+		if apiResourceScopeSet.Contains(sc) {
+			apiResource, _, _ := data.APIResources.GetApiResourceByScope(sc)
+			if apiResource != nil {
+				audienceSet.Add(apiResource.Name)
+			}
+		}
+	}
+
+	var audInterface interface{}
+	if audienceSet.Size() > 1 {
+		audInterface = audienceSet.Values()
+	} else if audienceSet.Size() == 1 {
+		audInterface = audienceSet.Values()[0]
+	}
+
 	claims := &JWTAccessClaims{
 		StandardClaims: jwt.StandardClaims{
 			Id:        xid.New().String(),
-			Audience:  clientID,
 			Issuer:    a.Issuer,
 			Subject:   data.UserID,
 			ExpiresAt: data.TokenInfo.GetAccessCreateAt().Add(data.TokenInfo.GetAccessExpiresIn()).Unix(),
@@ -100,6 +117,7 @@ func (a *JWTAccessGenerate) Token(ctx context.Context, data *echo_oauth2.Generat
 	firstClaims, _ := json.Marshal(claims)
 	json.Unmarshal(firstClaims, &mClaims)
 
+	mClaims["aud"] = audInterface
 	var arbitrary map[string][]string = make(map[string][]string)
 	if !core_utils.IsEmptyOrNil(data.Client.Claims) {
 		for _, v := range data.Client.Claims {

@@ -8,6 +8,8 @@ import (
 	echo_models "echo-starter/internal/models"
 	echo_oauth2 "echo-starter/internal/services/go-oauth2/oauth2"
 
+	contracts_apiresources "echo-starter/internal/contracts/apiresources"
+
 	"github.com/go-oauth2/oauth2/v4"
 	"github.com/go-oauth2/oauth2/v4/errors"
 	oauth2_manage "github.com/go-oauth2/oauth2/v4/manage"
@@ -34,6 +36,7 @@ type Manager struct {
 	accessGenerate echo_oauth2.AccessGenerate
 	tokenStore     oauth2.TokenStore
 	clientStore    contracts_clients.IClientStore
+	apiResources   contracts_apiresources.IAPIResources
 }
 
 // get grant type config
@@ -76,6 +79,14 @@ func (m *Manager) MustClientStorage(stor contracts_clients.IClientStore, err err
 	m.clientStore = stor
 }
 
+// MustClientStorage mandatory mapping the client store interface
+func (m *Manager) MustApiResources(stor contracts_apiresources.IAPIResources, err error) {
+	if err != nil {
+		panic(err.Error())
+	}
+	m.apiResources = stor
+}
+
 // MapTokenStorage mapping the token store interface
 func (m *Manager) MapTokenStorage(stor oauth2.TokenStore) {
 	m.tokenStore = stor
@@ -116,11 +127,12 @@ func (m *Manager) GenerateAuthToken(ctx context.Context, rt oauth2.ResponseType,
 
 	createAt := time.Now()
 	td := &echo_oauth2.GenerateBasic{
-		Client:    cli,
-		UserID:    tgr.UserID,
-		CreateAt:  createAt,
-		TokenInfo: ti,
-		Request:   tgr.Request,
+		APIResources: m.apiResources,
+		Client:       cli,
+		UserID:       tgr.UserID,
+		CreateAt:     createAt,
+		TokenInfo:    ti,
+		Request:      tgr.Request,
 	}
 	switch rt {
 
@@ -186,11 +198,12 @@ func (m *Manager) GenerateAccessToken(ctx context.Context, gt oauth2.GrantType, 
 	}
 
 	td := &echo_oauth2.GenerateBasic{
-		Client:    cli,
-		UserID:    tgr.UserID,
-		CreateAt:  createAt,
-		TokenInfo: ti,
-		Request:   tgr.Request,
+		APIResources: m.apiResources,
+		Client:       cli,
+		UserID:       tgr.UserID,
+		CreateAt:     createAt,
+		TokenInfo:    ti,
+		Request:      tgr.Request,
 	}
 
 	av, rv, err := m.accessGenerate.Token(ctx, td, gcfg.IsGenerateRefresh)

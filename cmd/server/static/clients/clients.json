@@ -75,7 +75,7 @@
 			"type": "scope",
 			"value": "rock-climber"
 		}],
-		"allowedScopes": ["artificer-ns","a", "b", "c"],
+		"allowedScopes": ["artificer-ns","a", "b", "c","invoices","users.read"],
 		"allowedGrantTypes": [
 			"client_credentials",
 			"arbitrary_resource_owner",

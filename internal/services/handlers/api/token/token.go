@@ -82,6 +82,7 @@ func (s *service) Ctor() {
 	// token memory store
 	s.Manager.MustTokenStorage(s.TokenStore, nil)
 	s.Manager.MustClientStorage(s.ClientStore, nil)
+	s.Manager.MustApiResources(s.APIResources, nil)
 	signingKey, err := s.SigningKeyStore.GetSigningKey()
 	if err != nil {
 		panic(err)

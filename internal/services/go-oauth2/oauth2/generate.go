@@ -2,6 +2,7 @@ package oauth2
 
 import (
 	"context"
+	contracts_apiresources "echo-starter/internal/contracts/apiresources"
 	"echo-starter/internal/models"
 	"net/http"
 	"time"
@@ -12,11 +13,12 @@ import (
 type (
 	// GenerateBasic provide the basis of the generated token data
 	GenerateBasic struct {
-		Client    *models.Client
-		UserID    string
-		CreateAt  time.Time
-		TokenInfo d_oauth2.TokenInfo
-		Request   *http.Request
+		Client       *models.Client
+		APIResources contracts_apiresources.IAPIResources
+		UserID       string
+		CreateAt     time.Time
+		TokenInfo    d_oauth2.TokenInfo
+		Request      *http.Request
 	}
 
 	// AuthorizeGenerate generate the authorization code interface
