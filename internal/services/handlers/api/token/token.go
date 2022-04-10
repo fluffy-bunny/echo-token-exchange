@@ -2,33 +2,30 @@ package token
 
 import (
 	"context"
+	contracts_apiresources "echo-starter/internal/contracts/apiresources"
+	contracts_clients "echo-starter/internal/contracts/clients"
+	contracts_config "echo-starter/internal/contracts/config"
+	contracts_go_oauth2_oauth2 "echo-starter/internal/contracts/go-oauth2/oauth2"
 	"echo-starter/internal/models"
+	"echo-starter/internal/services/go-oauth2/oauth2/generates"
+	"echo-starter/internal/services/go-oauth2/oauth2/manage"
 	"echo-starter/internal/utils"
 	"echo-starter/internal/wellknown"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"reflect"
+	"strings"
 	"time"
 
-	contracts_config "echo-starter/internal/contracts/config"
-
 	contracts_logger "github.com/fluffy-bunny/grpcdotnetgo/pkg/contracts/logger"
-	"github.com/golang-jwt/jwt"
-
-	contracts_clients "echo-starter/internal/contracts/clients"
-	contracts_go_oauth2_oauth2 "echo-starter/internal/contracts/go-oauth2/oauth2"
-
 	contracts_handler "github.com/fluffy-bunny/grpcdotnetgo/pkg/echo/contracts/handler"
+	core_hashset "github.com/fluffy-bunny/grpcdotnetgo/pkg/gods/sets/hashset"
 	di "github.com/fluffy-bunny/sarulabsdi"
 	"github.com/go-oauth2/oauth2/v4"
 	"github.com/go-oauth2/oauth2/v4/errors"
-
-	"echo-starter/internal/services/go-oauth2/oauth2/generates"
-
-	"echo-starter/internal/services/go-oauth2/oauth2/manage"
-
 	oauth2_server "github.com/go-oauth2/oauth2/v4/server"
+	"github.com/golang-jwt/jwt"
 	"github.com/labstack/echo/v4"
 )
 
@@ -37,8 +34,8 @@ type (
 		Config                      *contracts_config.Config                    `inject:""`
 		Logger                      contracts_logger.ILogger                    `inject:""`
 		TokenStore                  contracts_go_oauth2_oauth2.ITokenStore      `inject:""`
-		ClientStore                 contracts_go_oauth2_oauth2.IClientStore     `inject:""`
-		ClientStore2                contracts_clients.IClientStore              `inject:""`
+		ClientStore                 contracts_clients.IClientStore              `inject:""`
+		APIResources                contracts_apiresources.IAPIResources        `inject:""`
 		SigningKeyStore             contracts_go_oauth2_oauth2.ISigningKeyStore `inject:""`
 		ClientInfoHandler           oauth2_server.ClientInfoHandler
 		InternalErrorHandler        oauth2_server.InternalErrorHandler
@@ -99,19 +96,23 @@ func (s *service) _clientInfoHandler(r *http.Request) (clientID, clientSecret st
 	if err != nil {
 		clientID, clientSecret, err = oauth2_server.ClientFormHandler(r)
 	}
-	client, _ := s.ClientStore.GetByID(context.Background(), clientID)
-	match, _ := utils.ComparePasswordHash(clientSecret, client.GetSecret())
+	client, _, _ := s.ClientStore.GetClient(context.Background(), clientID)
+	var match bool
+	for _, sc := range client.ClientSecrets {
+		match, _ = utils.ComparePasswordHash(clientSecret, sc.Value)
+		if match {
+			break
+		}
+	}
 	if !match {
 		err = errors.ErrInvalidClient
 	}
-	clientSecret = client.GetSecret()
 	return
 }
 func (s *service) Do(c echo.Context) error {
 	rootPath := utils.GetMyRootPath(c)
 	jwtGenerator := generates.NewJWTAccessGenerate(s.signingKey.Kid, []byte(s.signingKey.PrivateKey), jwt.SigningMethodES256)
 	jwtGenerator.Issuer = rootPath
-	jwtGenerator.Audience = rootPath //TODO this should be in the client_id
 	s.Manager.MapAccessGenerate(jwtGenerator)
 
 	return s.processRequest(c)
@@ -137,7 +138,7 @@ func (s *service) processRequest(c echo.Context) error {
 
 }
 func (s *service) ValidationTokenRequest(r *http.Request) (oauth2.GrantType, *oauth2.TokenGenerateRequest, error) {
-
+	ctx := r.Context()
 	gt := oauth2.GrantType(r.FormValue("grant_type"))
 	if gt.String() == "" {
 		return "", nil, errors.ErrUnsupportedGrantType
@@ -165,8 +166,23 @@ func (s *service) ValidationTokenRequest(r *http.Request) (oauth2.GrantType, *oa
 		}
 	case "urn:ietf:params:oauth:grant-type:token-exchange":
 	}
+
+	client, found, err := s.ClientStore.GetClient(ctx, clientID)
+	if err != nil {
+		return "", nil, err
+	}
+	if !found {
+		return "", nil, errors.ErrInvalidClient
+	}
+	requestedScopes := strings.Split(tgr.Scope, " ")
+	requestedScopeSet := core_hashset.NewStringSet(requestedScopes...)
+	if !client.AllowedScopesSet.Contains(requestedScopeSet.Values()...) {
+		return "", nil, errors.ErrInvalidScope
+	}
+
 	return gt, tgr, nil
 }
+
 func (s *service) tokenError(w http.ResponseWriter, err error) error {
 	data, statusCode, header := s.GetErrorData(err)
 	return s.token(w, data, header, statusCode)

@@ -7,6 +7,9 @@ import (
 	"errors"
 	"fmt"
 	"path"
+	"sort"
+
+	core_hashset "github.com/fluffy-bunny/grpcdotnetgo/pkg/gods/sets/hashset"
 
 	"github.com/spf13/viper"
 	"github.com/xeipuuv/gojsonschema"
@@ -44,8 +47,17 @@ func (s *Startup) loadTestClients() (err error) {
 		return
 	}
 
+	// sanitize the input
 	// need to set the secret has as the original has them in the open
 	for ic := range clients {
+		clients[ic].AllowedGrantTypesSet = core_hashset.NewStringSet(clients[ic].AllowedGrantTypes...)
+		clients[ic].AllowedGrantTypes = clients[ic].AllowedGrantTypesSet.Values()
+		sort.Strings(clients[ic].AllowedGrantTypes)
+
+		clients[ic].AllowedScopesSet = core_hashset.NewStringSet(clients[ic].AllowedScopes...)
+		clients[ic].AllowedScopes = clients[ic].AllowedScopesSet.Values()
+		sort.Strings(clients[ic].AllowedScopes)
+
 		for idx := range clients[ic].ClientSecrets {
 			hash, _ := utils.GeneratePasswordHash(clients[ic].ClientSecrets[idx].Value)
 			clients[ic].ClientSecrets[idx].Value = hash

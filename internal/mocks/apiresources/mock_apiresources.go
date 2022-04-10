@@ -8,6 +8,7 @@ import (
 	models "echo-starter/internal/models"
 	reflect "reflect"
 
+	hashset "github.com/fluffy-bunny/grpcdotnetgo/pkg/gods/sets/hashset"
 	gomock "github.com/golang/mock/gomock"
 )
 
@@ -63,4 +64,35 @@ func (m *MockIAPIResources) GetAPIResources() ([]models.APIResource, error) {
 func (mr *MockIAPIResourcesMockRecorder) GetAPIResources() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAPIResources", reflect.TypeOf((*MockIAPIResources)(nil).GetAPIResources))
+}
+
+// GetApiResourceByScope mocks base method.
+func (m *MockIAPIResources) GetApiResourceByScope(arg0 string) (*models.APIResource, bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetApiResourceByScope", arg0)
+	ret0, _ := ret[0].(*models.APIResource)
+	ret1, _ := ret[1].(bool)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// GetApiResourceByScope indicates an expected call of GetApiResourceByScope.
+func (mr *MockIAPIResourcesMockRecorder) GetApiResourceByScope(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetApiResourceByScope", reflect.TypeOf((*MockIAPIResources)(nil).GetApiResourceByScope), arg0)
+}
+
+// GetApiResourceScopes mocks base method.
+func (m *MockIAPIResources) GetApiResourceScopes() (*hashset.StringSet, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetApiResourceScopes")
+	ret0, _ := ret[0].(*hashset.StringSet)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetApiResourceScopes indicates an expected call of GetApiResourceScopes.
+func (mr *MockIAPIResourcesMockRecorder) GetApiResourceScopes() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetApiResourceScopes", reflect.TypeOf((*MockIAPIResources)(nil).GetApiResourceScopes))
 }

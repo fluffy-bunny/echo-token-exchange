@@ -5,11 +5,11 @@ import "echo-starter/internal/models"
 func (s *Startup) loadApiResources() (err error) {
 	s.apiResources = append(s.apiResources, models.APIResource{
 		Name:   "invoices",
-		Scopes: []string{"read", "write"},
+		Scopes: []string{"invoices.read", "invoices.write"},
 	})
 	s.apiResources = append(s.apiResources, models.APIResource{
 		Name:   "users",
-		Scopes: []string{"read", "write"},
+		Scopes: []string{"users.read", "users.write"},
 	})
 	return
 }

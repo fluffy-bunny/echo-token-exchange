@@ -1,6 +1,7 @@
 package inmemory
 
 import (
+	"context"
 	"reflect"
 
 	contracts_clients "echo-starter/internal/contracts/clients"
@@ -40,7 +41,7 @@ func AddSingletonIClientStore(builder *di.Builder, clients []models.Client) {
 		return obj, nil
 	})
 }
-func (s *service) GetClient(id string) (*models.Client, bool, error) {
+func (s *service) GetClient(ctx context.Context, id string) (*models.Client, bool, error) {
 	client, found := s.clientsMap[id]
 	if !found {
 		return nil, false, nil

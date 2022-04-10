@@ -1,6 +1,10 @@
 package apiresources
 
-import "echo-starter/internal/models"
+import (
+	"echo-starter/internal/models"
+
+	core_hashset "github.com/fluffy-bunny/grpcdotnetgo/pkg/gods/sets/hashset"
+)
 
 //go:generate genny -pkg $GOPACKAGE -in=../../../genny/sarulabsdi/interface-types.go -out=gen-$GOFILE gen "InterfaceType=IAPIResources"
 
@@ -11,5 +15,7 @@ type (
 	IAPIResources interface {
 		GetAPIResources() ([]models.APIResource, error)
 		GetAPIResource(name string) (*models.APIResource, bool, error)
+		GetApiResourceByScope(scope string) (*models.APIResource, bool, error)
+		GetApiResourceScopes() (*core_hashset.StringSet, error)
 	}
 )

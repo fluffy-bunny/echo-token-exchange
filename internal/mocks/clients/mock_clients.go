@@ -5,6 +5,7 @@
 package clients
 
 import (
+	context "context"
 	models "echo-starter/internal/models"
 	reflect "reflect"
 
@@ -35,9 +36,9 @@ func (m *MockIClientStore) EXPECT() *MockIClientStoreMockRecorder {
 }
 
 // GetClient mocks base method.
-func (m *MockIClientStore) GetClient(arg0 string) (*models.Client, bool, error) {
+func (m *MockIClientStore) GetClient(arg0 context.Context, arg1 string) (*models.Client, bool, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetClient", arg0)
+	ret := m.ctrl.Call(m, "GetClient", arg0, arg1)
 	ret0, _ := ret[0].(*models.Client)
 	ret1, _ := ret[1].(bool)
 	ret2, _ := ret[2].(error)
@@ -45,7 +46,7 @@ func (m *MockIClientStore) GetClient(arg0 string) (*models.Client, bool, error) 
 }
 
 // GetClient indicates an expected call of GetClient.
-func (mr *MockIClientStoreMockRecorder) GetClient(arg0 interface{}) *gomock.Call {
+func (mr *MockIClientStoreMockRecorder) GetClient(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetClient", reflect.TypeOf((*MockIClientStore)(nil).GetClient), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetClient", reflect.TypeOf((*MockIClientStore)(nil).GetClient), arg0, arg1)
 }

@@ -4,9 +4,12 @@ import (
 	"context"
 	"time"
 
+	contracts_clients "echo-starter/internal/contracts/clients"
+	echo_models "echo-starter/internal/models"
+	echo_oauth2 "echo-starter/internal/services/go-oauth2/oauth2"
+
 	"github.com/go-oauth2/oauth2/v4"
 	"github.com/go-oauth2/oauth2/v4/errors"
-	"github.com/go-oauth2/oauth2/v4/generates"
 	oauth2_manage "github.com/go-oauth2/oauth2/v4/manage"
 	"github.com/go-oauth2/oauth2/v4/models"
 )
@@ -14,9 +17,6 @@ import (
 // NewDefaultManager create to default authorization management instance
 func NewDefaultManager() *Manager {
 	m := NewManager()
-	// default implementation
-	m.MapAccessGenerate(generates.NewAccessGenerate())
-
 	return m
 }
 
@@ -31,9 +31,9 @@ func NewManager() *Manager {
 type Manager struct {
 	gtcfg          map[oauth2.GrantType]*oauth2_manage.Config
 	rcfg           *oauth2_manage.RefreshingConfig
-	accessGenerate oauth2.AccessGenerate
+	accessGenerate echo_oauth2.AccessGenerate
 	tokenStore     oauth2.TokenStore
-	clientStore    oauth2.ClientStore
+	clientStore    contracts_clients.IClientStore
 }
 
 // get grant type config
@@ -59,17 +59,17 @@ func (m *Manager) SetRefreshTokenCfg(cfg *oauth2_manage.RefreshingConfig) {
 }
 
 // MapAccessGenerate mapping the access token generate interface
-func (m *Manager) MapAccessGenerate(gen oauth2.AccessGenerate) {
+func (m *Manager) MapAccessGenerate(gen echo_oauth2.AccessGenerate) {
 	m.accessGenerate = gen
 }
 
 // MapClientStorage mapping the client store interface
-func (m *Manager) MapClientStorage(stor oauth2.ClientStore) {
+func (m *Manager) MapClientStorage(stor contracts_clients.IClientStore) {
 	m.clientStore = stor
 }
 
 // MustClientStorage mandatory mapping the client store interface
-func (m *Manager) MustClientStorage(stor oauth2.ClientStore, err error) {
+func (m *Manager) MustClientStorage(stor contracts_clients.IClientStore, err error) {
 	if err != nil {
 		panic(err.Error())
 	}
@@ -90,12 +90,13 @@ func (m *Manager) MustTokenStorage(stor oauth2.TokenStore, err error) {
 }
 
 // GetClient get the client information
-func (m *Manager) GetClient(ctx context.Context, clientID string) (cli oauth2.ClientInfo, err error) {
-	cli, err = m.clientStore.GetByID(ctx, clientID)
+func (m *Manager) GetClient(ctx context.Context, clientID string) (cli *echo_models.Client, err error) {
+	cli, found, err := m.clientStore.GetClient(ctx, clientID)
 	if err != nil {
-		return
-	} else if cli == nil {
-		err = errors.ErrInvalidClient
+		return nil, err
+	}
+	if !found {
+		return nil, errors.ErrInvalidClient
 	}
 	return
 }
@@ -114,7 +115,7 @@ func (m *Manager) GenerateAuthToken(ctx context.Context, rt oauth2.ResponseType,
 	ti.SetScope(tgr.Scope)
 
 	createAt := time.Now()
-	td := &oauth2.GenerateBasic{
+	td := &echo_oauth2.GenerateBasic{
 		Client:    cli,
 		UserID:    tgr.UserID,
 		CreateAt:  createAt,
@@ -162,13 +163,6 @@ func (m *Manager) GenerateAccessToken(ctx context.Context, gt oauth2.GrantType, 
 	if err != nil {
 		return nil, err
 	}
-	if cliPass, ok := cli.(oauth2.ClientPasswordVerifier); ok {
-		if !cliPass.VerifyPassword(tgr.ClientSecret) {
-			return nil, errors.ErrInvalidClient
-		}
-	} else if len(cli.GetSecret()) > 0 && tgr.ClientSecret != cli.GetSecret() {
-		return nil, errors.ErrInvalidClient
-	}
 
 	ti := models.NewToken()
 	ti.SetClientID(tgr.ClientID)
@@ -191,7 +185,7 @@ func (m *Manager) GenerateAccessToken(ctx context.Context, gt oauth2.GrantType, 
 		ti.SetRefreshExpiresIn(gcfg.RefreshTokenExp)
 	}
 
-	td := &oauth2.GenerateBasic{
+	td := &echo_oauth2.GenerateBasic{
 		Client:    cli,
 		UserID:    tgr.UserID,
 		CreateAt:  createAt,
@@ -231,7 +225,7 @@ func (m *Manager) RefreshAccessToken(ctx context.Context, tgr *oauth2.TokenGener
 
 	oldAccess, oldRefresh := ti.GetAccess(), ti.GetRefresh()
 
-	td := &oauth2.GenerateBasic{
+	td := &echo_oauth2.GenerateBasic{
 		Client:    cli,
 		UserID:    ti.GetUserID(),
 		CreateAt:  time.Now(),

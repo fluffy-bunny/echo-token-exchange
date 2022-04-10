@@ -2,6 +2,7 @@ package models
 
 import (
 	contracts_claimsprincipal "github.com/fluffy-bunny/grpcdotnetgo/pkg/contracts/claimsprincipal"
+	core_hashset "github.com/fluffy-bunny/grpcdotnetgo/pkg/gods/sets/hashset"
 )
 
 const (
@@ -57,7 +58,8 @@ type Client struct {
 	AlwaysIncludeUserClaimsInIdToken bool                              `json:"always_include_user_claims_in_id_token"`
 	AllowedScopes                    []string                          `json:"allowed_scopes"`
 	AllowedGrantTypes                []string                          `json:"allowed_grant_types"`
-	AllowedGrantTypesMap             map[string]interface{}
-	RequireClientSecret              bool     `json:"require_client_secret"`
-	ClientSecrets                    []Secret `json:"client_secrets"`
+	RequireClientSecret              bool                              `json:"require_client_secret"`
+	ClientSecrets                    []Secret                          `json:"client_secrets"`
+	AllowedGrantTypesSet             *core_hashset.StringSet
+	AllowedScopesSet                 *core_hashset.StringSet
 }

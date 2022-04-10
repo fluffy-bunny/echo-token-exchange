@@ -3,15 +3,27 @@ package generates
 import (
 	"context"
 	"encoding/base64"
+	"encoding/json"
 	"strings"
 	"time"
 
-	"github.com/go-oauth2/oauth2/v4"
+	echo_oauth2 "echo-starter/internal/services/go-oauth2/oauth2"
+
+	core_hashset "github.com/fluffy-bunny/grpcdotnetgo/pkg/gods/sets/hashset"
+	core_utils "github.com/fluffy-bunny/grpcdotnetgo/pkg/utils"
+
 	"github.com/go-oauth2/oauth2/v4/errors"
 	"github.com/golang-jwt/jwt"
 	"github.com/google/uuid"
 	"github.com/rs/xid"
 )
+
+var notAllowed *core_hashset.StringSet
+
+func init() {
+	notAllowed = core_hashset.NewStringSet()
+	notAllowed.Add("exp", "scope", "aud", "iss", "sub", "iat", "nbf", "jti", "client_id")
+}
 
 type CustomClaims struct {
 	ClientID string      `json:"client_id,omitempty"`
@@ -22,6 +34,13 @@ type CustomClaims struct {
 type JWTAccessClaims struct {
 	jwt.StandardClaims
 	CustomClaims
+}
+
+type mapClaims map[string]interface{}
+
+// Valid claims verification
+func (a mapClaims) Valid() error {
+	return nil
 }
 
 // Valid claims verification
@@ -47,20 +66,16 @@ type JWTAccessGenerate struct {
 	SignedKey    []byte
 	SignedMethod jwt.SigningMethod
 	Issuer       string
-	Audience     string
 }
 
 func (a *JWTAccessGenerate) SetIssuer(issuer string) {
 	a.Issuer = issuer
 }
-func (a *JWTAccessGenerate) SetAudience(audience string) {
-	a.Audience = audience
-}
 
 // Token based on the UUID generated token
-func (a *JWTAccessGenerate) Token(ctx context.Context, data *oauth2.GenerateBasic, isGenRefresh bool) (string, string, error) {
-	clientID := data.Client.GetID()
-	scopes := strings.Split(data.TokenInfo.GetScope(), ",")
+func (a *JWTAccessGenerate) Token(ctx context.Context, data *echo_oauth2.GenerateBasic, isGenRefresh bool) (string, string, error) {
+	clientID := data.Client.ClientID
+	scopes := strings.Split(data.TokenInfo.GetScope(), " ")
 	var scopeInterface interface{}
 	if len(scopes) > 1 {
 		scopeInterface = scopes
@@ -71,7 +86,7 @@ func (a *JWTAccessGenerate) Token(ctx context.Context, data *oauth2.GenerateBasi
 	claims := &JWTAccessClaims{
 		StandardClaims: jwt.StandardClaims{
 			Id:        xid.New().String(),
-			Audience:  a.Audience,
+			Audience:  clientID,
 			Issuer:    a.Issuer,
 			Subject:   data.UserID,
 			ExpiresAt: data.TokenInfo.GetAccessCreateAt().Add(data.TokenInfo.GetAccessExpiresIn()).Unix(),
@@ -81,8 +96,41 @@ func (a *JWTAccessGenerate) Token(ctx context.Context, data *oauth2.GenerateBasi
 			Scope:    scopeInterface,
 		},
 	}
+	mClaims := make(mapClaims)
+	firstClaims, _ := json.Marshal(claims)
+	json.Unmarshal(firstClaims, &mClaims)
 
-	token := jwt.NewWithClaims(a.SignedMethod, claims)
+	var arbitrary map[string][]string = make(map[string][]string)
+	if !core_utils.IsEmptyOrNil(data.Client.Claims) {
+		for _, v := range data.Client.Claims {
+			_, ok := arbitrary[v.Type]
+			if !ok {
+				arbitrary[v.Type] = make([]string, 0)
+			}
+			arbitrary[v.Type] = append(arbitrary[v.Type], v.Value)
+		}
+	}
+
+	for key, v := range arbitrary {
+		if notAllowed.Contains(key) {
+			continue
+		}
+		_, ok := mClaims[key]
+		if ok {
+			ori := mClaims[key].([]interface{})
+			for _, value := range v {
+				ori = append(ori, value)
+			}
+			mClaims[key] = ori
+		} else {
+			if len(v) > 1 {
+				mClaims[key] = v // add all the strings
+			} else if len(v) == 1 {
+				mClaims[key] = v[0] // add the first string
+			}
+		}
+	}
+	token := jwt.NewWithClaims(a.SignedMethod, mClaims)
 	if a.SignedKeyID != "" {
 		token.Header["kid"] = a.SignedKeyID
 	}

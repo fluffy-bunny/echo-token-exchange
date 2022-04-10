@@ -1,6 +1,9 @@
 package clients
 
-import "echo-starter/internal/models"
+import (
+	"context"
+	"echo-starter/internal/models"
+)
 
 //go:generate genny -pkg $GOPACKAGE -in=../../../genny/sarulabsdi/interface-types.go -out=gen-$GOFILE gen "InterfaceType=IClientStore"
 
@@ -9,6 +12,6 @@ import "echo-starter/internal/models"
 type (
 	// IClientStore ...
 	IClientStore interface {
-		GetClient(id string) (*models.Client, bool, error)
+		GetClient(ctx context.Context, clientID string) (*models.Client, bool, error)
 	}
 )
