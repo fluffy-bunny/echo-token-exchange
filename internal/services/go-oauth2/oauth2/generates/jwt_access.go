@@ -4,6 +4,8 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/json"
+	"fmt"
+	"reflect"
 	"strings"
 	"time"
 
@@ -72,6 +74,25 @@ type JWTAccessGenerate struct {
 func (a *JWTAccessGenerate) SetIssuer(issuer string) {
 	a.Issuer = issuer
 }
+func IsSliceOrArray(v interface{}) bool {
+	if reflect.TypeOf(v).Kind() == reflect.Slice {
+		return true
+	}
+	if reflect.TypeOf(v).Kind() == reflect.Array {
+		return true
+	}
+	return false
+}
+
+func SliceOrArrayLength(v interface{}) int {
+	if reflect.TypeOf(v).Kind() == reflect.Slice {
+		return reflect.ValueOf(v).Len()
+	}
+	if reflect.TypeOf(v).Kind() == reflect.Array {
+		return reflect.ValueOf(v).Len()
+	}
+	return 0
+}
 
 // Token based on the UUID generated token
 func (a *JWTAccessGenerate) Token(ctx context.Context, data *echo_oauth2.GenerateBasic, isGenRefresh bool,
@@ -89,7 +110,8 @@ func (a *JWTAccessGenerate) Token(ctx context.Context, data *echo_oauth2.Generat
 	audienceSet := core_hashset.NewStringSet(clientID)
 	if !core_utils.IsEmptyOrNil(extraClaims) {
 		extraAudInterface := extraClaims["aud"]
-
+		fmt.Println(IsSliceOrArray(extraAudInterface))
+		fmt.Println(SliceOrArrayLength(extraAudInterface))
 		switch extraAudInterface.(type) {
 		case string:
 			audienceSet.Add(extraAudInterface.(string))
@@ -160,6 +182,16 @@ func (a *JWTAccessGenerate) Token(ctx context.Context, data *echo_oauth2.Generat
 			}
 		}
 	}
+	// make sure a string array with only one item is just a string in the jwt
+	for key, value := range mClaims {
+		switch value.(type) {
+		case []string:
+			if len(value.([]string)) == 1 {
+				mClaims[key] = value.([]string)[0]
+			}
+		}
+	}
+
 	token := jwt.NewWithClaims(a.SignedMethod, mClaims)
 	if a.SignedKeyID != "" {
 		token.Header["kid"] = a.SignedKeyID

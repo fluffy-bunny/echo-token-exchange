@@ -62,6 +62,27 @@ func (s *service) ProcessTokenRequest(ctx context.Context, data interface{}) (co
 	}
 	if validated != nil {
 		claims["aud"] = audienceSet.Values()
+		/*
+			// tests
+			claims["basic"] = true
+			claims["basic2"] = []string{"basic2"}
+			claims["basic3"] = []string{"2", "3"}
+
+			type basic struct {
+				Basic string `json:"basic"`
+				Count int    `json:"count"`
+			}
+			claims["basic4"] = []basic{
+				{
+					Basic: "basic4",
+					Count: 4,
+				},
+			}
+			claims["basic5"] = basic{
+				Basic: "basic5",
+				Count: 5,
+			}
+		*/
 	}
 	return claims, nil
 }
