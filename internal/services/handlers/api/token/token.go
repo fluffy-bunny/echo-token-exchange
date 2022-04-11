@@ -37,7 +37,7 @@ type (
 		ClientStore                 contracts_clients.IClientStore              `inject:""`
 		APIResources                contracts_apiresources.IAPIResources        `inject:""`
 		SigningKeyStore             contracts_go_oauth2_oauth2.ISigningKeyStore `inject:""`
-		ClientInfoHandler           oauth2_server.ClientInfoHandler
+		ClientRequest               contracts_clients.IClientRequest            `inject:""`
 		InternalErrorHandler        oauth2_server.InternalErrorHandler
 		ResponseErrorHandler        oauth2_server.ResponseErrorHandler
 		ClientAuthorizedHandler     oauth2_server.ClientAuthorizedHandler
@@ -77,7 +77,6 @@ func AddScopedIHandler(builder *di.Builder) {
 }
 func (s *service) Ctor() {
 
-	s.ClientInfoHandler = s._clientInfoHandler
 	s.Manager = manage.NewDefaultManager()
 	// token memory store
 	s.Manager.MustTokenStorage(s.TokenStore, nil)
@@ -101,24 +100,6 @@ func (s *service) GetMiddleware() []echo.MiddlewareFunc {
 	return []echo.MiddlewareFunc{}
 }
 
-func (s *service) _clientInfoHandler(r *http.Request) (clientID, clientSecret string, err error) {
-	clientID, clientSecret, err = oauth2_server.ClientBasicHandler(r)
-	if err != nil {
-		clientID, clientSecret, err = oauth2_server.ClientFormHandler(r)
-	}
-	client, _, _ := s.ClientStore.GetClient(context.Background(), clientID)
-	var match bool
-	for _, sc := range client.ClientSecrets {
-		match, _ = utils.ComparePasswordHash(clientSecret, sc.Value)
-		if match {
-			break
-		}
-	}
-	if !match {
-		err = errors.ErrInvalidClient
-	}
-	return
-}
 func (s *service) Do(c echo.Context) error {
 	rootPath := utils.GetMyRootPath(c)
 	jwtGenerator := generates.NewJWTAccessGenerate(s.signingKey.Kid, []byte(s.signingKey.PrivateKey), jwt.SigningMethodES256)
@@ -148,21 +129,16 @@ func (s *service) processRequest(c echo.Context) error {
 
 }
 func (s *service) ValidationTokenRequest(r *http.Request) (oauth2.GrantType, *oauth2.TokenGenerateRequest, error) {
-	ctx := r.Context()
+
 	gt := oauth2.GrantType(r.FormValue("grant_type"))
 	if !supportedGrantTypes.Contains(string(gt)) {
 		return "", nil, errors.ErrUnsupportedGrantType
 	}
-
-	clientID, clientSecret, err := s.ClientInfoHandler(r)
-	if err != nil {
-		return "", nil, err
-	}
+	client := s.ClientRequest.GetClient()
 
 	tgr := &oauth2.TokenGenerateRequest{
-		ClientID:     clientID,
-		ClientSecret: clientSecret,
-		Request:      r,
+		ClientID: client.ClientID,
+		Request:  r,
 	}
 
 	switch gt {
@@ -179,13 +155,6 @@ func (s *service) ValidationTokenRequest(r *http.Request) (oauth2.GrantType, *oa
 		return "", nil, errors.ErrUnsupportedGrantType
 	}
 
-	client, found, err := s.ClientStore.GetClient(ctx, clientID)
-	if err != nil {
-		return "", nil, err
-	}
-	if !found {
-		return "", nil, errors.ErrInvalidClient
-	}
 	requestedScopes := strings.Split(tgr.Scope, " ")
 	requestedScopeSet := core_hashset.NewStringSet(requestedScopes...)
 	if !client.AllowedScopesSet.Contains(requestedScopeSet.Values()...) {

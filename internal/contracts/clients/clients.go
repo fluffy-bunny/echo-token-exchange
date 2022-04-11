@@ -5,9 +5,9 @@ import (
 	"echo-starter/internal/models"
 )
 
-//go:generate genny -pkg $GOPACKAGE -in=../../../genny/sarulabsdi/interface-types.go -out=gen-$GOFILE gen "InterfaceType=IClientStore,IClientTokenRequest,IClientRequest,IClientRequestInternal,IClientTokenRequestInternal"
+//go:generate genny -pkg $GOPACKAGE -in=../../../genny/sarulabsdi/interface-types.go -out=gen-$GOFILE gen "InterfaceType=IClientStore,IClientRequest,IClientRequestInternal"
 
-//go:generate mockgen -package=$GOPACKAGE -destination=../../mocks/$GOPACKAGE/mock_$GOFILE   echo-starter/internal/contracts/$GOPACKAGE IClientStore,IClientTokenRequest,IClientRequest,IClientRequestInternal,IClientTokenRequestInternal
+//go:generate mockgen -package=$GOPACKAGE -destination=../../mocks/$GOPACKAGE/mock_$GOFILE   echo-starter/internal/contracts/$GOPACKAGE IClientStore,IClientRequest,IClientRequestInternal
 
 type (
 	// IClientStore ...
@@ -21,14 +21,6 @@ type (
 	IClientRequestInternal interface {
 		IClientRequest
 		SetClient(client *models.Client)
-	}
-	IClientTokenRequest interface {
-		IClientRequest
-		GetGrantType() string
-	}
-	IClientTokenRequestInternal interface {
-		IClientRequestInternal
-		IClientTokenRequest
 	}
 
 	CommonClientRequest struct {
