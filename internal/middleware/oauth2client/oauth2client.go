@@ -83,6 +83,24 @@ func AuthenticateOAuth2Client(root di.Container) echo.MiddlewareFunc {
 
 			}
 
+			// validate that the required form arguments are present
+			switch grantType {
+			case wellknown.OAuth2GrantType_RefreshToken:
+				refreshToken := r.FormValue("refresh_token")
+				if core_utils.IsEmptyOrNil(refreshToken) {
+					return c.JSON(401, "refresh_token is required")
+				}
+			case wellknown.OAuth2GrantType_TokenExchange:
+				subjectToken := r.FormValue("subject_token")
+				if core_utils.IsEmptyOrNil(subjectToken) {
+					return c.JSON(401, "subject_token is required")
+				}
+				subjectTokenType := r.FormValue("subject_token_type")
+				if core_utils.IsEmptyOrNil(subjectTokenType) {
+					return c.JSON(401, "subject_token_type is required")
+				}
+			}
+
 			scopedContainer := c.Get(core_wellknown.SCOPED_CONTAINER_KEY).(di.Container)
 			clientRequest := contracts_clients.GetIClientRequestInternalFromContainer(scopedContainer)
 			clientRequest.SetClient(client)

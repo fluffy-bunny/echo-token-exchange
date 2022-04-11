@@ -35,6 +35,7 @@
 		"allowedScopes": ["invoices","users.read"],
 		"allowedGrantTypes": [
 			"client_credentials",
+			"refresh_token",
 			"arbitrary_resource_owner",
 			"arbitrary_identity"
 		],
@@ -78,6 +79,7 @@
 		"allowedScopes": ["artificer-ns","a", "b", "c","invoices","users.read"],
 		"allowedGrantTypes": [
 			"client_credentials",
+			"refresh_token",
 			"arbitrary_resource_owner",
 			"arbitrary_identity"
 		],

@@ -21,7 +21,6 @@ import (
 
 	contracts_logger "github.com/fluffy-bunny/grpcdotnetgo/pkg/contracts/logger"
 	contracts_handler "github.com/fluffy-bunny/grpcdotnetgo/pkg/echo/contracts/handler"
-	core_hashset "github.com/fluffy-bunny/grpcdotnetgo/pkg/gods/sets/hashset"
 	di "github.com/fluffy-bunny/sarulabsdi"
 	"github.com/go-oauth2/oauth2/v4"
 	"github.com/go-oauth2/oauth2/v4/errors"
@@ -53,15 +52,6 @@ type (
 		signingKey *models.SigningKey
 	}
 )
-
-var supportedGrantTypes *core_hashset.StringSet
-
-func init() {
-	supportedGrantTypes = core_hashset.NewStringSet(
-		string(oauth2.ClientCredentials),
-		string(oauth2.Refreshing),
-		"urn:ietf:params:oauth:grant-type:token-exchange")
-}
 
 func assertImplementation() {
 	var _ contracts_handler.IHandler = (*service)(nil)
@@ -250,50 +240,11 @@ func (s *service) CheckGrantType(gt oauth2.GrantType) bool {
 func (s *service) GetAccessToken(ctx context.Context,
 	gt oauth2.GrantType, tgr *oauth2.TokenGenerateRequest, claims contracts_tokenhandlers.Claims) (oauth2.TokenInfo,
 	error) {
-	if allowed := s.CheckGrantType(gt); !allowed {
-		return nil, errors.ErrUnauthorizedClient
-	}
-
-	if fn := s.ClientAuthorizedHandler; fn != nil {
-		allowed, err := fn(tgr.ClientID, gt)
-		if err != nil {
-			return nil, err
-		} else if !allowed {
-			return nil, errors.ErrUnauthorizedClient
-		}
-	}
 
 	switch gt {
-
 	case oauth2.ClientCredentials:
-		if fn := s.ClientScopeHandler; fn != nil {
-			allowed, err := fn(tgr)
-			if err != nil {
-				return nil, err
-			} else if !allowed {
-				return nil, errors.ErrInvalidScope
-			}
-		}
 		return s.Manager.GenerateAccessToken(ctx, gt, tgr, claims)
 	case oauth2.Refreshing:
-		// check scope
-		if scopeFn := s.RefreshingScopeHandler; tgr.Scope != "" && scopeFn != nil {
-			rti, err := s.Manager.LoadRefreshToken(ctx, tgr.Refresh)
-			if err != nil {
-				if err == errors.ErrInvalidRefreshToken || err == errors.ErrExpiredRefreshToken {
-					return nil, errors.ErrInvalidGrant
-				}
-				return nil, err
-			}
-
-			allowed, err := scopeFn(tgr, rti.GetScope())
-			if err != nil {
-				return nil, err
-			} else if !allowed {
-				return nil, errors.ErrInvalidScope
-			}
-		}
-
 		if validationFn := s.RefreshingValidationHandler; validationFn != nil {
 			rti, err := s.Manager.LoadRefreshToken(ctx, tgr.Refresh)
 			if err != nil {
