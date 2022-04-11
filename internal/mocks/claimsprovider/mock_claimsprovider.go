@@ -5,9 +5,9 @@
 package claimsprovider
 
 import (
+	tokenhandlers "echo-starter/internal/contracts/tokenhandlers"
 	reflect "reflect"
 
-	claimsprincipal "github.com/fluffy-bunny/grpcdotnetgo/pkg/contracts/claimsprincipal"
 	gomock "github.com/golang/mock/gomock"
 )
 
@@ -35,10 +35,10 @@ func (m *MockIClaimsProvider) EXPECT() *MockIClaimsProviderMockRecorder {
 }
 
 // GetClaims mocks base method.
-func (m *MockIClaimsProvider) GetClaims(arg0, arg1 string) ([]*claimsprincipal.Claim, error) {
+func (m *MockIClaimsProvider) GetClaims(arg0, arg1 string) (tokenhandlers.Claims, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetClaims", arg0, arg1)
-	ret0, _ := ret[0].([]*claimsprincipal.Claim)
+	ret0, _ := ret[0].(tokenhandlers.Claims)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

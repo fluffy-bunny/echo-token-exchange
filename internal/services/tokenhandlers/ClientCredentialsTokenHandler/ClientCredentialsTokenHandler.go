@@ -16,7 +16,6 @@ import (
 type (
 	service struct {
 		APIResources contracts_apiresources.IAPIResources `inject:""`
-		contracts_tokenhandlers.CommonTokenHandlerAccessor
 	}
 	validated struct {
 		scopes []string

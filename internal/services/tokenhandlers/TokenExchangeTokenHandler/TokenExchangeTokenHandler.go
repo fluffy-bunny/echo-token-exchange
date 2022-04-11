@@ -1,25 +1,35 @@
 package TokenExchangeTokenHandler
 
+// https://datatracker.ietf.org/doc/html/draft-ietf-oauth-token-exchange-12#section-2.1
 import (
 	"context"
+	"errors"
 	"net/http"
 	"reflect"
 	"strings"
 
-	contracts_apiresources "echo-starter/internal/contracts/apiresources"
 	contracts_tokenhandlers "echo-starter/internal/contracts/tokenhandlers"
 
-	core_hashset "github.com/fluffy-bunny/grpcdotnetgo/pkg/gods/sets/hashset"
+	contracts_claimsprovider "echo-starter/internal/contracts/claimsprovider"
+
+	core_utils "github.com/fluffy-bunny/grpcdotnetgo/pkg/utils"
+
 	di "github.com/fluffy-bunny/sarulabsdi"
 )
 
 type (
 	service struct {
-		APIResources contracts_apiresources.IAPIResources `inject:""`
-		contracts_tokenhandlers.CommonTokenHandlerAccessor
+		ClaimsProvider contracts_claimsprovider.IClaimsProvider `inject:""`
 	}
 	validated struct {
-		scopes []string
+		scopes             []string
+		subjectToken       string
+		subjectTokenType   string
+		actorToken         string
+		actorTokenType     string
+		requestedTokenType string
+		audience           string
+		resource           string
 	}
 )
 
@@ -41,48 +51,25 @@ func (s *service) ValidationTokenRequest(r *http.Request) (result interface{}, e
 	validate := &validated{
 		scopes: strings.Split(scope, " "),
 	}
+	validate.subjectToken = r.FormValue("subject_token")
+	if core_utils.IsEmptyOrNil(validate.subjectToken) {
+		return nil, errors.New("subject_token is required")
+	}
+	validate.subjectTokenType = r.FormValue("subject_token_type")
+	if core_utils.IsEmptyOrNil(validate.subjectTokenType) {
+		return nil, errors.New("subject_token_type is required")
+	}
+	validate.actorToken = r.FormValue("actor_token")
+	validate.actorTokenType = r.FormValue("actor_token_type")
+	validate.requestedTokenType = r.FormValue("requested_token_type")
+	validate.audience = r.FormValue("audience")
+	validate.resource = r.FormValue("resource")
 
 	return validate, nil
 }
 func (s *service) ProcessTokenRequest(ctx context.Context, data interface{}) (contracts_tokenhandlers.Claims, error) {
 	claims := make(contracts_tokenhandlers.Claims)
-	validated := data.(*validated)
+	//validated := data.(*validated)
 
-	// the general processor will add all the standard claims.
-	// these AUD claims are added because of our apiresources model
-	audienceSet := core_hashset.NewStringSet()
-	apiResourceScopeSet, _ := s.APIResources.GetApiResourceScopes()
-	for _, sc := range validated.scopes {
-		if apiResourceScopeSet.Contains(sc) {
-			apiResource, _, _ := s.APIResources.GetApiResourceByScope(sc)
-			if apiResource != nil {
-				audienceSet.Add(apiResource.Name)
-			}
-		}
-	}
-	if validated != nil {
-		claims["aud"] = audienceSet.Values()
-		/*
-			// tests
-			claims["basic"] = true
-			claims["basic2"] = []string{"basic2"}
-			claims["basic3"] = []string{"2", "3"}
-
-			type basic struct {
-				Basic string `json:"basic"`
-				Count int    `json:"count"`
-			}
-			claims["basic4"] = []basic{
-				{
-					Basic: "basic4",
-					Count: 4,
-				},
-			}
-			claims["basic5"] = basic{
-				Basic: "basic5",
-				Count: 5,
-			}
-		*/
-	}
 	return claims, nil
 }
