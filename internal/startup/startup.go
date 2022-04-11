@@ -52,6 +52,8 @@ import (
 	services_go_oauth2_token_stores_redis "echo-starter/internal/services/go-oauth2/oauth2/token_stores/redis"
 	services_tokenhandlers "echo-starter/internal/services/tokenhandlers"
 	services_tokenhandlers_ClientCredentialsTokenHandler "echo-starter/internal/services/tokenhandlers/ClientCredentialsTokenHandler"
+	services_tokenhandlers_RefreshTokenHandler "echo-starter/internal/services/tokenhandlers/RefreshTokenHandler"
+	services_tokenhandlers_TokenExchangeTokenHandler "echo-starter/internal/services/tokenhandlers/TokenExchangeTokenHandler"
 
 	// OIDC
 	//----------------------------------------------------------------------------------------------------------------------
@@ -354,6 +356,9 @@ func (s *Startup) addAppHandlers(builder *di.Builder) {
 		panic("client store provider not supported")
 	}
 	services_tokenhandlers_ClientCredentialsTokenHandler.AddScopedIClientCredentialsTokenHandler(builder)
+	services_tokenhandlers_TokenExchangeTokenHandler.AddScopedITokenExchangeTokenHandler(builder)
+	services_tokenhandlers_RefreshTokenHandler.AddScopedIRefreshTokenHandler(builder)
+
 	services_tokenhandlers.AddScopedITokenHandlerAccessor(builder)
 
 	services_go_oauth2_keystore.AddSingletonISigningKeyStore(builder)
