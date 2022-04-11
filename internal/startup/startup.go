@@ -407,7 +407,7 @@ func (s *Startup) ConfigureServices(builder *di.Builder) error {
 	// add our app handlers
 	s.addAppHandlers(builder)
 
-	services_claimsprovider.AddSingletonIClaimsProviderMock(builder, s.ctrl)
+	services_claimsprovider.AddSingletonIClaimsProvider(builder)
 	return nil
 }
 func (s *Startup) Configure(e *echo.Echo, root di.Container) error {

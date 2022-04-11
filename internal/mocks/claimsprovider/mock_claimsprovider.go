@@ -8,6 +8,7 @@ import (
 	tokenhandlers "echo-starter/internal/contracts/tokenhandlers"
 	reflect "reflect"
 
+	hashset "github.com/fluffy-bunny/grpcdotnetgo/pkg/gods/sets/hashset"
 	gomock "github.com/golang/mock/gomock"
 )
 
@@ -50,10 +51,10 @@ func (mr *MockIClaimsProviderMockRecorder) GetClaims(arg0, arg1 interface{}) *go
 }
 
 // GetProfiles mocks base method.
-func (m *MockIClaimsProvider) GetProfiles(arg0 string) ([]string, error) {
+func (m *MockIClaimsProvider) GetProfiles(arg0 string) (*hashset.StringSet, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetProfiles", arg0)
-	ret0, _ := ret[0].([]string)
+	ret0, _ := ret[0].(*hashset.StringSet)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

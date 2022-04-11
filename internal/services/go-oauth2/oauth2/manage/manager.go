@@ -46,8 +46,16 @@ func (m *Manager) grantConfig(gt oauth2.GrantType) *oauth2_manage.Config {
 		return c
 	}
 	switch gt {
+	case oauth2.Refreshing:
+		return &oauth2_manage.Config{
+			RefreshTokenExp: time.Minute * 5, // TODO config this
+		}
 	case oauth2.ClientCredentials:
-		return oauth2_manage.DefaultClientTokenCfg
+		//		return oauth2_manage.DefaultClientTokenCfg
+		return &oauth2_manage.Config{
+			AccessTokenExp:    time.Minute * 30,
+			IsGenerateRefresh: true, // TODO: client_credentials should NOT have a refresh_token
+		}
 	}
 	return &oauth2_manage.Config{}
 }

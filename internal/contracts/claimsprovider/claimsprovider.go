@@ -2,6 +2,8 @@ package claimsprovider
 
 import (
 	contracts_tokenhandlers "echo-starter/internal/contracts/tokenhandlers"
+
+	core_hashset "github.com/fluffy-bunny/grpcdotnetgo/pkg/gods/sets/hashset"
 )
 
 //go:generate genny -pkg $GOPACKAGE -in=../../../genny/sarulabsdi/interface-types.go -out=gen-$GOFILE gen "InterfaceType=IClaimsProvider"
@@ -11,7 +13,7 @@ import (
 type (
 	// IClaimsProvider ...
 	IClaimsProvider interface {
-		GetProfiles(userID string) ([]string, error)
+		GetProfiles(userID string) (*core_hashset.StringSet, error)
 		GetClaims(userID string, profile string) (contracts_tokenhandlers.Claims, error)
 	}
 )
