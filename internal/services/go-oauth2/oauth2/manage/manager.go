@@ -5,6 +5,7 @@ import (
 	"time"
 
 	contracts_clients "echo-starter/internal/contracts/clients"
+	contracts_tokenhandlers "echo-starter/internal/contracts/tokenhandlers"
 	echo_models "echo-starter/internal/models"
 	echo_oauth2 "echo-starter/internal/services/go-oauth2/oauth2"
 
@@ -112,65 +113,8 @@ func (m *Manager) GetClient(ctx context.Context, clientID string) (cli *echo_mod
 	return
 }
 
-// GenerateAuthToken generate the authorization token(code)
-func (m *Manager) GenerateAuthToken(ctx context.Context, rt oauth2.ResponseType, tgr *oauth2.TokenGenerateRequest) (oauth2.TokenInfo, error) {
-	cli, err := m.GetClient(ctx, tgr.ClientID)
-	if err != nil {
-		return nil, err
-	}
-
-	ti := models.NewToken()
-	ti.SetClientID(tgr.ClientID)
-	ti.SetUserID(tgr.UserID)
-	ti.SetRedirectURI(tgr.RedirectURI)
-	ti.SetScope(tgr.Scope)
-
-	createAt := time.Now()
-	td := &echo_oauth2.GenerateBasic{
-		APIResources: m.apiResources,
-		Client:       cli,
-		UserID:       tgr.UserID,
-		CreateAt:     createAt,
-		TokenInfo:    ti,
-		Request:      tgr.Request,
-	}
-	switch rt {
-
-	case oauth2.Token:
-		// set access token expires
-		icfg := m.grantConfig(oauth2.Implicit)
-		aexp := icfg.AccessTokenExp
-		if exp := tgr.AccessTokenExp; exp > 0 {
-			aexp = exp
-		}
-		ti.SetAccessCreateAt(createAt)
-		ti.SetAccessExpiresIn(aexp)
-
-		if icfg.IsGenerateRefresh {
-			ti.SetRefreshCreateAt(createAt)
-			ti.SetRefreshExpiresIn(icfg.RefreshTokenExp)
-		}
-
-		tv, rv, err := m.accessGenerate.Token(ctx, td, icfg.IsGenerateRefresh)
-		if err != nil {
-			return nil, err
-		}
-		ti.SetAccess(tv)
-
-		if rv != "" {
-			ti.SetRefresh(rv)
-		}
-	}
-
-	err = m.tokenStore.Create(ctx, ti)
-	if err != nil {
-		return nil, err
-	}
-	return ti, nil
-}
-
 // GenerateAccessToken generate the access token
-func (m *Manager) GenerateAccessToken(ctx context.Context, gt oauth2.GrantType, tgr *oauth2.TokenGenerateRequest) (oauth2.TokenInfo, error) {
+func (m *Manager) GenerateAccessToken(ctx context.Context, gt oauth2.GrantType, tgr *oauth2.TokenGenerateRequest, claims contracts_tokenhandlers.Claims) (oauth2.TokenInfo, error) {
 	cli, err := m.GetClient(ctx, tgr.ClientID)
 	if err != nil {
 		return nil, err
@@ -206,7 +150,7 @@ func (m *Manager) GenerateAccessToken(ctx context.Context, gt oauth2.GrantType, 
 		Request:      tgr.Request,
 	}
 
-	av, rv, err := m.accessGenerate.Token(ctx, td, gcfg.IsGenerateRefresh)
+	av, rv, err := m.accessGenerate.Token(ctx, td, gcfg.IsGenerateRefresh, claims)
 	if err != nil {
 		return nil, err
 	}
@@ -268,7 +212,7 @@ func (m *Manager) RefreshAccessToken(ctx context.Context, tgr *oauth2.TokenGener
 		ti.SetScope(scope)
 	}
 
-	tv, rv, err := m.accessGenerate.Token(ctx, td, rcfg.IsGenerateRefresh)
+	tv, rv, err := m.accessGenerate.Token(ctx, td, rcfg.IsGenerateRefresh, nil)
 	if err != nil {
 		return nil, err
 	}

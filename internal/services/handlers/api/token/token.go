@@ -15,8 +15,9 @@ import (
 	"fmt"
 	"net/http"
 	"reflect"
-	"strings"
 	"time"
+
+	contracts_tokenhandlers "echo-starter/internal/contracts/tokenhandlers"
 
 	contracts_logger "github.com/fluffy-bunny/grpcdotnetgo/pkg/contracts/logger"
 	contracts_handler "github.com/fluffy-bunny/grpcdotnetgo/pkg/echo/contracts/handler"
@@ -31,13 +32,15 @@ import (
 
 type (
 	service struct {
-		Config                      *contracts_config.Config                    `inject:""`
-		Logger                      contracts_logger.ILogger                    `inject:""`
-		TokenStore                  contracts_go_oauth2_oauth2.ITokenStore      `inject:""`
-		ClientStore                 contracts_clients.IClientStore              `inject:""`
-		APIResources                contracts_apiresources.IAPIResources        `inject:""`
-		SigningKeyStore             contracts_go_oauth2_oauth2.ISigningKeyStore `inject:""`
-		ClientRequest               contracts_clients.IClientRequest            `inject:""`
+		Config                      *contracts_config.Config                      `inject:""`
+		Logger                      contracts_logger.ILogger                      `inject:""`
+		TokenStore                  contracts_go_oauth2_oauth2.ITokenStore        `inject:""`
+		ClientStore                 contracts_clients.IClientStore                `inject:""`
+		APIResources                contracts_apiresources.IAPIResources          `inject:""`
+		SigningKeyStore             contracts_go_oauth2_oauth2.ISigningKeyStore   `inject:""`
+		ClientRequest               contracts_clients.IClientRequest              `inject:""`
+		TokenHandlerAccessor        contracts_tokenhandlers.ITokenHandlerAccessor `inject:""`
+		TokenHandler                contracts_tokenhandlers.ITokenHandler
 		InternalErrorHandler        oauth2_server.InternalErrorHandler
 		ResponseErrorHandler        oauth2_server.ResponseErrorHandler
 		ClientAuthorizedHandler     oauth2_server.ClientAuthorizedHandler
@@ -76,7 +79,7 @@ func AddScopedIHandler(builder *di.Builder) {
 		wellknown.OAuth2TokenPath)
 }
 func (s *service) Ctor() {
-
+	s.TokenHandler = s.TokenHandlerAccessor.GetTokenHandler()
 	s.Manager = manage.NewDefaultManager()
 	// token memory store
 	s.Manager.MustTokenStorage(s.TokenStore, nil)
@@ -114,13 +117,20 @@ func getMyRootPath(c echo.Context) string {
 
 func (s *service) processRequest(c echo.Context) error {
 	ctx := c.Request().Context()
+	r := c.Request()
 	w := c.Response()
-	gt, tgr, err := s.ValidationTokenRequest(c.Request())
+	validatedResult, err := s.TokenHandler.ValidationTokenRequest(r)
 	if err != nil {
 		return s.tokenError(c.Response(), err)
 	}
+	claims, err := s.TokenHandler.ProcessTokenRequest(ctx, validatedResult)
+	if err != nil {
+		return s.tokenError(c.Response(), err)
+	}
+	fmt.Println("claims", claims)
+	gt, tgr, err := s.ValidationTokenRequest(c.Request())
 
-	ti, err := s.GetAccessToken(ctx, gt, tgr)
+	ti, err := s.GetAccessToken(ctx, gt, tgr, claims)
 	if err != nil {
 		return s.tokenError(w, err)
 	}
@@ -129,11 +139,8 @@ func (s *service) processRequest(c echo.Context) error {
 
 }
 func (s *service) ValidationTokenRequest(r *http.Request) (oauth2.GrantType, *oauth2.TokenGenerateRequest, error) {
-
+	// grant_type and scopes have been validated in the middleware
 	gt := oauth2.GrantType(r.FormValue("grant_type"))
-	if !supportedGrantTypes.Contains(string(gt)) {
-		return "", nil, errors.ErrUnsupportedGrantType
-	}
 	client := s.ClientRequest.GetClient()
 
 	tgr := &oauth2.TokenGenerateRequest{
@@ -155,14 +162,6 @@ func (s *service) ValidationTokenRequest(r *http.Request) (oauth2.GrantType, *oa
 		return "", nil, errors.ErrUnsupportedGrantType
 	}
 
-	requestedScopes := strings.Split(tgr.Scope, " ")
-	requestedScopeSet := core_hashset.NewStringSet(requestedScopes...)
-	if !client.AllowedScopesSet.Contains(requestedScopeSet.Values()...) {
-		return "", nil, errors.ErrInvalidScope
-	}
-	if !client.AllowedGrantTypesSet.Contains(string(gt)) {
-		return "", nil, errors.ErrInvalidGrant
-	}
 	return gt, tgr, nil
 }
 
@@ -248,7 +247,8 @@ func (s *service) CheckGrantType(gt oauth2.GrantType) bool {
 }
 
 // GetAccessToken access token
-func (s *service) GetAccessToken(ctx context.Context, gt oauth2.GrantType, tgr *oauth2.TokenGenerateRequest) (oauth2.TokenInfo,
+func (s *service) GetAccessToken(ctx context.Context,
+	gt oauth2.GrantType, tgr *oauth2.TokenGenerateRequest, claims contracts_tokenhandlers.Claims) (oauth2.TokenInfo,
 	error) {
 	if allowed := s.CheckGrantType(gt); !allowed {
 		return nil, errors.ErrUnauthorizedClient
@@ -274,7 +274,7 @@ func (s *service) GetAccessToken(ctx context.Context, gt oauth2.GrantType, tgr *
 				return nil, errors.ErrInvalidScope
 			}
 		}
-		return s.Manager.GenerateAccessToken(ctx, gt, tgr)
+		return s.Manager.GenerateAccessToken(ctx, gt, tgr, claims)
 	case oauth2.Refreshing:
 		// check scope
 		if scopeFn := s.RefreshingScopeHandler; tgr.Scope != "" && scopeFn != nil {

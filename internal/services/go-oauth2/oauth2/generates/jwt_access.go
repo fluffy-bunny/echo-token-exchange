@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	contracts_tokenhandlers "echo-starter/internal/contracts/tokenhandlers"
 	echo_oauth2 "echo-starter/internal/services/go-oauth2/oauth2"
 
 	core_hashset "github.com/fluffy-bunny/grpcdotnetgo/pkg/gods/sets/hashset"
@@ -73,7 +74,8 @@ func (a *JWTAccessGenerate) SetIssuer(issuer string) {
 }
 
 // Token based on the UUID generated token
-func (a *JWTAccessGenerate) Token(ctx context.Context, data *echo_oauth2.GenerateBasic, isGenRefresh bool) (string, string, error) {
+func (a *JWTAccessGenerate) Token(ctx context.Context, data *echo_oauth2.GenerateBasic, isGenRefresh bool,
+	extraClaims contracts_tokenhandlers.Claims) (string, string, error) {
 	clientID := data.Client.ClientID
 	scopes := strings.Split(data.TokenInfo.GetScope(), " ")
 	var scopeInterface interface{}
@@ -83,22 +85,27 @@ func (a *JWTAccessGenerate) Token(ctx context.Context, data *echo_oauth2.Generat
 		scopeInterface = scopes[0]
 	}
 
+	// special case, aud is allowed
 	audienceSet := core_hashset.NewStringSet(clientID)
-	apiResourceScopeSet, _ := data.APIResources.GetApiResourceScopes()
-	for _, sc := range scopes {
-		if apiResourceScopeSet.Contains(sc) {
-			apiResource, _, _ := data.APIResources.GetApiResourceByScope(sc)
-			if apiResource != nil {
-				audienceSet.Add(apiResource.Name)
-			}
+	if !core_utils.IsEmptyOrNil(extraClaims) {
+		extraAudInterface := extraClaims["aud"]
+
+		switch extraAudInterface.(type) {
+		case string:
+			audienceSet.Add(extraAudInterface.(string))
+		case []string:
+			audienceSet.Add(extraAudInterface.([]string)...)
 		}
 	}
-
-	var audInterface interface{}
-	if audienceSet.Size() > 1 {
-		audInterface = audienceSet.Values()
-	} else if audienceSet.Size() == 1 {
-		audInterface = audienceSet.Values()[0]
+	// sanitize the extra claims.
+	var toBeRemoved []string
+	for key := range extraClaims {
+		if notAllowed.Contains(key) {
+			toBeRemoved = append(toBeRemoved, key)
+		}
+	}
+	for _, key := range toBeRemoved {
+		delete(extraClaims, key)
 	}
 
 	claims := &JWTAccessClaims{
@@ -117,7 +124,12 @@ func (a *JWTAccessGenerate) Token(ctx context.Context, data *echo_oauth2.Generat
 	firstClaims, _ := json.Marshal(claims)
 	json.Unmarshal(firstClaims, &mClaims)
 
-	mClaims["aud"] = audInterface
+	mClaims["aud"] = audienceSet.Values()
+	// add in all the extraClaims
+	for key, value := range extraClaims {
+		mClaims[key] = value
+	}
+
 	var arbitrary map[string][]string = make(map[string][]string)
 	if !core_utils.IsEmptyOrNil(data.Client.Claims) {
 		for _, v := range data.Client.Claims {
