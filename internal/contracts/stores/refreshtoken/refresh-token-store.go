@@ -2,6 +2,7 @@ package refreshtoken
 
 import (
 	"context"
+	"time"
 )
 
 //go:generate genny -pkg $GOPACKAGE -in=../../../../genny/sarulabsdi/interface-types.go -out=gen-$GOFILE gen "InterfaceType=IRefreshTokenStore"
@@ -15,7 +16,8 @@ type (
 		Scopes             []string          `json:"scopes"`
 		GrantType          string            `json:"grant_type"`
 		Params             map[string]string `json:"params"`
-		AbsoluteExpiration int64             `json:"absolute_expiration"`
+		Expiration         time.Time         `json:"expiration"`
+		AbsoluteExpiration time.Time         `json:"absolute_expiration"`
 	}
 	IRefreshTokenStore interface {
 		StoreRefreshToken(ctx context.Context, info *RefreshTokenInfo) (handle string, err error)

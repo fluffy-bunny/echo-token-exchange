@@ -2,6 +2,7 @@ package manage
 
 import (
 	"context"
+	"strings"
 	"time"
 
 	contracts_clients "echo-starter/internal/contracts/clients"
@@ -10,6 +11,7 @@ import (
 	echo_oauth2 "echo-starter/internal/services/go-oauth2/oauth2"
 
 	contracts_apiresources "echo-starter/internal/contracts/apiresources"
+	contracts_stores_refreshtoken "echo-starter/internal/contracts/stores/refreshtoken"
 
 	"github.com/go-oauth2/oauth2/v4"
 	"github.com/go-oauth2/oauth2/v4/errors"
@@ -32,12 +34,13 @@ func NewManager() *Manager {
 
 // Manager provide authorization management
 type Manager struct {
-	gtcfg          map[oauth2.GrantType]*oauth2_manage.Config
-	rcfg           *oauth2_manage.RefreshingConfig
-	accessGenerate echo_oauth2.AccessGenerate
-	tokenStore     oauth2.TokenStore
-	clientStore    contracts_clients.IClientStore
-	apiResources   contracts_apiresources.IAPIResources
+	gtcfg             map[oauth2.GrantType]*oauth2_manage.Config
+	rcfg              *oauth2_manage.RefreshingConfig
+	accessGenerate    echo_oauth2.AccessGenerate
+	tokenStore        oauth2.TokenStore
+	clientStore       contracts_clients.IClientStore
+	apiResources      contracts_apiresources.IAPIResources
+	RefreshTokenStore contracts_stores_refreshtoken.IRefreshTokenStore
 }
 
 // get grant type config
@@ -88,12 +91,20 @@ func (m *Manager) MustClientStorage(stor contracts_clients.IClientStore, err err
 	m.clientStore = stor
 }
 
-// MustClientStorage mandatory mapping the client store interface
+// MustApiResources mandatory mapping the client store interface
 func (m *Manager) MustApiResources(stor contracts_apiresources.IAPIResources, err error) {
 	if err != nil {
 		panic(err.Error())
 	}
 	m.apiResources = stor
+}
+
+// MustRefreshTokenStore mandatory mapping the client store interface
+func (m *Manager) MustRefreshTokenStore(stor contracts_stores_refreshtoken.IRefreshTokenStore, err error) {
+	if err != nil {
+		panic(err.Error())
+	}
+	m.RefreshTokenStore = stor
 }
 
 // MapTokenStorage mapping the token store interface
@@ -164,6 +175,26 @@ func (m *Manager) GenerateAccessToken(ctx context.Context, gt oauth2.GrantType, 
 	}
 	ti.SetAccess(av)
 
+	if gcfg.IsGenerateRefresh {
+		var absoluteExpiration = time.Now().Add(time.Second * time.Duration(cli.AbsoluteRefreshTokenLifetime))
+		if cli.AbsoluteRefreshTokenLifetime <= 0 {
+			absoluteExpiration = time.Now().Add(time.Hour * 24 * 365 * 10) // 10 years
+		}
+		var expiration = time.Now().Add(time.Second * time.Duration(cli.RefreshTokenExpiration))
+		handle, err := m.RefreshTokenStore.StoreRefreshToken(ctx,
+			&contracts_stores_refreshtoken.RefreshTokenInfo{
+				ClientID:           tgr.ClientID,
+				Subject:            tgr.UserID,
+				Scopes:             strings.Split(tgr.Scope, " "),
+				GrantType:          "todo",
+				Expiration:         expiration,
+				AbsoluteExpiration: absoluteExpiration,
+			})
+		if err != nil {
+			return nil, err
+		}
+		rv = handle
+	}
 	if rv != "" {
 		ti.SetRefresh(rv)
 	}

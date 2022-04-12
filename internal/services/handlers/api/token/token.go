@@ -19,6 +19,8 @@ import (
 
 	contracts_tokenhandlers "echo-starter/internal/contracts/tokenhandlers"
 
+	contracts_stores_refreshtoken "echo-starter/internal/contracts/stores/refreshtoken"
+
 	contracts_logger "github.com/fluffy-bunny/grpcdotnetgo/pkg/contracts/logger"
 	contracts_handler "github.com/fluffy-bunny/grpcdotnetgo/pkg/echo/contracts/handler"
 	di "github.com/fluffy-bunny/sarulabsdi"
@@ -31,14 +33,15 @@ import (
 
 type (
 	service struct {
-		Config                      *contracts_config.Config                      `inject:""`
-		Logger                      contracts_logger.ILogger                      `inject:""`
-		TokenStore                  contracts_go_oauth2_oauth2.ITokenStore        `inject:""`
-		ClientStore                 contracts_clients.IClientStore                `inject:""`
-		APIResources                contracts_apiresources.IAPIResources          `inject:""`
-		SigningKeyStore             contracts_go_oauth2_oauth2.ISigningKeyStore   `inject:""`
-		ClientRequest               contracts_clients.IClientRequest              `inject:""`
-		TokenHandlerAccessor        contracts_tokenhandlers.ITokenHandlerAccessor `inject:""`
+		Config                      *contracts_config.Config                         `inject:""`
+		Logger                      contracts_logger.ILogger                         `inject:""`
+		TokenStore                  contracts_go_oauth2_oauth2.ITokenStore           `inject:""`
+		ClientStore                 contracts_clients.IClientStore                   `inject:""`
+		APIResources                contracts_apiresources.IAPIResources             `inject:""`
+		SigningKeyStore             contracts_go_oauth2_oauth2.ISigningKeyStore      `inject:""`
+		ClientRequest               contracts_clients.IClientRequest                 `inject:""`
+		TokenHandlerAccessor        contracts_tokenhandlers.ITokenHandlerAccessor    `inject:""`
+		RefreshTokenStore           contracts_stores_refreshtoken.IRefreshTokenStore `inject:""`
 		TokenHandler                contracts_tokenhandlers.ITokenHandler
 		InternalErrorHandler        oauth2_server.InternalErrorHandler
 		ResponseErrorHandler        oauth2_server.ResponseErrorHandler
@@ -75,6 +78,7 @@ func (s *service) Ctor() {
 	s.Manager.MustTokenStorage(s.TokenStore, nil)
 	s.Manager.MustClientStorage(s.ClientStore, nil)
 	s.Manager.MustApiResources(s.APIResources, nil)
+	s.Manager.MustRefreshTokenStore(s.RefreshTokenStore, nil)
 	signingKey, err := s.SigningKeyStore.GetSigningKey()
 	if err != nil {
 		panic(err)
