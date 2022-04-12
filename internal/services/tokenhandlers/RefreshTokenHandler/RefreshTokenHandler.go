@@ -2,20 +2,27 @@ package RefreshTokenHandler
 
 import (
 	"context"
+
+	"github.com/go-oauth2/oauth2/v4/errors"
+
 	"net/http"
 	"reflect"
-	"strings"
 
-	contracts_apiresources "echo-starter/internal/contracts/apiresources"
+	contracts_stores_refreshtoken "echo-starter/internal/contracts/stores/refreshtoken"
 	contracts_tokenhandlers "echo-starter/internal/contracts/tokenhandlers"
+	"echo-starter/internal/utils"
+	"echo-starter/internal/wellknown"
 
-	core_hashset "github.com/fluffy-bunny/grpcdotnetgo/pkg/gods/sets/hashset"
+	core_utils "github.com/fluffy-bunny/grpcdotnetgo/pkg/utils"
+
 	di "github.com/fluffy-bunny/sarulabsdi"
 )
 
 type (
 	service struct {
-		APIResources contracts_apiresources.IAPIResources `inject:""`
+		TokenExchangeTokenHandler     contracts_tokenhandlers.ITokenExchangeTokenHandler     `inject:""`
+		ClientCredentialsTokenHandler contracts_tokenhandlers.IClientCredentialsTokenHandler `inject:""`
+		RefreshTokenStore             contracts_stores_refreshtoken.IRefreshTokenStore       `inject:""`
 	}
 	validated struct {
 		scopes []string
@@ -33,55 +40,51 @@ func AddScopedIRefreshTokenHandler(builder *di.Builder) {
 	contracts_tokenhandlers.AddScopedIRefreshTokenHandler(builder, reflectType)
 }
 
-func (s *service) ValidationTokenRequest(r *http.Request) (result interface{}, err error) {
-
-	scope := strings.TrimLeft(r.FormValue("scope"), " ")
-	scope = strings.TrimRight(scope, " ")
-	validate := &validated{
-		scopes: strings.Split(scope, " "),
+func (s *service) ValidationTokenRequest(r *http.Request) (result *contracts_tokenhandlers.ValidatedTokenRequestResult, err error) {
+	validated := &contracts_tokenhandlers.ValidatedTokenRequestResult{
+		GrantType: r.FormValue("grant_type"),
+		Params:    make(map[string]string),
 	}
-
-	return validate, nil
-}
-func (s *service) ProcessTokenRequest(ctx context.Context, data interface{}) (contracts_tokenhandlers.Claims, error) {
-	claims := make(contracts_tokenhandlers.Claims)
-	validated := data.(*validated)
-
-	// the general processor will add all the standard claims.
-	// these AUD claims are added because of our apiresources model
-	audienceSet := core_hashset.NewStringSet()
-	apiResourceScopeSet, _ := s.APIResources.GetApiResourceScopes()
-	for _, sc := range validated.scopes {
-		if apiResourceScopeSet.Contains(sc) {
-			apiResource, _, _ := s.APIResources.GetApiResourceByScope(sc)
-			if apiResource != nil {
-				audienceSet.Add(apiResource.Name)
-			}
+	var safeAddParam = func(key string) {
+		val := utils.TrimLeftAndRight(r.FormValue(key))
+		if !core_utils.IsEmptyOrNil(val) {
+			validated.Params[key] = val
 		}
 	}
-	if validated != nil {
-		claims["aud"] = audienceSet.Values()
-		/*
-			// tests
-			claims["basic"] = true
-			claims["basic2"] = []string{"basic2"}
-			claims["basic3"] = []string{"2", "3"}
+	safeAddParam("scope")
+	safeAddParam("refresh_token")
 
-			type basic struct {
-				Basic string `json:"basic"`
-				Count int    `json:"count"`
-			}
-			claims["basic4"] = []basic{
-				{
-					Basic: "basic4",
-					Count: 4,
-				},
-			}
-			claims["basic5"] = basic{
-				Basic: "basic5",
-				Count: 5,
-			}
-		*/
+	return validated, nil
+}
+func (s *service) ProcessTokenRequest(ctx context.Context, result *contracts_tokenhandlers.ValidatedTokenRequestResult) (contracts_tokenhandlers.Claims, error) {
+	rt, err := s.RefreshTokenStore.GetRefreshToken(ctx, result.Params["refresh_token"])
+	if err != nil {
+		return nil, errors.ErrInvalidRequest
 	}
-	return claims, nil
+	if rt.ClientID != result.ClientID {
+		return nil, errors.New("clientID mismatch")
+	}
+	// if no scope is passed then we use the scope from the last run
+	scope, ok := result.Params["scope"]
+
+	result.Params = rt.Params
+	if ok {
+		// override the sone passed into the refresh_token request
+		result.Params["scope"] = scope
+	}
+	newValidatedResult := &contracts_tokenhandlers.ValidatedTokenRequestResult{
+		GrantType: rt.GrantType,
+		ClientID:  rt.ClientID,
+		Params:    result.Params,
+	}
+	switch rt.GrantType {
+	case wellknown.OAuth2GrantType_ClientCredentials:
+		return s.ClientCredentialsTokenHandler.ProcessTokenRequest(ctx, newValidatedResult)
+	case wellknown.OAuth2GrantType_TokenExchange:
+		return s.TokenExchangeTokenHandler.ProcessTokenRequest(ctx, newValidatedResult)
+
+	default:
+		return nil, errors.ErrUnsupportedGrantType
+	}
+
 }

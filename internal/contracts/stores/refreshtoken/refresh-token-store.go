@@ -13,7 +13,7 @@ type (
 	RefreshTokenInfo struct {
 		ClientID           string            `json:"client_id"`
 		Subject            string            `json:"subject"`
-		Scopes             []string          `json:"scopes"`
+		Scope              string            `json:"scope"`
 		GrantType          string            `json:"grant_type"`
 		Params             map[string]string `json:"params"`
 		Expiration         time.Time         `json:"expiration"`

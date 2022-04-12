@@ -2,7 +2,6 @@ package generates
 
 import (
 	"context"
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"reflect"
@@ -17,7 +16,6 @@ import (
 
 	"github.com/go-oauth2/oauth2/v4/errors"
 	"github.com/golang-jwt/jwt"
-	"github.com/google/uuid"
 	"github.com/rs/xid"
 )
 
@@ -95,8 +93,8 @@ func SliceOrArrayLength(v interface{}) int {
 }
 
 // Token based on the UUID generated token
-func (a *JWTAccessGenerate) Token(ctx context.Context, data *echo_oauth2.GenerateBasic, isGenRefresh bool,
-	extraClaims contracts_tokenhandlers.Claims) (string, string, error) {
+func (a *JWTAccessGenerate) Token(ctx context.Context, data *echo_oauth2.GenerateBasic,
+	extraClaims contracts_tokenhandlers.Claims) (string, error) {
 	clientID := data.Client.ClientID
 	scopes := strings.Split(data.TokenInfo.GetScope(), " ")
 	var scopeInterface interface{}
@@ -200,34 +198,27 @@ func (a *JWTAccessGenerate) Token(ctx context.Context, data *echo_oauth2.Generat
 	if a.isEs() {
 		v, err := jwt.ParseECPrivateKeyFromPEM(a.SignedKey)
 		if err != nil {
-			return "", "", err
+			return "", err
 		}
 		key = v
 	} else if a.isRsOrPS() {
 		v, err := jwt.ParseRSAPrivateKeyFromPEM(a.SignedKey)
 		if err != nil {
-			return "", "", err
+			return "", err
 		}
 		key = v
 	} else if a.isHs() {
 		key = a.SignedKey
 	} else {
-		return "", "", errors.New("unsupported sign method")
+		return "", errors.New("unsupported sign method")
 	}
 
 	access, err := token.SignedString(key)
 	if err != nil {
-		return "", "", err
-	}
-	refresh := ""
-
-	if isGenRefresh {
-		t := uuid.NewSHA1(uuid.Must(uuid.NewRandom()), []byte(access)).String()
-		refresh = base64.URLEncoding.EncodeToString([]byte(t))
-		refresh = strings.ToUpper(strings.TrimRight(refresh, "="))
+		return "", err
 	}
 
-	return access, refresh, nil
+	return access, nil
 }
 
 func (a *JWTAccessGenerate) isEs() bool {

@@ -29,6 +29,6 @@ type (
 
 	// AccessGenerate generate the access and refresh tokens interface
 	AccessGenerate interface {
-		Token(ctx context.Context, data *GenerateBasic, isGenRefresh bool, claims contracts_tokenhandlers.Claims) (access, refresh string, err error)
+		Token(ctx context.Context, data *GenerateBasic, claims contracts_tokenhandlers.Claims) (access string, err error)
 	}
 )

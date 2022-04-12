@@ -23,6 +23,7 @@ type (
 
 func (s *service) Ctor() {
 	s.lock = &sync.RWMutex{}
+	s.tokens = make(map[string]*contracts_stores_refreshtoken.RefreshTokenInfo)
 }
 func assertImplementation() {
 	var _ contracts_stores_refreshtoken.IRefreshTokenStore = (*service)(nil)

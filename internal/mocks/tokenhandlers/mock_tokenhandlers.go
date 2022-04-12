@@ -37,7 +37,7 @@ func (m *MockITokenHandler) EXPECT() *MockITokenHandlerMockRecorder {
 }
 
 // ProcessTokenRequest mocks base method.
-func (m *MockITokenHandler) ProcessTokenRequest(arg0 context.Context, arg1 interface{}) (tokenhandlers.Claims, error) {
+func (m *MockITokenHandler) ProcessTokenRequest(arg0 context.Context, arg1 *tokenhandlers.ValidatedTokenRequestResult) (tokenhandlers.Claims, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ProcessTokenRequest", arg0, arg1)
 	ret0, _ := ret[0].(tokenhandlers.Claims)
@@ -52,10 +52,10 @@ func (mr *MockITokenHandlerMockRecorder) ProcessTokenRequest(arg0, arg1 interfac
 }
 
 // ValidationTokenRequest mocks base method.
-func (m *MockITokenHandler) ValidationTokenRequest(arg0 *http.Request) (interface{}, error) {
+func (m *MockITokenHandler) ValidationTokenRequest(arg0 *http.Request) (*tokenhandlers.ValidatedTokenRequestResult, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ValidationTokenRequest", arg0)
-	ret0, _ := ret[0].(interface{})
+	ret0, _ := ret[0].(*tokenhandlers.ValidatedTokenRequestResult)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -90,7 +90,7 @@ func (m *MockIClientCredentialsTokenHandler) EXPECT() *MockIClientCredentialsTok
 }
 
 // ProcessTokenRequest mocks base method.
-func (m *MockIClientCredentialsTokenHandler) ProcessTokenRequest(arg0 context.Context, arg1 interface{}) (tokenhandlers.Claims, error) {
+func (m *MockIClientCredentialsTokenHandler) ProcessTokenRequest(arg0 context.Context, arg1 *tokenhandlers.ValidatedTokenRequestResult) (tokenhandlers.Claims, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ProcessTokenRequest", arg0, arg1)
 	ret0, _ := ret[0].(tokenhandlers.Claims)
@@ -105,10 +105,10 @@ func (mr *MockIClientCredentialsTokenHandlerMockRecorder) ProcessTokenRequest(ar
 }
 
 // ValidationTokenRequest mocks base method.
-func (m *MockIClientCredentialsTokenHandler) ValidationTokenRequest(arg0 *http.Request) (interface{}, error) {
+func (m *MockIClientCredentialsTokenHandler) ValidationTokenRequest(arg0 *http.Request) (*tokenhandlers.ValidatedTokenRequestResult, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ValidationTokenRequest", arg0)
-	ret0, _ := ret[0].(interface{})
+	ret0, _ := ret[0].(*tokenhandlers.ValidatedTokenRequestResult)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -143,7 +143,7 @@ func (m *MockIRefreshTokenHandler) EXPECT() *MockIRefreshTokenHandlerMockRecorde
 }
 
 // ProcessTokenRequest mocks base method.
-func (m *MockIRefreshTokenHandler) ProcessTokenRequest(arg0 context.Context, arg1 interface{}) (tokenhandlers.Claims, error) {
+func (m *MockIRefreshTokenHandler) ProcessTokenRequest(arg0 context.Context, arg1 *tokenhandlers.ValidatedTokenRequestResult) (tokenhandlers.Claims, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ProcessTokenRequest", arg0, arg1)
 	ret0, _ := ret[0].(tokenhandlers.Claims)
@@ -158,10 +158,10 @@ func (mr *MockIRefreshTokenHandlerMockRecorder) ProcessTokenRequest(arg0, arg1 i
 }
 
 // ValidationTokenRequest mocks base method.
-func (m *MockIRefreshTokenHandler) ValidationTokenRequest(arg0 *http.Request) (interface{}, error) {
+func (m *MockIRefreshTokenHandler) ValidationTokenRequest(arg0 *http.Request) (*tokenhandlers.ValidatedTokenRequestResult, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ValidationTokenRequest", arg0)
-	ret0, _ := ret[0].(interface{})
+	ret0, _ := ret[0].(*tokenhandlers.ValidatedTokenRequestResult)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -196,7 +196,7 @@ func (m *MockITokenExchangeTokenHandler) EXPECT() *MockITokenExchangeTokenHandle
 }
 
 // ProcessTokenRequest mocks base method.
-func (m *MockITokenExchangeTokenHandler) ProcessTokenRequest(arg0 context.Context, arg1 interface{}) (tokenhandlers.Claims, error) {
+func (m *MockITokenExchangeTokenHandler) ProcessTokenRequest(arg0 context.Context, arg1 *tokenhandlers.ValidatedTokenRequestResult) (tokenhandlers.Claims, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ProcessTokenRequest", arg0, arg1)
 	ret0, _ := ret[0].(tokenhandlers.Claims)
@@ -211,10 +211,10 @@ func (mr *MockITokenExchangeTokenHandlerMockRecorder) ProcessTokenRequest(arg0, 
 }
 
 // ValidationTokenRequest mocks base method.
-func (m *MockITokenExchangeTokenHandler) ValidationTokenRequest(arg0 *http.Request) (interface{}, error) {
+func (m *MockITokenExchangeTokenHandler) ValidationTokenRequest(arg0 *http.Request) (*tokenhandlers.ValidatedTokenRequestResult, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ValidationTokenRequest", arg0)
-	ret0, _ := ret[0].(interface{})
+	ret0, _ := ret[0].(*tokenhandlers.ValidatedTokenRequestResult)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

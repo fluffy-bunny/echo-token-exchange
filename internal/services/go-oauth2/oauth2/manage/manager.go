@@ -2,7 +2,6 @@ package manage
 
 import (
 	"context"
-	"strings"
 	"time"
 
 	contracts_clients "echo-starter/internal/contracts/clients"
@@ -133,7 +132,9 @@ func (m *Manager) GetClient(ctx context.Context, clientID string) (cli *echo_mod
 }
 
 // GenerateAccessToken generate the access token
-func (m *Manager) GenerateAccessToken(ctx context.Context, gt oauth2.GrantType, tgr *oauth2.TokenGenerateRequest, claims contracts_tokenhandlers.Claims) (oauth2.TokenInfo, error) {
+func (m *Manager) GenerateAccessToken(ctx context.Context,
+	validatedResult *contracts_tokenhandlers.ValidatedTokenRequestResult,
+	gt oauth2.GrantType, tgr *oauth2.TokenGenerateRequest, claims contracts_tokenhandlers.Claims) (oauth2.TokenInfo, error) {
 	cli, err := m.GetClient(ctx, tgr.ClientID)
 	if err != nil {
 		return nil, err
@@ -143,7 +144,8 @@ func (m *Manager) GenerateAccessToken(ctx context.Context, gt oauth2.GrantType, 
 	ti.SetClientID(tgr.ClientID)
 	ti.SetUserID(tgr.UserID)
 	ti.SetRedirectURI(tgr.RedirectURI)
-	ti.SetScope(tgr.Scope)
+	scope, _ := validatedResult.Params["scope"]
+	ti.SetScope(scope)
 
 	createAt := time.Now()
 	ti.SetAccessCreateAt(createAt)
@@ -169,7 +171,7 @@ func (m *Manager) GenerateAccessToken(ctx context.Context, gt oauth2.GrantType, 
 		Request:      tgr.Request,
 	}
 
-	av, rv, err := m.accessGenerate.Token(ctx, td, gcfg.IsGenerateRefresh, claims)
+	av, err := m.accessGenerate.Token(ctx, td, claims)
 	if err != nil {
 		return nil, err
 	}
@@ -185,18 +187,16 @@ func (m *Manager) GenerateAccessToken(ctx context.Context, gt oauth2.GrantType, 
 			&contracts_stores_refreshtoken.RefreshTokenInfo{
 				ClientID:           tgr.ClientID,
 				Subject:            tgr.UserID,
-				Scopes:             strings.Split(tgr.Scope, " "),
-				GrantType:          "todo",
+				Scope:              tgr.Scope,
+				GrantType:          validatedResult.GrantType,
 				Expiration:         expiration,
 				AbsoluteExpiration: absoluteExpiration,
+				Params:             validatedResult.Params,
 			})
 		if err != nil {
 			return nil, err
 		}
-		rv = handle
-	}
-	if rv != "" {
-		ti.SetRefresh(rv)
+		ti.SetRefresh(handle)
 	}
 
 	err = m.tokenStore.Create(ctx, ti)
@@ -251,12 +251,13 @@ func (m *Manager) RefreshAccessToken(ctx context.Context, tgr *oauth2.TokenGener
 		ti.SetScope(scope)
 	}
 
-	tv, rv, err := m.accessGenerate.Token(ctx, td, rcfg.IsGenerateRefresh, nil)
+	tv, err := m.accessGenerate.Token(ctx, td, nil)
 	if err != nil {
 		return nil, err
 	}
 
 	ti.SetAccess(tv)
+	rv := "" // TODO: FIX
 	if rv != "" {
 		ti.SetRefresh(rv)
 	}

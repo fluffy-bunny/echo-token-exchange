@@ -10,10 +10,15 @@ import (
 //go:generate mockgen -package=$GOPACKAGE -destination=../../mocks/$GOPACKAGE/mock_$GOFILE   echo-starter/internal/contracts/$GOPACKAGE ITokenHandler,IClientCredentialsTokenHandler,IRefreshTokenHandler,ITokenExchangeTokenHandler,ITokenHandlerAccessor,IInternalTokenHandlerAccessor
 
 type (
-	Claims        map[string]interface{}
+	Claims                      map[string]interface{}
+	ValidatedTokenRequestResult struct {
+		ClientID  string `json:"client_id"`
+		GrantType string `json:"grant_type"`
+		Params    map[string]string
+	}
 	ITokenHandler interface {
-		ValidationTokenRequest(r *http.Request) (result interface{}, err error)
-		ProcessTokenRequest(ctx context.Context, data interface{}) (Claims, error)
+		ValidationTokenRequest(r *http.Request) (result *ValidatedTokenRequestResult, err error)
+		ProcessTokenRequest(ctx context.Context, result *ValidatedTokenRequestResult) (Claims, error)
 	}
 
 	IClientCredentialsTokenHandler interface {

@@ -32,7 +32,7 @@
 			"type": "scope",
 			"value": "rock-climber"
 		}],
-		"allowedScopes": ["invoices","users.read"],
+		"allowedScopes": ["offline_access","invoices","users.read"],
 		"allowedGrantTypes": [
 			"client_credentials",
 			"refresh_token",
@@ -76,7 +76,7 @@
 			"type": "scope",
 			"value": "rock-climber"
 		}],
-		"allowedScopes": ["artificer-ns","a", "b", "c","invoices","users.read"],
+		"allowedScopes": ["offline_access","artificer-ns","a", "b", "c","invoices","users.read"],
 		"allowedGrantTypes": [
 			"client_credentials",
 			"refresh_token",

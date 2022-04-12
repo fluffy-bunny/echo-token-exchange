@@ -3,12 +3,11 @@ package TokenExchangeTokenHandler
 // https://datatracker.ietf.org/doc/html/draft-ietf-oauth-token-exchange-12#section-2.1
 import (
 	"context"
-	"errors"
 	"net/http"
 	"reflect"
-	"strings"
 
 	contracts_tokenhandlers "echo-starter/internal/contracts/tokenhandlers"
+	"echo-starter/internal/utils"
 
 	contracts_claimsprovider "echo-starter/internal/contracts/claimsprovider"
 
@@ -44,30 +43,28 @@ func AddScopedITokenExchangeTokenHandler(builder *di.Builder) {
 	contracts_tokenhandlers.AddScopedITokenExchangeTokenHandler(builder, reflectType)
 }
 
-func (s *service) ValidationTokenRequest(r *http.Request) (result interface{}, err error) {
+func (s *service) ValidationTokenRequest(r *http.Request) (result *contracts_tokenhandlers.ValidatedTokenRequestResult, err error) {
+	validated := &contracts_tokenhandlers.ValidatedTokenRequestResult{
+		GrantType: r.FormValue("grant_type"),
+	}
+	var safeAddParam = func(key string) {
+		val := utils.TrimLeftAndRight(r.FormValue(key))
+		if !core_utils.IsEmptyOrNil(val) {
+			validated.Params[key] = val
+		}
+	}
+	safeAddParam("scope")
+	safeAddParam("subject_token")
+	safeAddParam("subject_token_type")
+	safeAddParam("actor_token")
+	safeAddParam("actor_token_type")
+	safeAddParam("requested_token_type")
+	safeAddParam("audience")
+	safeAddParam("resource")
 
-	scope := strings.TrimLeft(r.FormValue("scope"), " ")
-	scope = strings.TrimRight(scope, " ")
-	validate := &validated{
-		scopes: strings.Split(scope, " "),
-	}
-	validate.subjectToken = r.FormValue("subject_token")
-	if core_utils.IsEmptyOrNil(validate.subjectToken) {
-		return nil, errors.New("subject_token is required")
-	}
-	validate.subjectTokenType = r.FormValue("subject_token_type")
-	if core_utils.IsEmptyOrNil(validate.subjectTokenType) {
-		return nil, errors.New("subject_token_type is required")
-	}
-	validate.actorToken = r.FormValue("actor_token")
-	validate.actorTokenType = r.FormValue("actor_token_type")
-	validate.requestedTokenType = r.FormValue("requested_token_type")
-	validate.audience = r.FormValue("audience")
-	validate.resource = r.FormValue("resource")
-
-	return validate, nil
+	return validated, nil
 }
-func (s *service) ProcessTokenRequest(ctx context.Context, data interface{}) (contracts_tokenhandlers.Claims, error) {
+func (s *service) ProcessTokenRequest(ctx context.Context, result *contracts_tokenhandlers.ValidatedTokenRequestResult) (contracts_tokenhandlers.Claims, error) {
 	claims := make(contracts_tokenhandlers.Claims)
 	//validated := data.(*validated)
 

@@ -53,7 +53,8 @@ func AuthenticateOAuth2Client(root di.Container) echo.MiddlewareFunc {
 		return func(c echo.Context) error {
 			r := c.Request()
 			var grantType string
-			switch c.Request().URL.Path {
+			path := r.URL.Path
+			switch path {
 			case wellknown.OAuth2TokenPath:
 				grantType = r.FormValue("grant_type")
 				if !wellknown.SupportedGrantTypes.Contains(grantType) {
@@ -77,7 +78,8 @@ func AuthenticateOAuth2Client(root di.Container) echo.MiddlewareFunc {
 						return c.JSON(401, "scope is invalid")
 					}
 				}
-				if !client.AllowedGrantTypesSet.Contains(grantType) {
+				ok := client.AllowedGrantTypesSet.Contains(grantType)
+				if !ok {
 					return c.JSON(401, "grant_type is invalid")
 				}
 
