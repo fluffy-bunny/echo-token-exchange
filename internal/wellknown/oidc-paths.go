@@ -9,7 +9,7 @@ const (
 	UnauthorizedPath                = "/unauthorized"
 	WellKnownOpenIDCOnfiguationPath = "/.well-known/openid-configuration"
 	WellKnownJWKS                   = "/.well-known/jwks"
-
-	OAuth2TokenPath  = "/token"
-	OAuth2RevokePath = "/revoke"
+	OAuth2TokenPath                 = "/token"
+	OAuth2RevokePath                = "/revoke"
+	OAuth2IntrospectPath            = "/introspect"
 )

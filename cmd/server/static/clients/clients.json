@@ -17,7 +17,7 @@
 		"slidingRefreshTokenLifetime": 900,
 		"identityTokenLifetime": 2600000,
 		"refreshTokenUsage": 1,
-		"refreshTokenExpiration": 1,
+		"refreshTokenExpiration": 300,
 		"accessTokenType": 0,
 		"claims": [{
 			"type": "artificer-ns",
@@ -32,9 +32,10 @@
 			"type": "scope",
 			"value": "rock-climber"
 		}],
-		"allowedScopes": ["invoices","users.read"],
+		"allowedScopes": ["offline_access","invoices","users.read"],
 		"allowedGrantTypes": [
 			"client_credentials",
+			"refresh_token",
 			"arbitrary_resource_owner",
 			"arbitrary_identity"
 		],
@@ -60,7 +61,7 @@
 		"slidingRefreshTokenLifetime": 900,
 		"identityTokenLifetime": 2600000,
 		"refreshTokenUsage": 1,
-		"refreshTokenExpiration": 1,
+		"refreshTokenExpiration": 300,
 		"accessTokenType": 0,
 		"claims": [{
 			"type": "artificer-ns",
@@ -75,9 +76,10 @@
 			"type": "scope",
 			"value": "rock-climber"
 		}],
-		"allowedScopes": ["artificer-ns","a", "b", "c","invoices","users.read"],
+		"allowedScopes": ["offline_access","artificer-ns","a", "b", "c","invoices","users.read"],
 		"allowedGrantTypes": [
 			"client_credentials",
+			"refresh_token",
 			"arbitrary_resource_owner",
 			"arbitrary_identity"
 		],
