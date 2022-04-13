@@ -99,10 +99,13 @@ func assertImplementation() {
 }
 
 func NewStartup() echo_contracts_startup.IStartup {
-	data, err := ioutil.ReadFile("./static/secrets/signing-keys.json")
-	if err == nil {
-		log.Error().Msg("DO NOT USE THIS IN PRODUCTION: Using signing keys from file")
-		os.Setenv("SIGNING_KEYS", string(data))
+	signingKeys := os.Getenv("SIGNING_KEYS")
+	if core_utils.IsEmptyOrNil(signingKeys) {
+		data, err := ioutil.ReadFile("./static/secrets/signing-keys.json")
+		if err == nil {
+			log.Error().Msg("DO NOT USE THIS IN PRODUCTION: Using signing keys from file")
+			os.Setenv("SIGNING_KEYS", string(data))
+		}
 	}
 
 	startup := &Startup{
