@@ -2,9 +2,9 @@ package token
 
 import (
 	"context"
-	contracts_apiresources "echo-starter/internal/contracts/apiresources"
 	contracts_clients "echo-starter/internal/contracts/clients"
 	contracts_config "echo-starter/internal/contracts/config"
+	contracts_stores_apiresources "echo-starter/internal/contracts/stores/apiresources"
 	contracts_stores_keymaterial "echo-starter/internal/contracts/stores/keymaterial"
 	contracts_stores_referencetoken "echo-starter/internal/contracts/stores/referencetoken"
 	contracts_stores_refreshtoken "echo-starter/internal/contracts/stores/refreshtoken"
@@ -37,7 +37,7 @@ type (
 		Config               *contracts_config.Config                             `inject:""`
 		Logger               contracts_logger.ILogger                             `inject:""`
 		ClientStore          contracts_clients.IClientStore                       `inject:""`
-		APIResources         contracts_apiresources.IAPIResources                 `inject:""`
+		APIResources         contracts_stores_apiresources.IAPIResources          `inject:""`
 		KeyMaterial          contracts_stores_keymaterial.IKeyMaterial            `inject:""`
 		ClientRequest        contracts_clients.IClientRequest                     `inject:""`
 		TokenHandlerAccessor contracts_tokenhandlers.ITokenHandlerAccessor        `inject:""`

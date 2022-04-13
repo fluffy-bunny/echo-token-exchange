@@ -6,7 +6,7 @@ import (
 	"reflect"
 	"strings"
 
-	contracts_apiresources "echo-starter/internal/contracts/apiresources"
+	contracts_stores_apiresources "echo-starter/internal/contracts/stores/apiresources"
 	contracts_tokenhandlers "echo-starter/internal/contracts/tokenhandlers"
 	"echo-starter/internal/utils"
 
@@ -17,7 +17,7 @@ import (
 
 type (
 	service struct {
-		APIResources contracts_apiresources.IAPIResources `inject:""`
+		APIResources contracts_stores_apiresources.IAPIResources `inject:""`
 	}
 )
 

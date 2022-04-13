@@ -9,7 +9,7 @@ import (
 	echo_models "echo-starter/internal/models"
 	echo_oauth2 "echo-starter/internal/services/go-oauth2/oauth2"
 
-	contracts_apiresources "echo-starter/internal/contracts/apiresources"
+	contracts_stores_apiresources "echo-starter/internal/contracts/stores/apiresources"
 	contracts_stores_refreshtoken "echo-starter/internal/contracts/stores/refreshtoken"
 
 	"github.com/go-oauth2/oauth2/v4"
@@ -38,7 +38,7 @@ type Manager struct {
 	accessGenerate    echo_oauth2.AccessGenerate
 	tokenStore        oauth2.TokenStore
 	clientStore       contracts_clients.IClientStore
-	apiResources      contracts_apiresources.IAPIResources
+	apiResources      contracts_stores_apiresources.IAPIResources
 	RefreshTokenStore contracts_stores_refreshtoken.IRefreshTokenStore
 }
 
@@ -91,7 +91,7 @@ func (m *Manager) MustClientStorage(stor contracts_clients.IClientStore, err err
 }
 
 // MustApiResources mandatory mapping the client store interface
-func (m *Manager) MustApiResources(stor contracts_apiresources.IAPIResources, err error) {
+func (m *Manager) MustApiResources(stor contracts_stores_apiresources.IAPIResources, err error) {
 	if err != nil {
 		panic(err.Error())
 	}

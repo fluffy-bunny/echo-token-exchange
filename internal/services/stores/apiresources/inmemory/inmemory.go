@@ -3,7 +3,7 @@ package inmemory
 import (
 	"reflect"
 
-	contracts_apiresources "echo-starter/internal/contracts/apiresources"
+	contracts_stores_apiresources "echo-starter/internal/contracts/stores/apiresources"
 	"echo-starter/internal/models"
 
 	core_hashset "github.com/fluffy-bunny/grpcdotnetgo/pkg/gods/sets/hashset"
@@ -23,7 +23,7 @@ type (
 )
 
 func assertImplementation() {
-	var _ contracts_apiresources.IAPIResources = (*service)(nil)
+	var _ contracts_stores_apiresources.IAPIResources = (*service)(nil)
 }
 
 var reflectType = reflect.TypeOf((*service)(nil))
@@ -36,7 +36,7 @@ func (s *service) Ctor() {
 
 // AddSingletonIAPIResources registers the *service as a singleton.
 func AddSingletonIAPIResources(builder *di.Builder, apiResources []models.APIResource) {
-	contracts_apiresources.AddSingletonIAPIResourcesByFunc(builder, reflectType, func(ctn di.Container) (interface{}, error) {
+	contracts_stores_apiresources.AddSingletonIAPIResourcesByFunc(builder, reflectType, func(ctn di.Container) (interface{}, error) {
 		obj := &service{}
 		obj.Ctor()
 
