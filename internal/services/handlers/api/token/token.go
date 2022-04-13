@@ -110,41 +110,13 @@ func (s *service) processRequest(c echo.Context) error {
 
 	iClaims.Set("client_id", client.ClientID)
 
-	_, tgr, err := s.ValidationTokenRequest(c.Request())
-
-	ti, err := s.GetAccessToken(ctx, validatedResult, "", tgr, claims)
+	ti, err := s.GetAccessToken(ctx, validatedResult, "", claims)
 	if err != nil {
 		return s.tokenError(w, err)
 	}
 
 	return s.token(w, s.GetTokenData(ti), nil)
 
-}
-func (s *service) ValidationTokenRequest(r *http.Request) (oauth2.GrantType, *oauth2.TokenGenerateRequest, error) {
-	// grant_type and scopes have been validated in the middleware
-	gt := oauth2.GrantType(r.FormValue("grant_type"))
-	client := s.ClientRequest.GetClient()
-
-	tgr := &oauth2.TokenGenerateRequest{
-		ClientID: client.ClientID,
-		Request:  r,
-	}
-
-	switch gt {
-	case oauth2.ClientCredentials:
-		tgr.Scope = r.FormValue("scope")
-	case oauth2.Refreshing:
-		tgr.Refresh = r.FormValue("refresh_token")
-		tgr.Scope = r.FormValue("scope")
-		if tgr.Refresh == "" {
-			return "", nil, errors.ErrInvalidRequest
-		}
-	case "urn:ietf:params:oauth:grant-type:token-exchange":
-	default:
-		return "", nil, errors.ErrUnsupportedGrantType
-	}
-
-	return gt, tgr, nil
 }
 
 func (s *service) tokenError(w http.ResponseWriter, err error) error {
@@ -209,28 +181,17 @@ func (s *service) GetErrorData(err error) (map[string]interface{}, int, http.Hea
 	return data, statusCode, re.Header
 }
 
-// CheckGrantType check allows grant type
-func (s *service) CheckGrantType(gt oauth2.GrantType) bool {
-	for _, agt := range s.Config.AllowedGrantTypes {
-		if agt == gt {
-			return true
-		}
-	}
-	return false
-}
-
 // GetAccessToken access token
 func (s *service) GetAccessToken(ctx context.Context,
 	validatedResult *contracts_tokenhandlers.ValidatedTokenRequestResult,
-	subject string,
-	tgr *oauth2.TokenGenerateRequest, claims models.IClaims) (oauth2.TokenInfo,
+	subject string, claims models.IClaims) (oauth2.TokenInfo,
 	error) {
 
 	switch validatedResult.GrantType {
 	case wellknown.OAuth2GrantType_ClientCredentials:
-		return s.GenerateAccessToken(ctx, validatedResult, subject, tgr, claims)
+		return s.GenerateAccessToken(ctx, validatedResult, subject, claims)
 	case wellknown.OAuth2GrantType_RefreshToken:
-		return s.GenerateAccessToken(ctx, validatedResult, subject, tgr, claims)
+		return s.GenerateAccessToken(ctx, validatedResult, subject, claims)
 	}
 
 	return nil, errors.ErrUnsupportedGrantType
@@ -259,16 +220,15 @@ func (s *service) GetTokenData(ti oauth2.TokenInfo) map[string]interface{} {
 func (s *service) GenerateAccessToken(ctx context.Context,
 	validatedResult *contracts_tokenhandlers.ValidatedTokenRequestResult,
 	subject string,
-	tgr *oauth2.TokenGenerateRequest,
 	claims models.IClaims) (oauth2.TokenInfo, error) {
 
 	//------------------------------------------------------------------------
 	client := s.ClientRequest.GetClient()
 
 	ti := oauth2_models.NewToken()
-	ti.SetClientID(tgr.ClientID)
-	ti.SetUserID(tgr.UserID)
-	ti.SetRedirectURI(tgr.RedirectURI)
+	ti.SetClientID(client.ClientID)
+	ti.SetUserID(subject)
+
 	scope, _ := validatedResult.Params["scope"]
 	ti.SetScope(scope)
 	scopes := strings.Split(scope, " ")
@@ -277,16 +237,7 @@ func (s *service) GenerateAccessToken(ctx context.Context,
 	ti.SetAccessCreateAt(createAt)
 
 	ti.SetAccessExpiresIn(time.Duration(client.AccessTokenLifetime) * time.Second)
-	/*
-		td := &echo_oauth2.GenerateBasic{
-			APIResources: s.APIResources,
-			Client:       client,
-			UserID:       tgr.UserID,
-			CreateAt:     createAt,
-			TokenInfo:    ti,
-			Request:      tgr.Request,
-		}
-	*/
+
 	standardClaims := &jwt.StandardClaims{
 		IssuedAt:  createAt.Unix(),
 		ExpiresAt: createAt.Add(time.Second * time.Duration(client.AccessTokenLifetime)).Unix(),
@@ -299,12 +250,7 @@ func (s *service) GenerateAccessToken(ctx context.Context,
 	if err != nil {
 		return nil, err
 	}
-	/*
-		av, err := s.accessGenerate.Token(ctx, td, claims)
-		if err != nil {
-			return nil, err
-		}
-	*/
+
 	ti.SetAccess(jwtToken)
 
 	if client.AllowOfflineAccess && scopeSet.Contains("offline_access") {
@@ -315,9 +261,9 @@ func (s *service) GenerateAccessToken(ctx context.Context,
 		var expiration = time.Now().Add(time.Second * time.Duration(client.RefreshTokenExpiration))
 		handle, err := s.RefreshTokenStore.StoreRefreshToken(ctx,
 			&contracts_stores_refreshtoken.RefreshTokenInfo{
-				ClientID:           tgr.ClientID,
-				Subject:            tgr.UserID,
-				Scope:              tgr.Scope,
+				ClientID:           client.ClientID,
+				Subject:            subject,
+				Scope:              scope,
 				GrantType:          validatedResult.GrantType,
 				Expiration:         expiration,
 				AbsoluteExpiration: absoluteExpiration,

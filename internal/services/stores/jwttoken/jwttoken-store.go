@@ -91,7 +91,7 @@ func (s *service) MintToken(ctx context.Context, standardClaims *jwt.StandardCla
 		}
 	}
 	extras.Set("aud", audienceSet.Values())
-	extras.Set("issuer", standardClaims.Issuer)
+	extras.Set("iss", standardClaims.Issuer)
 	if !core_utils.IsEmptyOrNil(standardClaims.Subject) {
 		extras.Set("sub", standardClaims.Subject)
 	}
