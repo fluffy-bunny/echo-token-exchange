@@ -11,4 +11,5 @@ const (
 	WellKnownJWKS                   = "/.well-known/jwks"
 	OAuth2TokenPath                 = "/token"
 	OAuth2RevokePath                = "/revoke"
+	OAuth2IntrospectPath            = "/introspect"
 )
