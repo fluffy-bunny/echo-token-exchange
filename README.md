@@ -1,27 +1,9 @@
 # echo starter  
 
-[Create ECDSA Signing Keys](https://github.com/fluffy-bunny/crypto-gen)  
+
 [auth0-golang-web-app](https://github.com/auth0-samples/auth0-golang-web-app/)  
 [demo-echo-app](https://github.com/gtongy/demo-echo-app)  
 [cookie auth](https://www.sohamkamani.com/golang/session-cookie-authentication/)
-
-## Refresh_Tokens in the browser
-
-Yes you can, but probably shouldn't.  
-[An in-depth look at refresh tokens in the browser](https://pragmaticwebsecurity.com/articles/oauthoidc/refresh-token-protection-implications.html)  
-
-The approach here is that the client javascript SPA will NEVER see the light of day of an access_token much less a refresh_token.  
-Those tokens are kept in a backend session and all fetch calls that the SPA makes will proxy through the webserver.  
-This accomplishes 2 things;
-
-1. Easier to manage security
-2. Still need sessions if you are a SPA, so let the server manage them
-3. The SPA isn't doing any crazy cross site calls, as those fan out calls are done by the server (machine-2-machine)
-4. All cookies are same-site
-5. All cookies are secure/http except for the _csfr cookie(that one needs to be read by javascript)
-6. Handling client redirecting to relogin is easier to understand if we are only dealing with one server
-
-The GraphiQL SPA in this kit has all the http requests proxied through the echo server.
 
 ## TLDR  
 
@@ -31,23 +13,20 @@ So make sure your Auth0 setup delivers a JWT access_token with a refresh_token.
 ## Docker-Compose
 
 ### Secrets
-
-place the following Auth0 env variables in your OS envs.  
-
-```env
-AUTH0_CLIENT_ID=M8x**REDACTED**4Zwk
-AUTH0_CLIENT_SECRET=mbTS7_63xBUx**REDACTED**lYgmRwXPbMy8ai9Pd
-AUTH0_DOMAIN={{yourdomain}}.auth0.com
+[Create ECDSA Signing Keys](https://github.com/fluffy-bunny/crypto-gen)  
+[Development Signing Keys](cmd/server/static/secrets/signing-keys.json)  
+These keys are loaded at startup and placed into the ***SIGNING_KEYS*** environment variable.
+```go
+  signingKeys := os.Getenv("SIGNING_KEYS")
+	if core_utils.IsEmptyOrNil(signingKeys) {
+		data, err := ioutil.ReadFile("./static/secrets/signing-keys.json")
+		if err == nil {
+			log.Error().Msg("DO NOT USE THIS IN PRODUCTION: Using signing keys from file")
+			os.Setenv("SIGNING_KEYS", string(data))
+		}
+	}
 ```
-
-example with none working secrets
-
-```.env
-AUTH0_CLIENT_ID=M8xSKujdhflsjdfPd3yfkBTjnajz4Zwk
-AUTH0_CLIENT_SECRET=mbTS7_63xBUxkjlhdsjkdfhksdjdfhnvyoWlYgmRwXPbMy8ai9Pd
-AUTH0_DOMAIN=foo.auth0.com
-```
-
+ 
 ```bash
 docker-compose pull
 docker-compose up
