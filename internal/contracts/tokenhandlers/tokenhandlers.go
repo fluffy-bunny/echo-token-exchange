@@ -2,6 +2,7 @@ package tokenhandlers
 
 import (
 	"context"
+	"echo-starter/internal/models"
 	"net/http"
 )
 
@@ -10,7 +11,6 @@ import (
 //go:generate mockgen -package=$GOPACKAGE -destination=../../mocks/$GOPACKAGE/mock_$GOFILE   echo-starter/internal/contracts/$GOPACKAGE ITokenHandler,IClientCredentialsTokenHandler,IRefreshTokenHandler,ITokenExchangeTokenHandler,ITokenHandlerAccessor,IInternalTokenHandlerAccessor
 
 type (
-	Claims                      map[string]interface{}
 	ValidatedTokenRequestResult struct {
 		ClientID  string `json:"client_id"`
 		GrantType string `json:"grant_type"`
@@ -18,7 +18,7 @@ type (
 	}
 	ITokenHandler interface {
 		ValidationTokenRequest(r *http.Request) (result *ValidatedTokenRequestResult, err error)
-		ProcessTokenRequest(ctx context.Context, result *ValidatedTokenRequestResult) (Claims, error)
+		ProcessTokenRequest(ctx context.Context, result *ValidatedTokenRequestResult) (models.IClaims, error)
 	}
 
 	IClientCredentialsTokenHandler interface {

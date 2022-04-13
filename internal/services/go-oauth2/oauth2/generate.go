@@ -3,7 +3,6 @@ package oauth2
 import (
 	"context"
 	contracts_stores_apiresources "echo-starter/internal/contracts/stores/apiresources"
-	contracts_tokenhandlers "echo-starter/internal/contracts/tokenhandlers"
 	"echo-starter/internal/models"
 	"net/http"
 	"time"
@@ -29,6 +28,6 @@ type (
 
 	// AccessGenerate generate the access and refresh tokens interface
 	AccessGenerate interface {
-		Token(ctx context.Context, data *GenerateBasic, claims contracts_tokenhandlers.Claims) (access string, err error)
+		Token(ctx context.Context, data *GenerateBasic, claims models.Claims) (access string, err error)
 	}
 )

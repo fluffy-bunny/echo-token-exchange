@@ -3,16 +3,14 @@ package TokenExchangeTokenHandler
 // https://datatracker.ietf.org/doc/html/draft-ietf-oauth-token-exchange-12#section-2.1
 import (
 	"context"
+	contracts_claimsprovider "echo-starter/internal/contracts/claimsprovider"
+	contracts_tokenhandlers "echo-starter/internal/contracts/tokenhandlers"
+	"echo-starter/internal/models"
+	"echo-starter/internal/utils"
 	"net/http"
 	"reflect"
 
-	contracts_tokenhandlers "echo-starter/internal/contracts/tokenhandlers"
-	"echo-starter/internal/utils"
-
-	contracts_claimsprovider "echo-starter/internal/contracts/claimsprovider"
-
 	core_utils "github.com/fluffy-bunny/grpcdotnetgo/pkg/utils"
-
 	di "github.com/fluffy-bunny/sarulabsdi"
 )
 
@@ -64,9 +62,9 @@ func (s *service) ValidationTokenRequest(r *http.Request) (result *contracts_tok
 
 	return validated, nil
 }
-func (s *service) ProcessTokenRequest(ctx context.Context, result *contracts_tokenhandlers.ValidatedTokenRequestResult) (contracts_tokenhandlers.Claims, error) {
-	claims := make(contracts_tokenhandlers.Claims)
+func (s *service) ProcessTokenRequest(ctx context.Context, result *contracts_tokenhandlers.ValidatedTokenRequestResult) (models.IClaims, error) {
+	claims := make(models.Claims)
 	//validated := data.(*validated)
 
-	return claims, nil
+	return &claims, nil
 }

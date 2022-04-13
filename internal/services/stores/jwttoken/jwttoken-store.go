@@ -1,15 +1,18 @@
 package jwttoken
 
 import (
+	"context"
 	contracts_config "echo-starter/internal/contracts/config"
 	contracts_stores_jwttoken "echo-starter/internal/contracts/stores/jwttoken"
 	contracts_stores_keymaterial "echo-starter/internal/contracts/stores/keymaterial"
+	"echo-starter/internal/models"
 	"fmt"
+	"reflect"
 	"strings"
 
-	"reflect"
-
 	contracts_logger "github.com/fluffy-bunny/grpcdotnetgo/pkg/contracts/logger"
+	core_hashset "github.com/fluffy-bunny/grpcdotnetgo/pkg/gods/sets/hashset"
+	core_utils "github.com/fluffy-bunny/grpcdotnetgo/pkg/utils"
 	di "github.com/fluffy-bunny/sarulabsdi"
 	"github.com/golang-jwt/jwt"
 )
@@ -33,7 +36,7 @@ func AddSingletonIJwtTokenStore(builder *di.Builder) {
 	contracts_stores_jwttoken.AddSingletonIJwtTokenStore(builder, reflectType)
 }
 
-func (s *service) MintToken(data jwt.Claims) (jwtToken string, err error) {
+func (s *service) MintToken(ctx context.Context, standardClaims *jwt.StandardClaims, extras models.IClaims) (jwtToken string, err error) {
 	signingKey, err := s.KeyMaterial.GetSigningKey()
 	if err != nil {
 		return "", err
@@ -77,12 +80,41 @@ func (s *service) MintToken(data jwt.Claims) (jwtToken string, err error) {
 		return key, nil
 	}
 
-	token := jwt.NewWithClaims(method, data)
+	audienceSet := core_hashset.NewStringSet(standardClaims.Audience)
+	if !core_utils.IsNil(extras) {
+		extraAudInterface := extras.Get("aud")
+		switch extraAudInterface.(type) {
+		case string:
+			audienceSet.Add(extraAudInterface.(string))
+		case []string:
+			audienceSet.Add(extraAudInterface.([]string)...)
+		}
+	}
+	extras.Set("aud", audienceSet.Values())
+	extras.Set("issuer", standardClaims.Issuer)
+	if !core_utils.IsEmptyOrNil(standardClaims.Subject) {
+		extras.Set("sub", standardClaims.Subject)
+	}
+	if !core_utils.IsEmptyOrNil(standardClaims.Id) {
+		extras.Set("jti", standardClaims.Id)
+	}
+	if !core_utils.IsEmptyOrNil(standardClaims.IssuedAt) {
+		extras.Set("iat", standardClaims.IssuedAt)
+	}
+	if standardClaims.NotBefore > 0 {
+		extras.Set("nbf", standardClaims.NotBefore)
+	}
+	extras.Set("exp", standardClaims.ExpiresAt)
+
+	token := jwt.NewWithClaims(method, extras.JwtClaims())
 	token.Header["kid"] = kid
 	key, err := getKey()
 	if err != nil {
 		return "", err
 	}
+
+	// special case, aud is allowed
+
 	jwtToken, err = token.SignedString(key)
 	if err != nil {
 		return "", err

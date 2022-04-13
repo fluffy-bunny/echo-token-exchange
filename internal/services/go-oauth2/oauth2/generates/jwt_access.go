@@ -8,7 +8,6 @@ import (
 	"strings"
 	"time"
 
-	contracts_tokenhandlers "echo-starter/internal/contracts/tokenhandlers"
 	echo_oauth2 "echo-starter/internal/services/go-oauth2/oauth2"
 
 	core_hashset "github.com/fluffy-bunny/grpcdotnetgo/pkg/gods/sets/hashset"
@@ -94,7 +93,7 @@ func SliceOrArrayLength(v interface{}) int {
 
 // Token based on the UUID generated token
 func (a *JWTAccessGenerate) Token(ctx context.Context, data *echo_oauth2.GenerateBasic,
-	extraClaims contracts_tokenhandlers.Claims) (string, error) {
+	extraClaims map[string]interface{}) (string, error) {
 	clientID := data.Client.ClientID
 	scopes := strings.Split(data.TokenInfo.GetScope(), " ")
 	var scopeInterface interface{}

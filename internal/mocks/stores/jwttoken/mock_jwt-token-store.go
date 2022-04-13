@@ -5,6 +5,8 @@
 package jwttoken
 
 import (
+	context "context"
+	models "echo-starter/internal/models"
 	reflect "reflect"
 
 	jwt "github.com/golang-jwt/jwt"
@@ -35,16 +37,16 @@ func (m *MockIJwtTokenStore) EXPECT() *MockIJwtTokenStoreMockRecorder {
 }
 
 // MintToken mocks base method.
-func (m *MockIJwtTokenStore) MintToken(arg0 jwt.Claims) (string, error) {
+func (m *MockIJwtTokenStore) MintToken(arg0 context.Context, arg1 *jwt.StandardClaims, arg2 models.IClaims) (string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "MintToken", arg0)
+	ret := m.ctrl.Call(m, "MintToken", arg0, arg1, arg2)
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // MintToken indicates an expected call of MintToken.
-func (mr *MockIJwtTokenStoreMockRecorder) MintToken(arg0 interface{}) *gomock.Call {
+func (mr *MockIJwtTokenStoreMockRecorder) MintToken(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MintToken", reflect.TypeOf((*MockIJwtTokenStore)(nil).MintToken), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MintToken", reflect.TypeOf((*MockIJwtTokenStore)(nil).MintToken), arg0, arg1, arg2)
 }

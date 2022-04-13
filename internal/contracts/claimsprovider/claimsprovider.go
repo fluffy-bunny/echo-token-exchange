@@ -1,7 +1,7 @@
 package claimsprovider
 
 import (
-	contracts_tokenhandlers "echo-starter/internal/contracts/tokenhandlers"
+	"echo-starter/internal/models"
 
 	core_hashset "github.com/fluffy-bunny/grpcdotnetgo/pkg/gods/sets/hashset"
 )
@@ -14,6 +14,6 @@ type (
 	// IClaimsProvider ...
 	IClaimsProvider interface {
 		GetProfiles(userID string) (*core_hashset.StringSet, error)
-		GetClaims(userID string, profile string) (contracts_tokenhandlers.Claims, error)
+		GetClaims(userID string, profile string) (models.IClaims, error)
 	}
 )

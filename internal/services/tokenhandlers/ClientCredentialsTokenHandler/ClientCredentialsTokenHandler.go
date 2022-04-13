@@ -8,6 +8,7 @@ import (
 
 	contracts_stores_apiresources "echo-starter/internal/contracts/stores/apiresources"
 	contracts_tokenhandlers "echo-starter/internal/contracts/tokenhandlers"
+	"echo-starter/internal/models"
 	"echo-starter/internal/utils"
 
 	core_hashset "github.com/fluffy-bunny/grpcdotnetgo/pkg/gods/sets/hashset"
@@ -47,14 +48,15 @@ func (s *service) ValidationTokenRequest(r *http.Request) (result *contracts_tok
 
 	return validated, nil
 }
-func (s *service) ProcessTokenRequest(ctx context.Context, result *contracts_tokenhandlers.ValidatedTokenRequestResult) (contracts_tokenhandlers.Claims, error) {
-	claims := make(contracts_tokenhandlers.Claims)
+func (s *service) ProcessTokenRequest(ctx context.Context, result *contracts_tokenhandlers.ValidatedTokenRequestResult) (models.IClaims, error) {
+	claims := make(models.Claims)
 
 	// the general processor will add all the standard claims.
 	// these AUD claims are added because of our apiresources model
 	audienceSet := core_hashset.NewStringSet()
 	apiResourceScopeSet, _ := s.APIResources.GetApiResourceScopes()
-	scopes := strings.Split(result.Params["scope"], " ")
+	scope := result.Params["scope"]
+	scopes := strings.Split(scope, " ")
 	for _, sc := range scopes {
 		if apiResourceScopeSet.Contains(sc) {
 			apiResource, _, _ := s.APIResources.GetApiResourceByScope(sc)
@@ -64,7 +66,7 @@ func (s *service) ProcessTokenRequest(ctx context.Context, result *contracts_tok
 		}
 	}
 	claims["aud"] = audienceSet.Values()
-
+	claims["scope"] = scopes
 	/*
 		// tests
 		claims["basic"] = true
@@ -86,5 +88,5 @@ func (s *service) ProcessTokenRequest(ctx context.Context, result *contracts_tok
 			Count: 5,
 		}
 	*/
-	return claims, nil
+	return &claims, nil
 }

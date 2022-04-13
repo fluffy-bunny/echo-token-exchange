@@ -5,13 +5,14 @@ import (
 	contracts_config "echo-starter/internal/contracts/config"
 	contracts_stores_apiresources "echo-starter/internal/contracts/stores/apiresources"
 	contracts_clients "echo-starter/internal/contracts/stores/clients"
+	contracts_stores_jwttoken "echo-starter/internal/contracts/stores/jwttoken"
 	contracts_stores_keymaterial "echo-starter/internal/contracts/stores/keymaterial"
+
 	contracts_stores_referencetoken "echo-starter/internal/contracts/stores/referencetoken"
 	contracts_stores_refreshtoken "echo-starter/internal/contracts/stores/refreshtoken"
 	contracts_tokenhandlers "echo-starter/internal/contracts/tokenhandlers"
 	"echo-starter/internal/models"
 	echo_oauth2 "echo-starter/internal/services/go-oauth2/oauth2"
-	"echo-starter/internal/services/go-oauth2/oauth2/generates"
 	"echo-starter/internal/utils"
 	"echo-starter/internal/wellknown"
 	"encoding/json"
@@ -30,6 +31,7 @@ import (
 	oauth2_models "github.com/go-oauth2/oauth2/v4/models"
 	"github.com/golang-jwt/jwt"
 	"github.com/labstack/echo/v4"
+	"github.com/rs/xid"
 )
 
 type (
@@ -39,6 +41,7 @@ type (
 		ClientStore          contracts_clients.IClientStore                       `inject:""`
 		APIResources         contracts_stores_apiresources.IAPIResources          `inject:""`
 		KeyMaterial          contracts_stores_keymaterial.IKeyMaterial            `inject:""`
+		JwtTokenStore        contracts_stores_jwttoken.IJwtTokenStore             `inject:""`
 		ClientRequest        contracts_clients.IClientRequest                     `inject:""`
 		TokenHandlerAccessor contracts_tokenhandlers.ITokenHandlerAccessor        `inject:""`
 		RefreshTokenStore    contracts_stores_refreshtoken.IRefreshTokenStore     `inject:""`
@@ -46,6 +49,7 @@ type (
 		TokenHandler         contracts_tokenhandlers.ITokenHandler
 		accessGenerate       echo_oauth2.AccessGenerate
 		signingKey           *models.SigningKey
+		issuer               string
 	}
 )
 
@@ -72,13 +76,6 @@ func (s *service) Ctor() {
 		panic(err)
 	}
 	s.signingKey = signingKey
-	/*
-		privateKey, publicKey, err := ecdsa.DecodePrivatePem(signingKey.Password, signingKey.PrivateKey)
-		if err != nil {
-			panic(err)
-		}
-		encPriv, _, err := ecdsa.Encode("", privateKey, publicKey)
-	*/
 
 }
 func (s *service) GetMiddleware() []echo.MiddlewareFunc {
@@ -87,9 +84,8 @@ func (s *service) GetMiddleware() []echo.MiddlewareFunc {
 
 func (s *service) Do(c echo.Context) error {
 	rootPath := utils.GetMyRootPath(c)
-	jwtGenerator := generates.NewJWTAccessGenerate(s.signingKey.Kid, []byte(s.signingKey.PrivateKey), jwt.SigningMethodES256)
-	jwtGenerator.Issuer = rootPath
-	s.accessGenerate = jwtGenerator
+	s.issuer = rootPath
+
 	return s.processRequest(c)
 }
 func getMyRootPath(c echo.Context) string {
@@ -110,10 +106,13 @@ func (s *service) processRequest(c echo.Context) error {
 	if err != nil {
 		return s.tokenError(c.Response(), err)
 	}
-	fmt.Println("claims", claims)
+	iClaims := claims.(models.IClaims)
+
+	iClaims.Set("client_id", client.ClientID)
+
 	_, tgr, err := s.ValidationTokenRequest(c.Request())
 
-	ti, err := s.GetAccessToken(ctx, validatedResult, tgr, claims)
+	ti, err := s.GetAccessToken(ctx, validatedResult, "", tgr, claims)
 	if err != nil {
 		return s.tokenError(w, err)
 	}
@@ -223,14 +222,15 @@ func (s *service) CheckGrantType(gt oauth2.GrantType) bool {
 // GetAccessToken access token
 func (s *service) GetAccessToken(ctx context.Context,
 	validatedResult *contracts_tokenhandlers.ValidatedTokenRequestResult,
-	tgr *oauth2.TokenGenerateRequest, claims contracts_tokenhandlers.Claims) (oauth2.TokenInfo,
+	subject string,
+	tgr *oauth2.TokenGenerateRequest, claims models.IClaims) (oauth2.TokenInfo,
 	error) {
 
 	switch validatedResult.GrantType {
 	case wellknown.OAuth2GrantType_ClientCredentials:
-		return s.GenerateAccessToken(ctx, validatedResult, tgr, claims)
+		return s.GenerateAccessToken(ctx, validatedResult, subject, tgr, claims)
 	case wellknown.OAuth2GrantType_RefreshToken:
-		return s.GenerateAccessToken(ctx, validatedResult, tgr, claims)
+		return s.GenerateAccessToken(ctx, validatedResult, subject, tgr, claims)
 	}
 
 	return nil, errors.ErrUnsupportedGrantType
@@ -258,8 +258,9 @@ func (s *service) GetTokenData(ti oauth2.TokenInfo) map[string]interface{} {
 // GenerateAccessToken generate the access token
 func (s *service) GenerateAccessToken(ctx context.Context,
 	validatedResult *contracts_tokenhandlers.ValidatedTokenRequestResult,
+	subject string,
 	tgr *oauth2.TokenGenerateRequest,
-	claims contracts_tokenhandlers.Claims) (oauth2.TokenInfo, error) {
+	claims models.IClaims) (oauth2.TokenInfo, error) {
 
 	//------------------------------------------------------------------------
 	client := s.ClientRequest.GetClient()
@@ -276,21 +277,35 @@ func (s *service) GenerateAccessToken(ctx context.Context,
 	ti.SetAccessCreateAt(createAt)
 
 	ti.SetAccessExpiresIn(time.Duration(client.AccessTokenLifetime) * time.Second)
-
-	td := &echo_oauth2.GenerateBasic{
-		APIResources: s.APIResources,
-		Client:       client,
-		UserID:       tgr.UserID,
-		CreateAt:     createAt,
-		TokenInfo:    ti,
-		Request:      tgr.Request,
+	/*
+		td := &echo_oauth2.GenerateBasic{
+			APIResources: s.APIResources,
+			Client:       client,
+			UserID:       tgr.UserID,
+			CreateAt:     createAt,
+			TokenInfo:    ti,
+			Request:      tgr.Request,
+		}
+	*/
+	standardClaims := &jwt.StandardClaims{
+		IssuedAt:  createAt.Unix(),
+		ExpiresAt: createAt.Add(time.Second * time.Duration(client.AccessTokenLifetime)).Unix(),
+		Issuer:    s.issuer,
+		Audience:  client.ClientID,
+		Subject:   subject,
+		Id:        xid.New().String(),
 	}
-
-	av, err := s.accessGenerate.Token(ctx, td, claims)
+	jwtToken, err := s.JwtTokenStore.MintToken(ctx, standardClaims, claims)
 	if err != nil {
 		return nil, err
 	}
-	ti.SetAccess(av)
+	/*
+		av, err := s.accessGenerate.Token(ctx, td, claims)
+		if err != nil {
+			return nil, err
+		}
+	*/
+	ti.SetAccess(jwtToken)
 
 	if client.AllowOfflineAccess && scopeSet.Contains("offline_access") {
 		var absoluteExpiration = time.Now().Add(time.Second * time.Duration(client.AbsoluteRefreshTokenLifetime))

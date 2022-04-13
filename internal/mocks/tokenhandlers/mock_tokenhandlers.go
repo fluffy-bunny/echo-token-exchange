@@ -7,6 +7,7 @@ package tokenhandlers
 import (
 	context "context"
 	tokenhandlers "echo-starter/internal/contracts/tokenhandlers"
+	models "echo-starter/internal/models"
 	http "net/http"
 	reflect "reflect"
 
@@ -37,10 +38,10 @@ func (m *MockITokenHandler) EXPECT() *MockITokenHandlerMockRecorder {
 }
 
 // ProcessTokenRequest mocks base method.
-func (m *MockITokenHandler) ProcessTokenRequest(arg0 context.Context, arg1 *tokenhandlers.ValidatedTokenRequestResult) (tokenhandlers.Claims, error) {
+func (m *MockITokenHandler) ProcessTokenRequest(arg0 context.Context, arg1 *tokenhandlers.ValidatedTokenRequestResult) (models.IClaims, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ProcessTokenRequest", arg0, arg1)
-	ret0, _ := ret[0].(tokenhandlers.Claims)
+	ret0, _ := ret[0].(models.IClaims)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -90,10 +91,10 @@ func (m *MockIClientCredentialsTokenHandler) EXPECT() *MockIClientCredentialsTok
 }
 
 // ProcessTokenRequest mocks base method.
-func (m *MockIClientCredentialsTokenHandler) ProcessTokenRequest(arg0 context.Context, arg1 *tokenhandlers.ValidatedTokenRequestResult) (tokenhandlers.Claims, error) {
+func (m *MockIClientCredentialsTokenHandler) ProcessTokenRequest(arg0 context.Context, arg1 *tokenhandlers.ValidatedTokenRequestResult) (models.IClaims, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ProcessTokenRequest", arg0, arg1)
-	ret0, _ := ret[0].(tokenhandlers.Claims)
+	ret0, _ := ret[0].(models.IClaims)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -143,10 +144,10 @@ func (m *MockIRefreshTokenHandler) EXPECT() *MockIRefreshTokenHandlerMockRecorde
 }
 
 // ProcessTokenRequest mocks base method.
-func (m *MockIRefreshTokenHandler) ProcessTokenRequest(arg0 context.Context, arg1 *tokenhandlers.ValidatedTokenRequestResult) (tokenhandlers.Claims, error) {
+func (m *MockIRefreshTokenHandler) ProcessTokenRequest(arg0 context.Context, arg1 *tokenhandlers.ValidatedTokenRequestResult) (models.IClaims, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ProcessTokenRequest", arg0, arg1)
-	ret0, _ := ret[0].(tokenhandlers.Claims)
+	ret0, _ := ret[0].(models.IClaims)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -196,10 +197,10 @@ func (m *MockITokenExchangeTokenHandler) EXPECT() *MockITokenExchangeTokenHandle
 }
 
 // ProcessTokenRequest mocks base method.
-func (m *MockITokenExchangeTokenHandler) ProcessTokenRequest(arg0 context.Context, arg1 *tokenhandlers.ValidatedTokenRequestResult) (tokenhandlers.Claims, error) {
+func (m *MockITokenExchangeTokenHandler) ProcessTokenRequest(arg0 context.Context, arg1 *tokenhandlers.ValidatedTokenRequestResult) (models.IClaims, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ProcessTokenRequest", arg0, arg1)
-	ret0, _ := ret[0].(tokenhandlers.Claims)
+	ret0, _ := ret[0].(models.IClaims)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

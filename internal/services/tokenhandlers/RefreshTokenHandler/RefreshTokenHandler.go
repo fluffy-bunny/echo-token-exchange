@@ -10,6 +10,7 @@ import (
 
 	contracts_stores_refreshtoken "echo-starter/internal/contracts/stores/refreshtoken"
 	contracts_tokenhandlers "echo-starter/internal/contracts/tokenhandlers"
+	"echo-starter/internal/models"
 	"echo-starter/internal/utils"
 	"echo-starter/internal/wellknown"
 
@@ -56,7 +57,7 @@ func (s *service) ValidationTokenRequest(r *http.Request) (result *contracts_tok
 
 	return validated, nil
 }
-func (s *service) ProcessTokenRequest(ctx context.Context, result *contracts_tokenhandlers.ValidatedTokenRequestResult) (contracts_tokenhandlers.Claims, error) {
+func (s *service) ProcessTokenRequest(ctx context.Context, result *contracts_tokenhandlers.ValidatedTokenRequestResult) (models.IClaims, error) {
 	rt, err := s.RefreshTokenStore.GetRefreshToken(ctx, result.Params["refresh_token"])
 	if err != nil {
 		return nil, errors.ErrInvalidRequest
