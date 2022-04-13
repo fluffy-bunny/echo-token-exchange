@@ -27,9 +27,9 @@ import (
 	"github.com/gorilla/securecookie"
 
 	services_auth_cookie_token_store "echo-starter/internal/services/auth/cookie_token_store"
-	services_clients_clientrequest "echo-starter/internal/services/clients/clientrequest"
-	services_clients_inmemory "echo-starter/internal/services/clients/inmemory"
 	services_apiresources_inmemory "echo-starter/internal/services/stores/apiresources/inmemory"
+	services_clients_clientrequest "echo-starter/internal/services/stores/clients/clientrequest"
+	services_clients_inmemory "echo-starter/internal/services/stores/clients/inmemory"
 
 	services_auth_session_token_store "echo-starter/internal/services/auth/session_token_store"
 

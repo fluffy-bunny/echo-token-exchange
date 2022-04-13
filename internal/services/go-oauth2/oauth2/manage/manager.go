@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	contracts_clients "echo-starter/internal/contracts/clients"
+	contracts_clients "echo-starter/internal/contracts/stores/clients"
 	contracts_tokenhandlers "echo-starter/internal/contracts/tokenhandlers"
 	echo_models "echo-starter/internal/models"
 	echo_oauth2 "echo-starter/internal/services/go-oauth2/oauth2"

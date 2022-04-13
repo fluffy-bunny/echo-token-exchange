@@ -3,7 +3,7 @@ package clientrequest
 import (
 	"reflect"
 
-	contracts_clients "echo-starter/internal/contracts/clients"
+	contracts_clients "echo-starter/internal/contracts/stores/clients"
 
 	contracts_logger "github.com/fluffy-bunny/grpcdotnetgo/pkg/contracts/logger"
 	di "github.com/fluffy-bunny/sarulabsdi"

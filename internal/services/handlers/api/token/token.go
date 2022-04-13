@@ -2,9 +2,9 @@ package token
 
 import (
 	"context"
-	contracts_clients "echo-starter/internal/contracts/clients"
 	contracts_config "echo-starter/internal/contracts/config"
 	contracts_stores_apiresources "echo-starter/internal/contracts/stores/apiresources"
+	contracts_clients "echo-starter/internal/contracts/stores/clients"
 	contracts_stores_keymaterial "echo-starter/internal/contracts/stores/keymaterial"
 	contracts_stores_referencetoken "echo-starter/internal/contracts/stores/referencetoken"
 	contracts_stores_refreshtoken "echo-starter/internal/contracts/stores/refreshtoken"

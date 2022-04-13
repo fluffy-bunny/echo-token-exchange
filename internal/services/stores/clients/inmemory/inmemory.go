@@ -4,7 +4,7 @@ import (
 	"context"
 	"reflect"
 
-	contracts_clients "echo-starter/internal/contracts/clients"
+	contracts_clients "echo-starter/internal/contracts/stores/clients"
 	"echo-starter/internal/models"
 
 	contracts_logger "github.com/fluffy-bunny/grpcdotnetgo/pkg/contracts/logger"

@@ -4,7 +4,7 @@ import (
 	"echo-starter/internal/models"
 	"strings"
 
-	contracts_clients "echo-starter/internal/contracts/clients"
+	contracts_clients "echo-starter/internal/contracts/stores/clients"
 	"echo-starter/internal/utils"
 	"echo-starter/internal/wellknown"
 
