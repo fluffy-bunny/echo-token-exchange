@@ -1,8 +1,8 @@
-package keystore
+package keymaterial
 
 import (
 	contracts_config "echo-starter/internal/contracts/config"
-	contracts_go_oauth2_oauth2 "echo-starter/internal/contracts/go-oauth2/oauth2"
+	contracts_stores_keymaterial "echo-starter/internal/contracts/stores/keymaterial"
 	"echo-starter/internal/models"
 	"echo-starter/internal/utils/ecdsa"
 	"encoding/json"
@@ -26,14 +26,14 @@ type (
 )
 
 func assertImplementation() {
-	var _ contracts_go_oauth2_oauth2.ISigningKeyStore = (*service)(nil)
+	var _ contracts_stores_keymaterial.IKeyMaterial = (*service)(nil)
 }
 
 var reflectType = reflect.TypeOf((*service)(nil))
 
-// AddSingletonISigningKeyStore registers the *service as a singleton.
-func AddSingletonISigningKeyStore(builder *di.Builder) {
-	contracts_go_oauth2_oauth2.AddSingletonISigningKeyStore(builder, reflectType)
+// AddSingletonIKeyMaterial registers the *service as a singleton.
+func AddSingletonIKeyMaterial(builder *di.Builder) {
+	contracts_stores_keymaterial.AddSingletonIKeyMaterial(builder, reflectType)
 }
 func (s *service) Ctor() {
 	var signingKeys []*models.SigningKey

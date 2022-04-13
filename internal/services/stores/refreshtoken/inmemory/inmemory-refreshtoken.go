@@ -7,6 +7,7 @@ import (
 	"reflect"
 	"sync"
 
+	core_utils "github.com/fluffy-bunny/grpcdotnetgo/pkg/utils"
 	di "github.com/fluffy-bunny/sarulabsdi"
 	"github.com/rs/xid"
 )
@@ -43,6 +44,10 @@ func (s *service) StoreRefreshToken(ctx context.Context, info *contracts_stores_
 	return handle, nil
 }
 func (s *service) GetRefreshToken(ctx context.Context, handle string) (*contracts_stores_refreshtoken.RefreshTokenInfo, error) {
+	if core_utils.IsEmptyOrNil(handle) {
+		return nil, errors.New("handle is empty")
+	}
+
 	s.lock.RLock()
 	defer s.lock.RUnlock()
 	h, ok := s.tokens[handle]
@@ -53,6 +58,10 @@ func (s *service) GetRefreshToken(ctx context.Context, handle string) (*contract
 
 }
 func (s *service) UpdateRefeshToken(ctx context.Context, handle string, info *contracts_stores_refreshtoken.RefreshTokenInfo) error {
+	if core_utils.IsEmptyOrNil(handle) {
+		return errors.New("handle is empty")
+	}
+
 	s.lock.Lock()
 	defer s.lock.Unlock()
 	_, ok := s.tokens[handle]
@@ -64,6 +73,9 @@ func (s *service) UpdateRefeshToken(ctx context.Context, handle string, info *co
 	return nil
 }
 func (s *service) RemoveRefreshToken(ctx context.Context, handle string) error {
+	if core_utils.IsEmptyOrNil(handle) {
+		return errors.New("handle is empty")
+	}
 	s.lock.Lock()
 	defer s.lock.Unlock()
 	_, ok := s.tokens[handle]
@@ -74,6 +86,9 @@ func (s *service) RemoveRefreshToken(ctx context.Context, handle string) error {
 	return nil
 }
 func (s *service) RemoveRefreshTokenByClientID(ctx context.Context, clientID string) error {
+	if core_utils.IsEmptyOrNil(clientID) {
+		return errors.New("client_id is empty")
+	}
 	s.lock.Lock()
 	defer s.lock.Unlock()
 	for k, v := range s.tokens {
@@ -84,6 +99,9 @@ func (s *service) RemoveRefreshTokenByClientID(ctx context.Context, clientID str
 	return nil
 }
 func (s *service) RemoveRefreshTokenBySubject(ctx context.Context, subject string) error {
+	if core_utils.IsEmptyOrNil(subject) {
+		return errors.New("subject is empty")
+	}
 	s.lock.Lock()
 	defer s.lock.Unlock()
 
@@ -95,6 +113,12 @@ func (s *service) RemoveRefreshTokenBySubject(ctx context.Context, subject strin
 	return nil
 }
 func (s *service) RemoveRefreshTokenByClientIdAndSubject(ctx context.Context, clientID string, subject string) error {
+	if core_utils.IsEmptyOrNil(clientID) {
+		return errors.New("client_id is empty")
+	}
+	if core_utils.IsEmptyOrNil(subject) {
+		return errors.New("subject is empty")
+	}
 	s.lock.Lock()
 	defer s.lock.Unlock()
 	for k, v := range s.tokens {

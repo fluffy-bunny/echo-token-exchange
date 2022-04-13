@@ -41,9 +41,9 @@ import (
 	// OAuth2
 	//----------------------------------------------------------------------------------------------------------------------
 	services_go_oauth2_client_stores_inmemory "echo-starter/internal/services/go-oauth2/oauth2/client_stores/inmemory"
-	services_go_oauth2_keystore "echo-starter/internal/services/go-oauth2/oauth2/keystore"
 	services_go_oauth2_token_stores_inmemory "echo-starter/internal/services/go-oauth2/oauth2/token_stores/inmemory"
 	services_go_oauth2_token_stores_redis "echo-starter/internal/services/go-oauth2/oauth2/token_stores/redis"
+	services_stores_keymaterial "echo-starter/internal/services/stores/keymaterial"
 	services_stores_refreshtoken_inmemory "echo-starter/internal/services/stores/refreshtoken/inmemory"
 	services_tokenhandlers "echo-starter/internal/services/tokenhandlers"
 	services_tokenhandlers_ClientCredentialsTokenHandler "echo-starter/internal/services/tokenhandlers/ClientCredentialsTokenHandler"
@@ -54,6 +54,7 @@ import (
 	//----------------------------------------------------------------------------------------------------------------------
 	services_handlers_api_discovery "echo-starter/internal/services/handlers/api/discovery"
 	services_handlers_api_discoveryjwks "echo-starter/internal/services/handlers/api/discoveryjwks"
+	services_handlers_api_revoke "echo-starter/internal/services/handlers/api/revoke"
 	services_handlers_api_token "echo-starter/internal/services/handlers/api/token"
 
 	core_contracts_session "github.com/fluffy-bunny/grpcdotnetgo/pkg/echo/contracts/session"
@@ -253,16 +254,17 @@ func (s *Startup) addAppHandlers(builder *di.Builder) {
 	services_stores_refreshtoken_inmemory.AddSingletonIRefreshTokenStore(builder)
 	services_tokenhandlers.AddScopedITokenHandlerAccessor(builder)
 
-	services_go_oauth2_keystore.AddSingletonISigningKeyStore(builder)
+	services_stores_keymaterial.AddSingletonIKeyMaterial(builder)
 	services_clients_inmemory.AddSingletonIClientStore(builder, s.clients)
 	services_clients_clientrequest.AddScopedIClientRequest(builder)
 	services_apiresources_inmemory.AddSingletonIAPIResources(builder, s.apiResources)
 
-	// OIDC
+	// OIDC/OAUTH2
 	//----------------------------------------------------------------------------------------------------------------------
 	services_handlers_api_discovery.AddScopedIHandler(builder)
 	services_handlers_api_discoveryjwks.AddScopedIHandler(builder)
 	services_handlers_api_token.AddScopedIHandler(builder)
+	services_handlers_api_revoke.AddScopedIHandler(builder)
 
 }
 

@@ -5,7 +5,6 @@ import (
 	contracts_apiresources "echo-starter/internal/contracts/apiresources"
 	contracts_clients "echo-starter/internal/contracts/clients"
 	contracts_config "echo-starter/internal/contracts/config"
-	contracts_go_oauth2_oauth2 "echo-starter/internal/contracts/go-oauth2/oauth2"
 	"echo-starter/internal/models"
 	"echo-starter/internal/services/go-oauth2/oauth2/generates"
 	"echo-starter/internal/utils"
@@ -20,6 +19,8 @@ import (
 	contracts_stores_refreshtoken "echo-starter/internal/contracts/stores/refreshtoken"
 	contracts_tokenhandlers "echo-starter/internal/contracts/tokenhandlers"
 	echo_oauth2 "echo-starter/internal/services/go-oauth2/oauth2"
+
+	contracts_stores_keymaterial "echo-starter/internal/contracts/stores/keymaterial"
 
 	core_hashset "github.com/fluffy-bunny/grpcdotnetgo/pkg/gods/sets/hashset"
 
@@ -39,7 +40,7 @@ type (
 		Logger               contracts_logger.ILogger                         `inject:""`
 		ClientStore          contracts_clients.IClientStore                   `inject:""`
 		APIResources         contracts_apiresources.IAPIResources             `inject:""`
-		SigningKeyStore      contracts_go_oauth2_oauth2.ISigningKeyStore      `inject:""`
+		KeyMaterial          contracts_stores_keymaterial.IKeyMaterial        `inject:""`
 		ClientRequest        contracts_clients.IClientRequest                 `inject:""`
 		TokenHandlerAccessor contracts_tokenhandlers.ITokenHandlerAccessor    `inject:""`
 		RefreshTokenStore    contracts_stores_refreshtoken.IRefreshTokenStore `inject:""`
@@ -67,7 +68,7 @@ func AddScopedIHandler(builder *di.Builder) {
 func (s *service) Ctor() {
 	s.TokenHandler = s.TokenHandlerAccessor.GetTokenHandler()
 
-	signingKey, err := s.SigningKeyStore.GetSigningKey()
+	signingKey, err := s.KeyMaterial.GetSigningKey()
 	if err != nil {
 		panic(err)
 	}
