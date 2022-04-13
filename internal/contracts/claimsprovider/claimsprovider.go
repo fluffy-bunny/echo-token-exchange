@@ -1,7 +1,9 @@
 package claimsprovider
 
 import (
-	contracts_claimsprincipal "github.com/fluffy-bunny/grpcdotnetgo/pkg/contracts/claimsprincipal"
+	"echo-starter/internal/models"
+
+	core_hashset "github.com/fluffy-bunny/grpcdotnetgo/pkg/gods/sets/hashset"
 )
 
 //go:generate genny -pkg $GOPACKAGE -in=../../../genny/sarulabsdi/interface-types.go -out=gen-$GOFILE gen "InterfaceType=IClaimsProvider"
@@ -11,7 +13,7 @@ import (
 type (
 	// IClaimsProvider ...
 	IClaimsProvider interface {
-		GetProfiles(userID string) ([]string, error)
-		GetClaims(userID string, profile string) ([]*contracts_claimsprincipal.Claim, error)
+		GetProfiles(userID string) (*core_hashset.StringSet, error)
+		GetClaims(userID string, profile string) (models.IClaims, error)
 	}
 )

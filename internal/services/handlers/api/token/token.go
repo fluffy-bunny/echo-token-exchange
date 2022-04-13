@@ -2,13 +2,17 @@ package token
 
 import (
 	"context"
-	contracts_apiresources "echo-starter/internal/contracts/apiresources"
-	contracts_clients "echo-starter/internal/contracts/clients"
 	contracts_config "echo-starter/internal/contracts/config"
-	contracts_go_oauth2_oauth2 "echo-starter/internal/contracts/go-oauth2/oauth2"
+	contracts_stores_apiresources "echo-starter/internal/contracts/stores/apiresources"
+	contracts_clients "echo-starter/internal/contracts/stores/clients"
+	contracts_stores_jwttoken "echo-starter/internal/contracts/stores/jwttoken"
+	contracts_stores_keymaterial "echo-starter/internal/contracts/stores/keymaterial"
+
+	contracts_stores_referencetoken "echo-starter/internal/contracts/stores/referencetoken"
+	contracts_stores_refreshtoken "echo-starter/internal/contracts/stores/refreshtoken"
+	contracts_tokenhandlers "echo-starter/internal/contracts/tokenhandlers"
 	"echo-starter/internal/models"
-	"echo-starter/internal/services/go-oauth2/oauth2/generates"
-	"echo-starter/internal/services/go-oauth2/oauth2/manage"
+	echo_oauth2 "echo-starter/internal/services/go-oauth2/oauth2"
 	"echo-starter/internal/utils"
 	"echo-starter/internal/wellknown"
 	"encoding/json"
@@ -24,41 +28,30 @@ import (
 	di "github.com/fluffy-bunny/sarulabsdi"
 	"github.com/go-oauth2/oauth2/v4"
 	"github.com/go-oauth2/oauth2/v4/errors"
-	oauth2_server "github.com/go-oauth2/oauth2/v4/server"
+	oauth2_models "github.com/go-oauth2/oauth2/v4/models"
 	"github.com/golang-jwt/jwt"
 	"github.com/labstack/echo/v4"
+	"github.com/rs/xid"
 )
 
 type (
 	service struct {
-		Config                      *contracts_config.Config                    `inject:""`
-		Logger                      contracts_logger.ILogger                    `inject:""`
-		TokenStore                  contracts_go_oauth2_oauth2.ITokenStore      `inject:""`
-		ClientStore                 contracts_clients.IClientStore              `inject:""`
-		APIResources                contracts_apiresources.IAPIResources        `inject:""`
-		SigningKeyStore             contracts_go_oauth2_oauth2.ISigningKeyStore `inject:""`
-		ClientInfoHandler           oauth2_server.ClientInfoHandler
-		InternalErrorHandler        oauth2_server.InternalErrorHandler
-		ResponseErrorHandler        oauth2_server.ResponseErrorHandler
-		ClientAuthorizedHandler     oauth2_server.ClientAuthorizedHandler
-		ClientScopeHandler          oauth2_server.ClientScopeHandler
-		RefreshingScopeHandler      oauth2_server.RefreshingScopeHandler
-		RefreshingValidationHandler oauth2_server.RefreshingValidationHandler
-		ExtensionFieldsHandler      oauth2_server.ExtensionFieldsHandler
-
-		Manager    *manage.Manager
-		signingKey *models.SigningKey
+		Config               *contracts_config.Config                             `inject:""`
+		Logger               contracts_logger.ILogger                             `inject:""`
+		ClientStore          contracts_clients.IClientStore                       `inject:""`
+		APIResources         contracts_stores_apiresources.IAPIResources          `inject:""`
+		KeyMaterial          contracts_stores_keymaterial.IKeyMaterial            `inject:""`
+		JwtTokenStore        contracts_stores_jwttoken.IJwtTokenStore             `inject:""`
+		ClientRequest        contracts_clients.IClientRequest                     `inject:""`
+		TokenHandlerAccessor contracts_tokenhandlers.ITokenHandlerAccessor        `inject:""`
+		RefreshTokenStore    contracts_stores_refreshtoken.IRefreshTokenStore     `inject:""`
+		ReferenceTokenStore  contracts_stores_referencetoken.IReferenceTokenStore `inject:""`
+		TokenHandler         contracts_tokenhandlers.ITokenHandler
+		accessGenerate       echo_oauth2.AccessGenerate
+		signingKey           *models.SigningKey
+		issuer               string
 	}
 )
-
-var supportedGrantTypes *core_hashset.StringSet
-
-func init() {
-	supportedGrantTypes = core_hashset.NewStringSet(
-		string(oauth2.ClientCredentials),
-		string(oauth2.Refreshing),
-		"urn:ietf:params:oauth:grant-type:token-exchange")
-}
 
 func assertImplementation() {
 	var _ contracts_handler.IHandler = (*service)(nil)
@@ -76,54 +69,22 @@ func AddScopedIHandler(builder *di.Builder) {
 		wellknown.OAuth2TokenPath)
 }
 func (s *service) Ctor() {
+	s.TokenHandler = s.TokenHandlerAccessor.GetTokenHandler()
 
-	s.ClientInfoHandler = s._clientInfoHandler
-	s.Manager = manage.NewDefaultManager()
-	// token memory store
-	s.Manager.MustTokenStorage(s.TokenStore, nil)
-	s.Manager.MustClientStorage(s.ClientStore, nil)
-	s.Manager.MustApiResources(s.APIResources, nil)
-	signingKey, err := s.SigningKeyStore.GetSigningKey()
+	signingKey, err := s.KeyMaterial.GetSigningKey()
 	if err != nil {
 		panic(err)
 	}
 	s.signingKey = signingKey
-	/*
-		privateKey, publicKey, err := ecdsa.DecodePrivatePem(signingKey.Password, signingKey.PrivateKey)
-		if err != nil {
-			panic(err)
-		}
-		encPriv, _, err := ecdsa.Encode("", privateKey, publicKey)
-	*/
 
 }
 func (s *service) GetMiddleware() []echo.MiddlewareFunc {
 	return []echo.MiddlewareFunc{}
 }
 
-func (s *service) _clientInfoHandler(r *http.Request) (clientID, clientSecret string, err error) {
-	clientID, clientSecret, err = oauth2_server.ClientBasicHandler(r)
-	if err != nil {
-		clientID, clientSecret, err = oauth2_server.ClientFormHandler(r)
-	}
-	client, _, _ := s.ClientStore.GetClient(context.Background(), clientID)
-	var match bool
-	for _, sc := range client.ClientSecrets {
-		match, _ = utils.ComparePasswordHash(clientSecret, sc.Value)
-		if match {
-			break
-		}
-	}
-	if !match {
-		err = errors.ErrInvalidClient
-	}
-	return
-}
 func (s *service) Do(c echo.Context) error {
 	rootPath := utils.GetMyRootPath(c)
-	jwtGenerator := generates.NewJWTAccessGenerate(s.signingKey.Kid, []byte(s.signingKey.PrivateKey), jwt.SigningMethodES256)
-	jwtGenerator.Issuer = rootPath
-	s.Manager.MapAccessGenerate(jwtGenerator)
+	s.issuer = rootPath
 
 	return s.processRequest(c)
 }
@@ -133,68 +94,29 @@ func getMyRootPath(c echo.Context) string {
 
 func (s *service) processRequest(c echo.Context) error {
 	ctx := c.Request().Context()
+	r := c.Request()
 	w := c.Response()
-	gt, tgr, err := s.ValidationTokenRequest(c.Request())
+	client := s.ClientRequest.GetClient()
+	validatedResult, err := s.TokenHandler.ValidationTokenRequest(r)
 	if err != nil {
 		return s.tokenError(c.Response(), err)
 	}
+	validatedResult.ClientID = client.ClientID
+	claims, err := s.TokenHandler.ProcessTokenRequest(ctx, validatedResult)
+	if err != nil {
+		return s.tokenError(c.Response(), err)
+	}
+	iClaims := claims.(models.IClaims)
 
-	ti, err := s.GetAccessToken(ctx, gt, tgr)
+	iClaims.Set("client_id", client.ClientID)
+
+	ti, err := s.GetAccessToken(ctx, validatedResult, "", claims)
 	if err != nil {
 		return s.tokenError(w, err)
 	}
 
 	return s.token(w, s.GetTokenData(ti), nil)
 
-}
-func (s *service) ValidationTokenRequest(r *http.Request) (oauth2.GrantType, *oauth2.TokenGenerateRequest, error) {
-	ctx := r.Context()
-	gt := oauth2.GrantType(r.FormValue("grant_type"))
-	if !supportedGrantTypes.Contains(string(gt)) {
-		return "", nil, errors.ErrUnsupportedGrantType
-	}
-
-	clientID, clientSecret, err := s.ClientInfoHandler(r)
-	if err != nil {
-		return "", nil, err
-	}
-
-	tgr := &oauth2.TokenGenerateRequest{
-		ClientID:     clientID,
-		ClientSecret: clientSecret,
-		Request:      r,
-	}
-
-	switch gt {
-	case oauth2.ClientCredentials:
-		tgr.Scope = r.FormValue("scope")
-	case oauth2.Refreshing:
-		tgr.Refresh = r.FormValue("refresh_token")
-		tgr.Scope = r.FormValue("scope")
-		if tgr.Refresh == "" {
-			return "", nil, errors.ErrInvalidRequest
-		}
-	case "urn:ietf:params:oauth:grant-type:token-exchange":
-	default:
-		return "", nil, errors.ErrUnsupportedGrantType
-	}
-
-	client, found, err := s.ClientStore.GetClient(ctx, clientID)
-	if err != nil {
-		return "", nil, err
-	}
-	if !found {
-		return "", nil, errors.ErrInvalidClient
-	}
-	requestedScopes := strings.Split(tgr.Scope, " ")
-	requestedScopeSet := core_hashset.NewStringSet(requestedScopes...)
-	if !client.AllowedScopesSet.Contains(requestedScopeSet.Values()...) {
-		return "", nil, errors.ErrInvalidScope
-	}
-	if !client.AllowedGrantTypesSet.Contains(string(gt)) {
-		return "", nil, errors.ErrInvalidGrant
-	}
-	return gt, tgr, nil
 }
 
 func (s *service) tokenError(w http.ResponseWriter, err error) error {
@@ -226,21 +148,12 @@ func (s *service) GetErrorData(err error) (map[string]interface{}, int, http.Hea
 		re.Description = v
 		re.StatusCode = errors.StatusCodes[err]
 	} else {
-		if fn := s.InternalErrorHandler; fn != nil {
-			if v := fn(err); v != nil {
-				re = *v
-			}
-		}
 
 		if re.Error == nil {
 			re.Error = errors.ErrServerError
 			re.Description = errors.Descriptions[errors.ErrServerError]
 			re.StatusCode = errors.StatusCodes[errors.ErrServerError]
 		}
-	}
-
-	if fn := s.ResponseErrorHandler; fn != nil {
-		fn(&re)
 	}
 
 	data := make(map[string]interface{})
@@ -268,87 +181,17 @@ func (s *service) GetErrorData(err error) (map[string]interface{}, int, http.Hea
 	return data, statusCode, re.Header
 }
 
-// CheckGrantType check allows grant type
-func (s *service) CheckGrantType(gt oauth2.GrantType) bool {
-	for _, agt := range s.Config.AllowedGrantTypes {
-		if agt == gt {
-			return true
-		}
-	}
-	return false
-}
-
 // GetAccessToken access token
-func (s *service) GetAccessToken(ctx context.Context, gt oauth2.GrantType, tgr *oauth2.TokenGenerateRequest) (oauth2.TokenInfo,
+func (s *service) GetAccessToken(ctx context.Context,
+	validatedResult *contracts_tokenhandlers.ValidatedTokenRequestResult,
+	subject string, claims models.IClaims) (oauth2.TokenInfo,
 	error) {
-	if allowed := s.CheckGrantType(gt); !allowed {
-		return nil, errors.ErrUnauthorizedClient
-	}
 
-	if fn := s.ClientAuthorizedHandler; fn != nil {
-		allowed, err := fn(tgr.ClientID, gt)
-		if err != nil {
-			return nil, err
-		} else if !allowed {
-			return nil, errors.ErrUnauthorizedClient
-		}
-	}
-
-	switch gt {
-
-	case oauth2.ClientCredentials:
-		if fn := s.ClientScopeHandler; fn != nil {
-			allowed, err := fn(tgr)
-			if err != nil {
-				return nil, err
-			} else if !allowed {
-				return nil, errors.ErrInvalidScope
-			}
-		}
-		return s.Manager.GenerateAccessToken(ctx, gt, tgr)
-	case oauth2.Refreshing:
-		// check scope
-		if scopeFn := s.RefreshingScopeHandler; tgr.Scope != "" && scopeFn != nil {
-			rti, err := s.Manager.LoadRefreshToken(ctx, tgr.Refresh)
-			if err != nil {
-				if err == errors.ErrInvalidRefreshToken || err == errors.ErrExpiredRefreshToken {
-					return nil, errors.ErrInvalidGrant
-				}
-				return nil, err
-			}
-
-			allowed, err := scopeFn(tgr, rti.GetScope())
-			if err != nil {
-				return nil, err
-			} else if !allowed {
-				return nil, errors.ErrInvalidScope
-			}
-		}
-
-		if validationFn := s.RefreshingValidationHandler; validationFn != nil {
-			rti, err := s.Manager.LoadRefreshToken(ctx, tgr.Refresh)
-			if err != nil {
-				if err == errors.ErrInvalidRefreshToken || err == errors.ErrExpiredRefreshToken {
-					return nil, errors.ErrInvalidGrant
-				}
-				return nil, err
-			}
-			allowed, err := validationFn(rti)
-			if err != nil {
-				return nil, err
-			} else if !allowed {
-				return nil, errors.ErrInvalidScope
-			}
-		}
-
-		ti, err := s.Manager.RefreshAccessToken(ctx, tgr)
-		if err != nil {
-			if err == errors.ErrInvalidRefreshToken || err == errors.ErrExpiredRefreshToken {
-				return nil, errors.ErrInvalidGrant
-			}
-			return nil, err
-		}
-		return ti, nil
+	switch validatedResult.GrantType {
+	case wellknown.OAuth2GrantType_ClientCredentials:
+		return s.GenerateAccessToken(ctx, validatedResult, subject, claims)
+	case wellknown.OAuth2GrantType_RefreshToken:
+		return s.GenerateAccessToken(ctx, validatedResult, subject, claims)
 	}
 
 	return nil, errors.ErrUnsupportedGrantType
@@ -370,14 +213,67 @@ func (s *service) GetTokenData(ti oauth2.TokenInfo) map[string]interface{} {
 		data["refresh_token"] = refresh
 	}
 
-	if fn := s.ExtensionFieldsHandler; fn != nil {
-		ext := fn(ti)
-		for k, v := range ext {
-			if _, ok := data[k]; ok {
-				continue
-			}
-			data[k] = v
-		}
-	}
 	return data
+}
+
+// GenerateAccessToken generate the access token
+func (s *service) GenerateAccessToken(ctx context.Context,
+	validatedResult *contracts_tokenhandlers.ValidatedTokenRequestResult,
+	subject string,
+	claims models.IClaims) (oauth2.TokenInfo, error) {
+
+	//------------------------------------------------------------------------
+	client := s.ClientRequest.GetClient()
+
+	ti := oauth2_models.NewToken()
+	ti.SetClientID(client.ClientID)
+	ti.SetUserID(subject)
+
+	scope, _ := validatedResult.Params["scope"]
+	ti.SetScope(scope)
+	scopes := strings.Split(scope, " ")
+	scopeSet := core_hashset.NewStringSet(scopes...)
+	createAt := time.Now()
+	ti.SetAccessCreateAt(createAt)
+
+	ti.SetAccessExpiresIn(time.Duration(client.AccessTokenLifetime) * time.Second)
+
+	standardClaims := &jwt.StandardClaims{
+		IssuedAt:  createAt.Unix(),
+		ExpiresAt: createAt.Add(time.Second * time.Duration(client.AccessTokenLifetime)).Unix(),
+		Issuer:    s.issuer,
+		Audience:  client.ClientID,
+		Subject:   subject,
+		Id:        xid.New().String(),
+	}
+	jwtToken, err := s.JwtTokenStore.MintToken(ctx, standardClaims, claims)
+	if err != nil {
+		return nil, err
+	}
+
+	ti.SetAccess(jwtToken)
+
+	if client.AllowOfflineAccess && scopeSet.Contains("offline_access") {
+		var absoluteExpiration = time.Now().Add(time.Second * time.Duration(client.AbsoluteRefreshTokenLifetime))
+		if client.AbsoluteRefreshTokenLifetime <= 0 {
+			absoluteExpiration = time.Now().Add(time.Hour * 24 * 365 * 10) // 10 years
+		}
+		var expiration = time.Now().Add(time.Second * time.Duration(client.RefreshTokenExpiration))
+		handle, err := s.RefreshTokenStore.StoreRefreshToken(ctx,
+			&contracts_stores_refreshtoken.RefreshTokenInfo{
+				ClientID:           client.ClientID,
+				Subject:            subject,
+				Scope:              scope,
+				GrantType:          validatedResult.GrantType,
+				Expiration:         expiration,
+				AbsoluteExpiration: absoluteExpiration,
+				Params:             validatedResult.Params,
+			})
+		if err != nil {
+			return nil, err
+		}
+		ti.SetRefresh(handle)
+	}
+
+	return ti, nil
 }

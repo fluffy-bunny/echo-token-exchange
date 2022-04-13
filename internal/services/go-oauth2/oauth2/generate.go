@@ -2,7 +2,7 @@ package oauth2
 
 import (
 	"context"
-	contracts_apiresources "echo-starter/internal/contracts/apiresources"
+	contracts_stores_apiresources "echo-starter/internal/contracts/stores/apiresources"
 	"echo-starter/internal/models"
 	"net/http"
 	"time"
@@ -14,7 +14,7 @@ type (
 	// GenerateBasic provide the basis of the generated token data
 	GenerateBasic struct {
 		Client       *models.Client
-		APIResources contracts_apiresources.IAPIResources
+		APIResources contracts_stores_apiresources.IAPIResources
 		UserID       string
 		CreateAt     time.Time
 		TokenInfo    d_oauth2.TokenInfo
@@ -28,6 +28,6 @@ type (
 
 	// AccessGenerate generate the access and refresh tokens interface
 	AccessGenerate interface {
-		Token(ctx context.Context, data *GenerateBasic, isGenRefresh bool) (access, refresh string, err error)
+		Token(ctx context.Context, data *GenerateBasic, claims models.Claims) (access string, err error)
 	}
 )

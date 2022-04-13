@@ -5,9 +5,10 @@
 package claimsprovider
 
 import (
+	models "echo-starter/internal/models"
 	reflect "reflect"
 
-	claimsprincipal "github.com/fluffy-bunny/grpcdotnetgo/pkg/contracts/claimsprincipal"
+	hashset "github.com/fluffy-bunny/grpcdotnetgo/pkg/gods/sets/hashset"
 	gomock "github.com/golang/mock/gomock"
 )
 
@@ -35,10 +36,10 @@ func (m *MockIClaimsProvider) EXPECT() *MockIClaimsProviderMockRecorder {
 }
 
 // GetClaims mocks base method.
-func (m *MockIClaimsProvider) GetClaims(arg0, arg1 string) ([]*claimsprincipal.Claim, error) {
+func (m *MockIClaimsProvider) GetClaims(arg0, arg1 string) (models.IClaims, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetClaims", arg0, arg1)
-	ret0, _ := ret[0].([]*claimsprincipal.Claim)
+	ret0, _ := ret[0].(models.IClaims)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -50,10 +51,10 @@ func (mr *MockIClaimsProviderMockRecorder) GetClaims(arg0, arg1 interface{}) *go
 }
 
 // GetProfiles mocks base method.
-func (m *MockIClaimsProvider) GetProfiles(arg0 string) ([]string, error) {
+func (m *MockIClaimsProvider) GetProfiles(arg0 string) (*hashset.StringSet, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetProfiles", arg0)
-	ret0, _ := ret[0].([]string)
+	ret0, _ := ret[0].(*hashset.StringSet)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

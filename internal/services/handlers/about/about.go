@@ -8,7 +8,7 @@ import (
 	"reflect"
 	"strings"
 
-	contracts_go_oauth2_oauth2 "echo-starter/internal/contracts/go-oauth2/oauth2"
+	contracts_stores_keymaterial "echo-starter/internal/contracts/stores/keymaterial"
 
 	golinq "github.com/ahmetb/go-linq/v3"
 	contracts_core_claimsprincipal "github.com/fluffy-bunny/grpcdotnetgo/pkg/contracts/claimsprincipal"
@@ -25,7 +25,7 @@ type (
 		ClaimsPrincipal   contracts_core_claimsprincipal.IClaimsPrincipal `inject:""`
 		ContainerAccessor contracts_container.ContainerAccessor           `inject:""`
 		HandlerFactory    contracts_handler.IHandlerFactory               `inject:""`
-		SigningKeyStore   contracts_go_oauth2_oauth2.ISigningKeyStore     `inject:""`
+		KeyMaterial       contracts_stores_keymaterial.IKeyMaterial       `inject:""`
 	}
 )
 
@@ -46,8 +46,8 @@ func AddScopedIHandler(builder *di.Builder) {
 }
 
 func (s *service) Ctor() {
-	key, _ := s.SigningKeyStore.GetSigningKey()
-	fmt.Println(key)
+	keys, _ := s.KeyMaterial.GetPublicWebKeys()
+	fmt.Println(keys)
 }
 func (s *service) GetMiddleware() []echo.MiddlewareFunc {
 	return []echo.MiddlewareFunc{}

@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"reflect"
 
-	contracts_go_oauth2_oauth2 "echo-starter/internal/contracts/go-oauth2/oauth2"
+	contracts_stores_keymaterial "echo-starter/internal/contracts/stores/keymaterial"
 
 	contracts_handler "github.com/fluffy-bunny/grpcdotnetgo/pkg/echo/contracts/handler"
 	di "github.com/fluffy-bunny/sarulabsdi"
@@ -15,7 +15,7 @@ import (
 
 type (
 	service struct {
-		SigningKeyStore contracts_go_oauth2_oauth2.ISigningKeyStore `inject:""`
+		KeyMaterial contracts_stores_keymaterial.IKeyMaterial `inject:""`
 	}
 )
 
@@ -48,7 +48,7 @@ func getMyRootPath(c echo.Context) string {
 
 func (s *service) get(c echo.Context) error {
 
-	keys, _ := s.SigningKeyStore.GetPublicWebKeys()
+	keys, _ := s.KeyMaterial.GetPublicWebKeys()
 	return c.JSON(http.StatusOK, keys)
 
 }

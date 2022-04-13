@@ -6,14 +6,11 @@ import (
 	contracts_config "echo-starter/internal/contracts/config"
 	"echo-starter/internal/models"
 
-	"echo-starter/internal/wellknown"
 	"encoding/base64"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"strconv"
-
-	"golang.org/x/oauth2"
 
 	core_utils "github.com/fluffy-bunny/grpcdotnetgo/pkg/utils"
 	"github.com/quasoft/memstore"
@@ -29,14 +26,12 @@ import (
 
 	"github.com/gorilla/securecookie"
 
-	services_apiresources_inmemory "echo-starter/internal/services/apiresources/inmemory"
 	services_auth_cookie_token_store "echo-starter/internal/services/auth/cookie_token_store"
-	services_clients_inmemory "echo-starter/internal/services/clients/inmemory"
+	services_apiresources_inmemory "echo-starter/internal/services/stores/apiresources/inmemory"
+	services_clients_clientrequest "echo-starter/internal/services/stores/clients/clientrequest"
+	services_clients_inmemory "echo-starter/internal/services/stores/clients/inmemory"
 
 	services_auth_session_token_store "echo-starter/internal/services/auth/session_token_store"
-	services_handlers_api_webhook "echo-starter/internal/services/handlers/api/webhook"
-
-	services_handlers_graphiql "echo-starter/internal/services/handlers/graphiql"
 
 	services_handlers_healthz "echo-starter/internal/services/handlers/healthz"
 	services_handlers_ready "echo-starter/internal/services/handlers/ready"
@@ -45,58 +40,36 @@ import (
 
 	// OAuth2
 	//----------------------------------------------------------------------------------------------------------------------
-	services_go_oauth2_client_stores_inmemory "echo-starter/internal/services/go-oauth2/oauth2/client_stores/inmemory"
-	services_go_oauth2_keystore "echo-starter/internal/services/go-oauth2/oauth2/keystore"
-	services_go_oauth2_token_stores_inmemory "echo-starter/internal/services/go-oauth2/oauth2/token_stores/inmemory"
-	services_go_oauth2_token_stores_redis "echo-starter/internal/services/go-oauth2/oauth2/token_stores/redis"
 
-	// OIDC
+	services_stores_jwttoken "echo-starter/internal/services/stores/jwttoken"
+	services_stores_keymaterial "echo-starter/internal/services/stores/keymaterial"
+	services_stores_referencetoken_inmemory "echo-starter/internal/services/stores/referencetoken/inmemory"
+	services_stores_refreshtoken_inmemory "echo-starter/internal/services/stores/refreshtoken/inmemory"
+
+	services_tokenhandlers "echo-starter/internal/services/tokenhandlers"
+	services_tokenhandlers_ClientCredentialsTokenHandler "echo-starter/internal/services/tokenhandlers/ClientCredentialsTokenHandler"
+	services_tokenhandlers_RefreshTokenHandler "echo-starter/internal/services/tokenhandlers/RefreshTokenHandler"
+	services_tokenhandlers_TokenExchangeTokenHandler "echo-starter/internal/services/tokenhandlers/TokenExchangeTokenHandler"
+
+	// OIDC/OAUTH2
 	//----------------------------------------------------------------------------------------------------------------------
 	services_handlers_api_discovery "echo-starter/internal/services/handlers/api/discovery"
 	services_handlers_api_discoveryjwks "echo-starter/internal/services/handlers/api/discoveryjwks"
+	services_handlers_api_introspect "echo-starter/internal/services/handlers/api/introspect"
+	services_handlers_api_revoke "echo-starter/internal/services/handlers/api/revoke"
 	services_handlers_api_token "echo-starter/internal/services/handlers/api/token"
-
-	// ACCOUNTS
-	//----------------------------------------------------------------------------------------------------------------------
-	services_handlers_accounts "echo-starter/internal/services/handlers/accounts"
-	services_handlers_api_accounts "echo-starter/internal/services/handlers/api/accounts"
-	services_handlers_api_dev "echo-starter/internal/services/handlers/api/dev"
-
-	// ARTISTS
-	//----------------------------------------------------------------------------------------------------------------------
-	services_handlers_api_artists "echo-starter/internal/services/handlers/api/artists"
-	services_handlers_api_artists_artist "echo-starter/internal/services/handlers/api/artists/artist"
-	services_handlers_api_artists_artist_albums "echo-starter/internal/services/handlers/api/artists/artist/albums"
-	services_handlers_artists "echo-starter/internal/services/handlers/artists"
-
-	// GRAPHQL
-	//----------------------------------------------------------------------------------------------------------------------
-	services_handlers_api_graphql "echo-starter/internal/services/handlers/api/graphql"
-
-	services_handlers_auth_oidc_callback "echo-starter/internal/services/handlers/auth/oidc/callback"
-	services_handlers_auth_oidc_login "echo-starter/internal/services/handlers/auth/oidc/login"
-	services_handlers_auth_oidc_logout "echo-starter/internal/services/handlers/auth/oidc/logout"
-
-	services_handlers_auth_oauth2_github_callback "echo-starter/internal/services/handlers/auth/oauth2/github/callback"
-	services_handlers_auth_oauth2_login "echo-starter/internal/services/handlers/auth/oauth2/login"
-	services_handlers_auth_oauth2_logout "echo-starter/internal/services/handlers/auth/oauth2/logout"
-
-	core_contracts_oauth2 "github.com/fluffy-bunny/grpcdotnetgo/pkg/contracts/oauth2"
-
-	core_contracts_oidc "github.com/fluffy-bunny/grpcdotnetgo/pkg/contracts/oidc"
-	core_services_oidc "github.com/fluffy-bunny/grpcdotnetgo/pkg/services/oidc"
-
-	core_services_oauth2_github "github.com/fluffy-bunny/grpcdotnetgo/pkg/services/oauth2/github"
 
 	core_contracts_session "github.com/fluffy-bunny/grpcdotnetgo/pkg/echo/contracts/session"
 	core_middleware_claimsprincipal "github.com/fluffy-bunny/grpcdotnetgo/pkg/echo/middleware/claimsprincipal"
 
+	middleware_oauth2client "echo-starter/internal/middleware/oauth2client"
+
 	middleware_claimsprincipal "echo-starter/internal/middleware/claimsprincipal"
 	middleware_session "echo-starter/internal/middleware/session"
+	middleware_stores "echo-starter/internal/middleware/stores"
+
 	services_claimsprovider "echo-starter/internal/services/claimsprovider"
-	services_handlers_auth_profiles "echo-starter/internal/services/handlers/auth/profiles"
 	services_handlers_auth_unauthorized "echo-starter/internal/services/handlers/auth/unauthorized"
-	services_handlers_deep "echo-starter/internal/services/handlers/deep"
 	services_handlers_error "echo-starter/internal/services/handlers/error"
 	services_handlers_home "echo-starter/internal/services/handlers/home"
 
@@ -251,76 +224,8 @@ func (s *Startup) addSecureCookieOptions(builder *di.Builder) {
 		}
 	})
 }
-func (s *Startup) addAuthServices(builder *di.Builder) {
-
-	switch s.config.AuthProvider {
-	case "oidc":
-		// AUTH SERVICES
-		//----------------------------------------------------------------------------------------------------------------------
-		core_contracts_oidc.AddGetOIDCAuthenticatorConfigFunc(builder, func() *core_contracts_oidc.AuthenticatorConfig {
-			if core_utils.IsEmptyOrNil(s.config.OIDC.CallbackURL) {
-				// primarily for development
-				port := s.config.Port
-				s.config.OIDC.CallbackURL = fmt.Sprintf("http://localhost:%v%s",
-					port,
-					wellknown.OIDCCallbackPath)
-			}
-
-			return &core_contracts_oidc.AuthenticatorConfig{
-				Domain:       s.config.OIDC.Domain,
-				ClientID:     s.config.OIDC.ClientID,
-				ClientSecret: s.config.OIDC.ClientSecret,
-				CallbackURL:  s.config.OIDC.CallbackURL,
-			}
-		})
-		core_services_oidc.AddSingletonIOIDCAuthenticator(builder)
-		// AUTH HANDLERS
-		//----------------------------------------------------------------------------------------------------------------------
-		services_handlers_auth_oidc_login.AddScopedIHandler(builder)
-		services_handlers_auth_oidc_callback.AddScopedIHandler(builder)
-		services_handlers_auth_oidc_logout.AddScopedIHandler(builder)
-
-	case "github":
-		core_contracts_oauth2.AddGetOAuth2AuthenticatorConfigFunc(builder, func() *oauth2.Config {
-			return &oauth2.Config{
-				ClientID:     s.config.OAuth2.ClientID,
-				ClientSecret: s.config.OAuth2.ClientSecret,
-				RedirectURL:  s.config.OAuth2.RedirectURL,
-				Scopes:       s.config.OAuth2.Scopes,
-			}
-
-		})
-		core_services_oauth2_github.AddSingletonIGithubOAuth2Authenticator(builder)
-		// AUTH HANDLERS
-		//----------------------------------------------------------------------------------------------------------------------
-		services_handlers_auth_oauth2_login.AddScopedIHandler(builder)
-		services_handlers_auth_oauth2_github_callback.AddScopedIHandler(builder)
-		services_handlers_auth_oauth2_logout.AddScopedIHandler(builder)
-
-	default:
-		panic("auth provider not supported")
-	}
-
-	// AUTH HANDLERS
-	//----------------------------------------------------------------------------------------------------------------------
-	services_handlers_auth_profiles.AddScopedIHandler(builder)
-	services_handlers_auth_unauthorized.AddScopedIHandler(builder)
-
-	switch s.config.AuthStore {
-	case "session":
-		services_auth_session_token_store.AddScopedITokenStore(builder)
-	default:
-		services_auth_cookie_token_store.AddScopedITokenStore(builder) // overrides the session one
-	}
-
-}
 
 func (s *Startup) addAppHandlers(builder *di.Builder) {
-
-	services_handlers_graphiql.AddScopedIHandler(builder)
-
-	services_handlers_api_graphql.AddScopedIHandler(builder)
-	services_handlers_api_webhook.AddScopedIHandler(builder)
 
 	services_handlers_healthz.AddScopedIHandler(builder)
 	services_handlers_ready.AddScopedIHandler(builder)
@@ -328,7 +233,6 @@ func (s *Startup) addAppHandlers(builder *di.Builder) {
 	services_probes_oidc.AddSingletonIProbe(builder)
 
 	services_handlers_home.AddScopedIHandler(builder)
-	services_handlers_deep.AddScopedIHandler(builder)
 	services_handlers_error.AddScopedIHandler(builder)
 	services_handlers_about.AddScopedIHandler(builder)
 
@@ -336,39 +240,36 @@ func (s *Startup) addAppHandlers(builder *di.Builder) {
 	//----------------------------------------------------------------------------------------------------------------------
 	switch s.config.TokenStoreProvider {
 	case "inmemory":
-		services_go_oauth2_token_stores_inmemory.AddSingletonITokenStore(builder)
+		services_stores_refreshtoken_inmemory.AddSingletonIRefreshTokenStore(builder)
 	case "redis":
-		services_go_oauth2_token_stores_redis.AddSingletonITokenStore(builder)
 	default:
 		panic("token store provider not supported")
 	}
 	switch s.config.ClientStoreProvider {
 	case "inmemory":
-		services_go_oauth2_client_stores_inmemory.AddSingletonIClientStore(builder)
+		services_clients_inmemory.AddSingletonIClientStore(builder, s.clients)
 	default:
 		panic("client store provider not supported")
 	}
-	services_go_oauth2_keystore.AddSingletonISigningKeyStore(builder)
-	services_clients_inmemory.AddSingletonIClientStore(builder, s.clients)
+	services_stores_referencetoken_inmemory.AddSingletonIReferenceTokenStore(builder)
+
+	services_tokenhandlers_ClientCredentialsTokenHandler.AddScopedIClientCredentialsTokenHandler(builder)
+	services_tokenhandlers_TokenExchangeTokenHandler.AddScopedITokenExchangeTokenHandler(builder)
+	services_tokenhandlers_RefreshTokenHandler.AddScopedIRefreshTokenHandler(builder)
+	services_tokenhandlers.AddScopedITokenHandlerAccessor(builder)
+
+	services_stores_keymaterial.AddSingletonIKeyMaterial(builder)
+	services_stores_jwttoken.AddSingletonIJwtTokenStore(builder)
+	services_clients_clientrequest.AddScopedIClientRequest(builder)
 	services_apiresources_inmemory.AddSingletonIAPIResources(builder, s.apiResources)
-	// OIDC
+
+	// OIDC/OAUTH2
 	//----------------------------------------------------------------------------------------------------------------------
 	services_handlers_api_discovery.AddScopedIHandler(builder)
 	services_handlers_api_discoveryjwks.AddScopedIHandler(builder)
 	services_handlers_api_token.AddScopedIHandler(builder)
-
-	// ACCOUNT SERVICES
-	//----------------------------------------------------------------------------------------------------------------------
-	services_handlers_accounts.AddScopedIHandler(builder)
-	services_handlers_api_accounts.AddScopedIHandler(builder)
-	services_handlers_api_dev.AddScopedIHandler(builder)
-
-	// ARTISTS CRUD API
-	//----------------------------------------------------------------------------------------------------------------------
-	services_handlers_artists.AddScopedIHandler(builder)
-	services_handlers_api_artists.AddScopedIHandler(builder)
-	services_handlers_api_artists_artist.AddScopedIHandler(builder)
-	services_handlers_api_artists_artist_albums.AddScopedIHandler(builder)
+	services_handlers_api_revoke.AddScopedIHandler(builder)
+	services_handlers_api_introspect.AddScopedIHandler(builder)
 
 }
 
@@ -386,13 +287,19 @@ func (s *Startup) ConfigureServices(builder *di.Builder) error {
 	// Add our secure cookie configs
 	s.addSecureCookieOptions(builder)
 
-	// add our auth services
-	s.addAuthServices(builder)
+	services_handlers_auth_unauthorized.AddScopedIHandler(builder)
+
+	switch s.config.AuthStore {
+	case "session":
+		services_auth_session_token_store.AddScopedITokenStore(builder)
+	default:
+		services_auth_cookie_token_store.AddScopedITokenStore(builder) // overrides the session one
+	}
 
 	// add our app handlers
 	s.addAppHandlers(builder)
 
-	services_claimsprovider.AddSingletonIClaimsProviderMock(builder, s.ctrl)
+	services_claimsprovider.AddSingletonIClaimsProvider(builder)
 	return nil
 }
 func (s *Startup) Configure(e *echo.Echo, root di.Container) error {
@@ -402,9 +309,11 @@ func (s *Startup) Configure(e *echo.Echo, root di.Container) error {
 			return id.String()
 		},
 	}))
+	e.Use(middleware_stores.EnsureClearExpiredStorageItems(s.GetContainer()))
 	// DevelopmentMiddlewareUsingClaimsMap adds all the needed claims so that FinalAuthVerificationMiddlewareUsingClaimsMap succeeds
 	//e.Use(middleware_claimsprincipal.DevelopmentMiddlewareUsingClaimsMap(echostarter_auth.BuildGrpcEntrypointPermissionsClaimsMap(), true))
 	e.Use(middleware_session.EnsureAuthTokenRefresh(s.GetContainer()))
+	e.Use(middleware_oauth2client.AuthenticateOAuth2Client(s.GetContainer()))
 	e.Use(middleware_claimsprincipal.AuthenticatedSessionToClaimsPrincipalMiddleware(root))
 	e.Use(core_middleware_claimsprincipal.FinalAuthVerificationMiddlewareUsingClaimsMap(echostarter_auth.BuildGrpcEntrypointPermissionsClaimsMap(), true))
 	// only after we pass auth do we slide out the auth session
