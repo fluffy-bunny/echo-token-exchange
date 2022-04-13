@@ -6,6 +6,7 @@ import (
 	contracts_stores_jwttoken "echo-starter/internal/contracts/stores/jwttoken"
 	contracts_stores_keymaterial "echo-starter/internal/contracts/stores/keymaterial"
 	"echo-starter/internal/models"
+	"encoding/json"
 	"fmt"
 	"reflect"
 	"strings"
@@ -91,20 +92,15 @@ func (s *service) MintToken(ctx context.Context, standardClaims *jwt.StandardCla
 		}
 	}
 	extras.Set("aud", audienceSet.Values())
-	extras.Set("iss", standardClaims.Issuer)
-	if !core_utils.IsEmptyOrNil(standardClaims.Subject) {
-		extras.Set("sub", standardClaims.Subject)
+
+	var standard map[string]interface{}
+	standardJSON, _ := json.Marshal(standardClaims)
+	json.Unmarshal(standardJSON, &standard)
+	delete(standard, "aud")
+
+	for k, v := range standard {
+		extras.Set(k, v)
 	}
-	if !core_utils.IsEmptyOrNil(standardClaims.Id) {
-		extras.Set("jti", standardClaims.Id)
-	}
-	if !core_utils.IsEmptyOrNil(standardClaims.IssuedAt) {
-		extras.Set("iat", standardClaims.IssuedAt)
-	}
-	if standardClaims.NotBefore > 0 {
-		extras.Set("nbf", standardClaims.NotBefore)
-	}
-	extras.Set("exp", standardClaims.ExpiresAt)
 
 	token := jwt.NewWithClaims(method, extras.JwtClaims())
 	token.Header["kid"] = kid
