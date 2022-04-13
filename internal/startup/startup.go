@@ -44,7 +44,9 @@ import (
 	services_go_oauth2_token_stores_inmemory "echo-starter/internal/services/go-oauth2/oauth2/token_stores/inmemory"
 	services_go_oauth2_token_stores_redis "echo-starter/internal/services/go-oauth2/oauth2/token_stores/redis"
 	services_stores_keymaterial "echo-starter/internal/services/stores/keymaterial"
+	services_stores_referencetoken_inmemory "echo-starter/internal/services/stores/referencetoken/inmemory"
 	services_stores_refreshtoken_inmemory "echo-starter/internal/services/stores/refreshtoken/inmemory"
+
 	services_tokenhandlers "echo-starter/internal/services/tokenhandlers"
 	services_tokenhandlers_ClientCredentialsTokenHandler "echo-starter/internal/services/tokenhandlers/ClientCredentialsTokenHandler"
 	services_tokenhandlers_RefreshTokenHandler "echo-starter/internal/services/tokenhandlers/RefreshTokenHandler"
@@ -252,6 +254,7 @@ func (s *Startup) addAppHandlers(builder *di.Builder) {
 	services_tokenhandlers_TokenExchangeTokenHandler.AddScopedITokenExchangeTokenHandler(builder)
 	services_tokenhandlers_RefreshTokenHandler.AddScopedIRefreshTokenHandler(builder)
 	services_stores_refreshtoken_inmemory.AddSingletonIRefreshTokenStore(builder)
+	services_stores_referencetoken_inmemory.AddSingletonIReferenceTokenStore(builder)
 	services_tokenhandlers.AddScopedITokenHandlerAccessor(builder)
 
 	services_stores_keymaterial.AddSingletonIKeyMaterial(builder)

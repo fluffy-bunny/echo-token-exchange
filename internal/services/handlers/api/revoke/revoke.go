@@ -6,6 +6,7 @@ import (
 	"reflect"
 	"strings"
 
+	contracts_stores_referencetoken "echo-starter/internal/contracts/stores/referencetoken"
 	contracts_stores_refreshtoken "echo-starter/internal/contracts/stores/refreshtoken"
 
 	contracts_handler "github.com/fluffy-bunny/grpcdotnetgo/pkg/echo/contracts/handler"
@@ -16,7 +17,8 @@ import (
 
 type (
 	service struct {
-		RefreshTokenStore contracts_stores_refreshtoken.IRefreshTokenStore `inject:""`
+		RefreshTokenStore   contracts_stores_refreshtoken.IRefreshTokenStore     `inject:""`
+		ReferenceTokenStore contracts_stores_referencetoken.IReferenceTokenStore `inject:""`
 	}
 )
 
@@ -58,20 +60,24 @@ func (s *service) post(c echo.Context) error {
 	if core_utils.IsEmptyOrNil(u.Token) {
 		return echo.NewHTTPError(http.StatusBadRequest, "token is invalid")
 	}
+	if core_utils.IsEmptyOrNil(u.TokenTypeHint) {
+		return echo.NewHTTPError(http.StatusBadRequest, "token_type_hint is invalid")
+	}
 	switch u.TokenTypeHint {
+	// REFRESH_TOKEN
 	case "refresh_token":
 		if err := s.RefreshTokenStore.RemoveRefreshToken(ctx, u.Token); err != nil {
 			return err
 		}
-	case "subject":
+	case "refresh_token:subject":
 		if err := s.RefreshTokenStore.RemoveRefreshTokenBySubject(ctx, u.Token); err != nil {
 			return err
 		}
-	case "client_id":
+	case "refresh_token:client_id":
 		if err := s.RefreshTokenStore.RemoveRefreshTokenByClientID(ctx, u.Token); err != nil {
 			return err
 		}
-	case "client_id_subject":
+	case "refresh_token:client_id:subject":
 		items := strings.Split(u.Token, ":")
 		if len(items) != 2 {
 			return echo.NewHTTPError(http.StatusBadRequest, "invalid token")
@@ -80,6 +86,30 @@ func (s *service) post(c echo.Context) error {
 			return echo.NewHTTPError(http.StatusBadRequest, "invalid token")
 		}
 		if err := s.RefreshTokenStore.RemoveRefreshTokenByClientIdAndSubject(ctx, items[0], items[1]); err != nil {
+			return err
+		}
+		// ACCESS_TOKEN
+	case "access_token":
+		if err := s.ReferenceTokenStore.RemoveReferenceToken(ctx, u.Token); err != nil {
+			return err
+		}
+	case "access_token:subject":
+		if err := s.ReferenceTokenStore.RemoveReferenceTokenBySubject(ctx, u.Token); err != nil {
+			return err
+		}
+	case "access_token:client_id":
+		if err := s.ReferenceTokenStore.RemoveReferenceTokenByClientID(ctx, u.Token); err != nil {
+			return err
+		}
+	case "access_token:client_id:subject":
+		items := strings.Split(u.Token, ":")
+		if len(items) != 2 {
+			return echo.NewHTTPError(http.StatusBadRequest, "invalid token")
+		}
+		if core_utils.IsEmptyOrNil(items[0]) || core_utils.IsEmptyOrNil(items[1]) {
+			return echo.NewHTTPError(http.StatusBadRequest, "invalid token")
+		}
+		if err := s.ReferenceTokenStore.RemoveReferenceTokenByClientIdAndSubject(ctx, items[0], items[1]); err != nil {
 			return err
 		}
 	}
