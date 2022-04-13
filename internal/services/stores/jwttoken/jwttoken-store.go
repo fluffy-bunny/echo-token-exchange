@@ -81,7 +81,10 @@ func (s *service) MintToken(ctx context.Context, standardClaims *jwt.StandardCla
 		return key, nil
 	}
 
-	audienceSet := core_hashset.NewStringSet(standardClaims.Audience)
+	audienceSet := core_hashset.NewStringSet()
+	if !core_utils.IsEmptyOrNil(standardClaims.Audience) {
+		audienceSet.Add(standardClaims.Audience)
+	}
 	if !core_utils.IsNil(extras) {
 		extraAudInterface := extras.Get("aud")
 		switch extraAudInterface.(type) {
