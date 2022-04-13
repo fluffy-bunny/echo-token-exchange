@@ -37,8 +37,10 @@ func AddSingletonIRefreshTokenStore(builder *di.Builder) {
 	contracts_stores_refreshtoken.AddSingletonIRefreshTokenStore(builder, reflectType)
 }
 func (s *service) StoreRefreshToken(ctx context.Context, info *contracts_stores_refreshtoken.RefreshTokenInfo) (handle string, err error) {
+	//--~--~--~--~--~-- BARBED WIRE --~--~--~--~--~--~--
 	s.lock.Lock()
 	defer s.lock.Unlock()
+	//--~--~--~--~--~-- BARBED WIRE --~--~--~--~--~--~--
 	handle = xid.New().String()
 	s.tokens[handle] = info
 	return handle, nil
@@ -48,8 +50,10 @@ func (s *service) GetRefreshToken(ctx context.Context, handle string) (*contract
 		return nil, errors.New("handle is empty")
 	}
 
+	//--~--~--~--~--~-- BARBED WIRE --~--~--~--~--~--~--
 	s.lock.RLock()
 	defer s.lock.RUnlock()
+	//--~--~--~--~--~-- BARBED WIRE --~--~--~--~--~--~--
 	h, ok := s.tokens[handle]
 	if !ok {
 		return nil, errors.New("not found")
@@ -62,8 +66,10 @@ func (s *service) UpdateRefeshToken(ctx context.Context, handle string, info *co
 		return errors.New("handle is empty")
 	}
 
+	//--~--~--~--~--~-- BARBED WIRE --~--~--~--~--~--~--
 	s.lock.Lock()
 	defer s.lock.Unlock()
+	//--~--~--~--~--~-- BARBED WIRE --~--~--~--~--~--~--
 	_, ok := s.tokens[handle]
 	if !ok {
 		return errors.New("not found")
@@ -76,9 +82,11 @@ func (s *service) RemoveRefreshToken(ctx context.Context, handle string) error {
 	if core_utils.IsEmptyOrNil(handle) {
 		return errors.New("handle is empty")
 	}
+	//--~--~--~--~--~-- BARBED WIRE --~--~--~--~--~--~--
 	s.lock.Lock()
 	defer s.lock.Unlock()
 	_, ok := s.tokens[handle]
+	//--~--~--~--~--~-- BARBED WIRE --~--~--~--~--~--~--
 	if !ok {
 		return errors.New("not found")
 	}
@@ -89,8 +97,10 @@ func (s *service) RemoveRefreshTokenByClientID(ctx context.Context, clientID str
 	if core_utils.IsEmptyOrNil(clientID) {
 		return errors.New("client_id is empty")
 	}
+	//--~--~--~--~--~-- BARBED WIRE --~--~--~--~--~--~--
 	s.lock.Lock()
 	defer s.lock.Unlock()
+	//--~--~--~--~--~-- BARBED WIRE --~--~--~--~--~--~--
 	for k, v := range s.tokens {
 		if v.ClientID == clientID {
 			delete(s.tokens, k)
@@ -102,8 +112,10 @@ func (s *service) RemoveRefreshTokenBySubject(ctx context.Context, subject strin
 	if core_utils.IsEmptyOrNil(subject) {
 		return errors.New("subject is empty")
 	}
+	//--~--~--~--~--~-- BARBED WIRE --~--~--~--~--~--~--
 	s.lock.Lock()
 	defer s.lock.Unlock()
+	//--~--~--~--~--~-- BARBED WIRE --~--~--~--~--~--~--
 
 	for k, v := range s.tokens {
 		if v.Subject == subject {
@@ -119,8 +131,10 @@ func (s *service) RemoveRefreshTokenByClientIdAndSubject(ctx context.Context, cl
 	if core_utils.IsEmptyOrNil(subject) {
 		return errors.New("subject is empty")
 	}
+	//--~--~--~--~--~-- BARBED WIRE --~--~--~--~--~--~--
 	s.lock.Lock()
 	defer s.lock.Unlock()
+	//--~--~--~--~--~-- BARBED WIRE --~--~--~--~--~--~--
 	for k, v := range s.tokens {
 		if v.ClientID == clientID && v.Subject == subject {
 			delete(s.tokens, k)

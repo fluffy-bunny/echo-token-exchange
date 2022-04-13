@@ -43,6 +43,7 @@ import (
 	services_go_oauth2_client_stores_inmemory "echo-starter/internal/services/go-oauth2/oauth2/client_stores/inmemory"
 	services_go_oauth2_token_stores_inmemory "echo-starter/internal/services/go-oauth2/oauth2/token_stores/inmemory"
 	services_go_oauth2_token_stores_redis "echo-starter/internal/services/go-oauth2/oauth2/token_stores/redis"
+	services_stores_jwttoken "echo-starter/internal/services/stores/jwttoken"
 	services_stores_keymaterial "echo-starter/internal/services/stores/keymaterial"
 	services_stores_referencetoken_inmemory "echo-starter/internal/services/stores/referencetoken/inmemory"
 	services_stores_refreshtoken_inmemory "echo-starter/internal/services/stores/refreshtoken/inmemory"
@@ -56,6 +57,7 @@ import (
 	//----------------------------------------------------------------------------------------------------------------------
 	services_handlers_api_discovery "echo-starter/internal/services/handlers/api/discovery"
 	services_handlers_api_discoveryjwks "echo-starter/internal/services/handlers/api/discoveryjwks"
+	services_handlers_api_introspect "echo-starter/internal/services/handlers/api/introspect"
 	services_handlers_api_revoke "echo-starter/internal/services/handlers/api/revoke"
 	services_handlers_api_token "echo-starter/internal/services/handlers/api/token"
 
@@ -258,6 +260,7 @@ func (s *Startup) addAppHandlers(builder *di.Builder) {
 	services_tokenhandlers.AddScopedITokenHandlerAccessor(builder)
 
 	services_stores_keymaterial.AddSingletonIKeyMaterial(builder)
+	services_stores_jwttoken.AddSingletonIJwtTokenStore(builder)
 	services_clients_inmemory.AddSingletonIClientStore(builder, s.clients)
 	services_clients_clientrequest.AddScopedIClientRequest(builder)
 	services_apiresources_inmemory.AddSingletonIAPIResources(builder, s.apiResources)
@@ -268,6 +271,7 @@ func (s *Startup) addAppHandlers(builder *di.Builder) {
 	services_handlers_api_discoveryjwks.AddScopedIHandler(builder)
 	services_handlers_api_token.AddScopedIHandler(builder)
 	services_handlers_api_revoke.AddScopedIHandler(builder)
+	services_handlers_api_introspect.AddScopedIHandler(builder)
 
 }
 

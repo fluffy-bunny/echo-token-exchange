@@ -7,6 +7,7 @@ import (
 	"echo-starter/internal/utils/ecdsa"
 	"encoding/json"
 	"reflect"
+	"sync"
 	"time"
 
 	linq "github.com/ahmetb/go-linq"
@@ -18,6 +19,7 @@ type (
 	service struct {
 		Config        *contracts_config.Config `inject:""`
 		Logger        contracts_logger.ILogger `inject:""`
+		lock          *sync.RWMutex
 		signingKeys   []*models.SigningKey
 		nextFetchTime time.Time
 		signingKey    *models.SigningKey
@@ -36,6 +38,7 @@ func AddSingletonIKeyMaterial(builder *di.Builder) {
 	contracts_stores_keymaterial.AddSingletonIKeyMaterial(builder, reflectType)
 }
 func (s *service) Ctor() {
+	s.lock = &sync.RWMutex{}
 	var signingKeys []*models.SigningKey
 	err := json.Unmarshal([]byte(s.Config.SigningKeys), &signingKeys)
 	if err != nil {
@@ -47,6 +50,10 @@ func (s *service) Ctor() {
 func (s *service) _reloadKeys() {
 	now := time.Now()
 	if now.After(s.nextFetchTime) {
+		//--~--~--~--~--~-- BARBED WIRE --~--~--~--~--~--~--
+		s.lock.Lock()
+		defer s.lock.Unlock()
+		//--~--~--~--~--~-- BARBED WIRE --~--~--~--~--~--~--
 		var signingKeys []*models.SigningKey
 		linq.From(s.signingKeys).Where(func(c interface{}) bool {
 			signingKey := c.(*models.SigningKey)
@@ -86,10 +93,19 @@ func (s *service) _reloadKeys() {
 
 func (s *service) GetSigningKey() (*models.SigningKey, error) {
 	s._reloadKeys()
+	//--~--~--~--~--~-- BARBED WIRE --~--~--~--~--~--~--
+	s.lock.RLock()
+	defer s.lock.RUnlock()
+	//--~--~--~--~--~-- BARBED WIRE --~--~--~--~--~--~--
+
 	return s.signingKey, nil
 }
 
 func (s *service) GetPublicWebKeys() ([]*models.PublicJwk, error) {
 	s._reloadKeys()
+	//--~--~--~--~--~-- BARBED WIRE --~--~--~--~--~--~--
+	s.lock.RLock()
+	defer s.lock.RUnlock()
+	//--~--~--~--~--~-- BARBED WIRE --~--~--~--~--~--~--
 	return s.jwks, nil
 }

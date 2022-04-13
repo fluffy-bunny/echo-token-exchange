@@ -5,7 +5,12 @@ import (
 	contracts_apiresources "echo-starter/internal/contracts/apiresources"
 	contracts_clients "echo-starter/internal/contracts/clients"
 	contracts_config "echo-starter/internal/contracts/config"
+	contracts_stores_keymaterial "echo-starter/internal/contracts/stores/keymaterial"
+	contracts_stores_referencetoken "echo-starter/internal/contracts/stores/referencetoken"
+	contracts_stores_refreshtoken "echo-starter/internal/contracts/stores/refreshtoken"
+	contracts_tokenhandlers "echo-starter/internal/contracts/tokenhandlers"
 	"echo-starter/internal/models"
+	echo_oauth2 "echo-starter/internal/services/go-oauth2/oauth2"
 	"echo-starter/internal/services/go-oauth2/oauth2/generates"
 	"echo-starter/internal/utils"
 	"echo-starter/internal/wellknown"
@@ -16,16 +21,9 @@ import (
 	"strings"
 	"time"
 
-	contracts_stores_refreshtoken "echo-starter/internal/contracts/stores/refreshtoken"
-	contracts_tokenhandlers "echo-starter/internal/contracts/tokenhandlers"
-	echo_oauth2 "echo-starter/internal/services/go-oauth2/oauth2"
-
-	contracts_stores_keymaterial "echo-starter/internal/contracts/stores/keymaterial"
-
-	core_hashset "github.com/fluffy-bunny/grpcdotnetgo/pkg/gods/sets/hashset"
-
 	contracts_logger "github.com/fluffy-bunny/grpcdotnetgo/pkg/contracts/logger"
 	contracts_handler "github.com/fluffy-bunny/grpcdotnetgo/pkg/echo/contracts/handler"
+	core_hashset "github.com/fluffy-bunny/grpcdotnetgo/pkg/gods/sets/hashset"
 	di "github.com/fluffy-bunny/sarulabsdi"
 	"github.com/go-oauth2/oauth2/v4"
 	"github.com/go-oauth2/oauth2/v4/errors"
@@ -36,14 +34,15 @@ import (
 
 type (
 	service struct {
-		Config               *contracts_config.Config                         `inject:""`
-		Logger               contracts_logger.ILogger                         `inject:""`
-		ClientStore          contracts_clients.IClientStore                   `inject:""`
-		APIResources         contracts_apiresources.IAPIResources             `inject:""`
-		KeyMaterial          contracts_stores_keymaterial.IKeyMaterial        `inject:""`
-		ClientRequest        contracts_clients.IClientRequest                 `inject:""`
-		TokenHandlerAccessor contracts_tokenhandlers.ITokenHandlerAccessor    `inject:""`
-		RefreshTokenStore    contracts_stores_refreshtoken.IRefreshTokenStore `inject:""`
+		Config               *contracts_config.Config                             `inject:""`
+		Logger               contracts_logger.ILogger                             `inject:""`
+		ClientStore          contracts_clients.IClientStore                       `inject:""`
+		APIResources         contracts_apiresources.IAPIResources                 `inject:""`
+		KeyMaterial          contracts_stores_keymaterial.IKeyMaterial            `inject:""`
+		ClientRequest        contracts_clients.IClientRequest                     `inject:""`
+		TokenHandlerAccessor contracts_tokenhandlers.ITokenHandlerAccessor        `inject:""`
+		RefreshTokenStore    contracts_stores_refreshtoken.IRefreshTokenStore     `inject:""`
+		ReferenceTokenStore  contracts_stores_referencetoken.IReferenceTokenStore `inject:""`
 		TokenHandler         contracts_tokenhandlers.ITokenHandler
 		accessGenerate       echo_oauth2.AccessGenerate
 		signingKey           *models.SigningKey
