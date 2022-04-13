@@ -286,3 +286,278 @@ func _getImplementedIRefreshTokenStoreNames(implementedTypes ...reflect.Type) st
 	}
 	return builder.String()
 }
+
+// ReflectTypeIInternalRefreshTokenStore used when your service claims to implement IInternalRefreshTokenStore
+var ReflectTypeIInternalRefreshTokenStore = di.GetInterfaceReflectType((*IInternalRefreshTokenStore)(nil))
+
+// AddSingletonIInternalRefreshTokenStore adds a type that implements IInternalRefreshTokenStore
+func AddSingletonIInternalRefreshTokenStore(builder *di.Builder, implType reflect.Type, implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeIInternalRefreshTokenStore)
+	_logAddIInternalRefreshTokenStore("SINGLETON", implType, _getImplementedIInternalRefreshTokenStoreNames(implementedTypes...),
+		_logIInternalRefreshTokenStoreExtra{
+			Name:  "DI-BY",
+			Value: "type",
+		})
+	di.AddSingleton(builder, implType, implementedTypes...)
+}
+
+// AddSingletonIInternalRefreshTokenStoreWithMetadata adds a type that implements IInternalRefreshTokenStore
+func AddSingletonIInternalRefreshTokenStoreWithMetadata(builder *di.Builder, implType reflect.Type, metaData map[string]interface{}, implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeIInternalRefreshTokenStore)
+	_logAddIInternalRefreshTokenStore("SINGLETON", implType, _getImplementedIInternalRefreshTokenStoreNames(implementedTypes...),
+		_logIInternalRefreshTokenStoreExtra{
+			Name:  "DI-BY",
+			Value: "type",
+		},
+		_logIInternalRefreshTokenStoreExtra{
+			Name:  "DI-M",
+			Value: metaData,
+		})
+	di.AddSingletonWithMetadata(builder, implType, metaData, implementedTypes...)
+}
+
+// AddSingletonIInternalRefreshTokenStoreByObj adds a prebuilt obj
+func AddSingletonIInternalRefreshTokenStoreByObj(builder *di.Builder, obj interface{}, implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeIInternalRefreshTokenStore)
+	_logAddIInternalRefreshTokenStore("SINGLETON", reflect.TypeOf(obj), _getImplementedIInternalRefreshTokenStoreNames(implementedTypes...),
+		_logIInternalRefreshTokenStoreExtra{
+			Name:  "DI-BY",
+			Value: "obj",
+		})
+	di.AddSingletonWithImplementedTypesByObj(builder, obj, implementedTypes...)
+}
+
+// AddSingletonIInternalRefreshTokenStoreByObjWithMetadata adds a prebuilt obj
+func AddSingletonIInternalRefreshTokenStoreByObjWithMetadata(builder *di.Builder, obj interface{}, metaData map[string]interface{}, implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeIInternalRefreshTokenStore)
+	_logAddIInternalRefreshTokenStore("SINGLETON", reflect.TypeOf(obj), _getImplementedIInternalRefreshTokenStoreNames(implementedTypes...),
+		_logIInternalRefreshTokenStoreExtra{
+			Name:  "DI-BY",
+			Value: "obj",
+		},
+		_logIInternalRefreshTokenStoreExtra{
+			Name:  "DI-M",
+			Value: metaData,
+		})
+
+	di.AddSingletonWithImplementedTypesByObjWithMetadata(builder, obj, metaData, implementedTypes...)
+}
+
+// AddSingletonIInternalRefreshTokenStoreByFunc adds a type by a custom func
+func AddSingletonIInternalRefreshTokenStoreByFunc(builder *di.Builder, implType reflect.Type, build func(ctn di.Container) (interface{}, error), implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeIInternalRefreshTokenStore)
+	_logAddIInternalRefreshTokenStore("SINGLETON", implType, _getImplementedIInternalRefreshTokenStoreNames(implementedTypes...),
+		_logIInternalRefreshTokenStoreExtra{
+			Name:  "DI-BY",
+			Value: "func",
+		})
+	di.AddSingletonWithImplementedTypesByFunc(builder, implType, build, implementedTypes...)
+}
+
+// AddSingletonIInternalRefreshTokenStoreByFuncWithMetadata adds a type by a custom func
+func AddSingletonIInternalRefreshTokenStoreByFuncWithMetadata(builder *di.Builder, implType reflect.Type, build func(ctn di.Container) (interface{}, error), metaData map[string]interface{}, implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeIInternalRefreshTokenStore)
+	_logAddIInternalRefreshTokenStore("SINGLETON", implType, _getImplementedIInternalRefreshTokenStoreNames(implementedTypes...),
+		_logIInternalRefreshTokenStoreExtra{
+			Name:  "DI-BY",
+			Value: "func",
+		},
+		_logIInternalRefreshTokenStoreExtra{
+			Name:  "DI-M",
+			Value: metaData,
+		})
+
+	di.AddSingletonWithImplementedTypesByFuncWithMetadata(builder, implType, build, metaData, implementedTypes...)
+}
+
+// AddTransientIInternalRefreshTokenStore adds a type that implements IInternalRefreshTokenStore
+func AddTransientIInternalRefreshTokenStore(builder *di.Builder, implType reflect.Type, implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeIInternalRefreshTokenStore)
+	_logAddIInternalRefreshTokenStore("TRANSIENT", implType, _getImplementedIInternalRefreshTokenStoreNames(implementedTypes...),
+		_logIInternalRefreshTokenStoreExtra{
+			Name:  "DI-BY",
+			Value: "type",
+		})
+
+	di.AddTransientWithImplementedTypes(builder, implType, implementedTypes...)
+}
+
+// AddTransientIInternalRefreshTokenStoreWithMetadata adds a type that implements IInternalRefreshTokenStore
+func AddTransientIInternalRefreshTokenStoreWithMetadata(builder *di.Builder, implType reflect.Type, metaData map[string]interface{}, implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeIInternalRefreshTokenStore)
+	_logAddIInternalRefreshTokenStore("TRANSIENT", implType, _getImplementedIInternalRefreshTokenStoreNames(implementedTypes...),
+		_logIInternalRefreshTokenStoreExtra{
+			Name:  "DI-BY",
+			Value: "type",
+		},
+		_logIInternalRefreshTokenStoreExtra{
+			Name:  "DI-M",
+			Value: metaData,
+		})
+
+	di.AddTransientWithImplementedTypesWithMetadata(builder, implType, metaData, implementedTypes...)
+}
+
+// AddTransientIInternalRefreshTokenStoreByFunc adds a type by a custom func
+func AddTransientIInternalRefreshTokenStoreByFunc(builder *di.Builder, implType reflect.Type, build func(ctn di.Container) (interface{}, error), implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeIInternalRefreshTokenStore)
+	_logAddIInternalRefreshTokenStore("TRANSIENT", implType, _getImplementedIInternalRefreshTokenStoreNames(implementedTypes...),
+		_logIInternalRefreshTokenStoreExtra{
+			Name:  "DI-BY",
+			Value: "func",
+		})
+
+	di.AddTransientWithImplementedTypesByFunc(builder, implType, build, implementedTypes...)
+}
+
+// AddTransientIInternalRefreshTokenStoreByFuncWithMetadata adds a type by a custom func
+func AddTransientIInternalRefreshTokenStoreByFuncWithMetadata(builder *di.Builder, implType reflect.Type, build func(ctn di.Container) (interface{}, error), metaData map[string]interface{}, implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeIInternalRefreshTokenStore)
+	_logAddIInternalRefreshTokenStore("TRANSIENT", implType, _getImplementedIInternalRefreshTokenStoreNames(implementedTypes...),
+		_logIInternalRefreshTokenStoreExtra{
+			Name:  "DI-BY",
+			Value: "func",
+		},
+		_logIInternalRefreshTokenStoreExtra{
+			Name:  "DI-M",
+			Value: metaData,
+		})
+
+	di.AddTransientWithImplementedTypesByFuncWithMetadata(builder, implType, build, metaData, implementedTypes...)
+}
+
+// AddScopedIInternalRefreshTokenStore adds a type that implements IInternalRefreshTokenStore
+func AddScopedIInternalRefreshTokenStore(builder *di.Builder, implType reflect.Type, implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeIInternalRefreshTokenStore)
+	_logAddIInternalRefreshTokenStore("SCOPED", implType, _getImplementedIInternalRefreshTokenStoreNames(implementedTypes...),
+		_logIInternalRefreshTokenStoreExtra{
+			Name:  "DI-BY",
+			Value: "type",
+		})
+	di.AddScopedWithImplementedTypes(builder, implType, implementedTypes...)
+}
+
+// AddScopedIInternalRefreshTokenStoreWithMetadata adds a type that implements IInternalRefreshTokenStore
+func AddScopedIInternalRefreshTokenStoreWithMetadata(builder *di.Builder, implType reflect.Type, metaData map[string]interface{}, implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeIInternalRefreshTokenStore)
+	_logAddIInternalRefreshTokenStore("SCOPED", implType, _getImplementedIInternalRefreshTokenStoreNames(implementedTypes...),
+		_logIInternalRefreshTokenStoreExtra{
+			Name:  "DI-BY",
+			Value: "type",
+		},
+		_logIInternalRefreshTokenStoreExtra{
+			Name:  "DI-M",
+			Value: metaData,
+		})
+	di.AddScopedWithImplementedTypesWithMetadata(builder, implType, metaData, implementedTypes...)
+}
+
+// AddScopedIInternalRefreshTokenStoreByFunc adds a type by a custom func
+func AddScopedIInternalRefreshTokenStoreByFunc(builder *di.Builder, implType reflect.Type, build func(ctn di.Container) (interface{}, error), implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeIInternalRefreshTokenStore)
+	_logAddIInternalRefreshTokenStore("SCOPED", implType, _getImplementedIInternalRefreshTokenStoreNames(implementedTypes...),
+		_logIInternalRefreshTokenStoreExtra{
+			Name:  "DI-BY",
+			Value: "func",
+		})
+	di.AddScopedWithImplementedTypesByFunc(builder, implType, build, implementedTypes...)
+}
+
+// AddScopedIInternalRefreshTokenStoreByFuncWithMetadata adds a type by a custom func
+func AddScopedIInternalRefreshTokenStoreByFuncWithMetadata(builder *di.Builder, implType reflect.Type, build func(ctn di.Container) (interface{}, error), metaData map[string]interface{}, implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeIInternalRefreshTokenStore)
+	_logAddIInternalRefreshTokenStore("SCOPED", implType, _getImplementedIInternalRefreshTokenStoreNames(implementedTypes...),
+		_logIInternalRefreshTokenStoreExtra{
+			Name:  "DI-BY",
+			Value: "func",
+		},
+		_logIInternalRefreshTokenStoreExtra{
+			Name:  "DI-M",
+			Value: metaData,
+		})
+
+	di.AddScopedWithImplementedTypesByFuncWithMetadata(builder, implType, build, metaData, implementedTypes...)
+}
+
+// RemoveAllIInternalRefreshTokenStore removes all IInternalRefreshTokenStore from the DI
+func RemoveAllIInternalRefreshTokenStore(builder *di.Builder) {
+	builder.RemoveAllByType(ReflectTypeIInternalRefreshTokenStore)
+}
+
+// GetIInternalRefreshTokenStoreFromContainer alternative to SafeGetIInternalRefreshTokenStoreFromContainer but panics of object is not present
+func GetIInternalRefreshTokenStoreFromContainer(ctn di.Container) IInternalRefreshTokenStore {
+	return ctn.GetByType(ReflectTypeIInternalRefreshTokenStore).(IInternalRefreshTokenStore)
+}
+
+// GetManyIInternalRefreshTokenStoreFromContainer alternative to SafeGetManyIInternalRefreshTokenStoreFromContainer but panics of object is not present
+func GetManyIInternalRefreshTokenStoreFromContainer(ctn di.Container) []IInternalRefreshTokenStore {
+	objs := ctn.GetManyByType(ReflectTypeIInternalRefreshTokenStore)
+	var results []IInternalRefreshTokenStore
+	for _, obj := range objs {
+		results = append(results, obj.(IInternalRefreshTokenStore))
+	}
+	return results
+}
+
+// SafeGetIInternalRefreshTokenStoreFromContainer trys to get the object by type, will not panic, returns nil and error
+func SafeGetIInternalRefreshTokenStoreFromContainer(ctn di.Container) (IInternalRefreshTokenStore, error) {
+	obj, err := ctn.SafeGetByType(ReflectTypeIInternalRefreshTokenStore)
+	if err != nil {
+		return nil, err
+	}
+	return obj.(IInternalRefreshTokenStore), nil
+}
+
+// GetIInternalRefreshTokenStoreDefinition returns that last definition registered that this container can provide
+func GetIInternalRefreshTokenStoreDefinition(ctn di.Container) *di.Def {
+	def := ctn.GetDefinitionByType(ReflectTypeIInternalRefreshTokenStore)
+	return def
+}
+
+// GetIInternalRefreshTokenStoreDefinitions returns all definitions that this container can provide
+func GetIInternalRefreshTokenStoreDefinitions(ctn di.Container) []*di.Def {
+	defs := ctn.GetDefinitionsByType(ReflectTypeIInternalRefreshTokenStore)
+	return defs
+}
+
+// SafeGetManyIInternalRefreshTokenStoreFromContainer trys to get the object by type, will not panic, returns nil and error
+func SafeGetManyIInternalRefreshTokenStoreFromContainer(ctn di.Container) ([]IInternalRefreshTokenStore, error) {
+	objs, err := ctn.SafeGetManyByType(ReflectTypeIInternalRefreshTokenStore)
+	if err != nil {
+		return nil, err
+	}
+	var results []IInternalRefreshTokenStore
+	for _, obj := range objs {
+		results = append(results, obj.(IInternalRefreshTokenStore))
+	}
+	return results, nil
+}
+
+type _logIInternalRefreshTokenStoreExtra struct {
+	Name  string
+	Value interface{}
+}
+
+func _logAddIInternalRefreshTokenStore(scopeType string, implType reflect.Type, interfaces string, extra ..._logIInternalRefreshTokenStoreExtra) {
+	infoEvent := log.Info().
+		Str("DI", scopeType).
+		Str("DI-I", interfaces).
+		Str("DI-B", implType.Elem().String())
+
+	for _, extra := range extra {
+		infoEvent = infoEvent.Interface(extra.Name, extra.Value)
+	}
+
+	infoEvent.Send()
+
+}
+func _getImplementedIInternalRefreshTokenStoreNames(implementedTypes ...reflect.Type) string {
+	builder := strings.Builder{}
+	for idx, implementedType := range implementedTypes {
+		builder.WriteString(implementedType.Name())
+		if idx < len(implementedTypes)-1 {
+			builder.WriteString(", ")
+		}
+	}
+	return builder.String()
+}

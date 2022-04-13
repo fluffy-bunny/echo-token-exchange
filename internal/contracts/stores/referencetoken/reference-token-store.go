@@ -5,9 +5,9 @@ import (
 	"time"
 )
 
-//go:generate genny -pkg $GOPACKAGE -in=../../../../genny/sarulabsdi/interface-types.go -out=gen-$GOFILE gen "InterfaceType=IReferenceTokenStore"
+//go:generate genny -pkg $GOPACKAGE -in=../../../../genny/sarulabsdi/interface-types.go -out=gen-$GOFILE gen "InterfaceType=IReferenceTokenStore,IInternalReferenceTokenStore"
 
-//go:generate mockgen -package=$GOPACKAGE -destination=../../../mocks/stores/$GOPACKAGE/mock_$GOFILE   echo-starter/internal/contracts/stores/$GOPACKAGE IReferenceTokenStore
+//go:generate mockgen -package=$GOPACKAGE -destination=../../../mocks/stores/$GOPACKAGE/mock_$GOFILE   echo-starter/internal/contracts/stores/$GOPACKAGE IReferenceTokenStore,IInternalReferenceTokenStore
 
 type (
 	ReferenceTokenInfo struct {
@@ -24,5 +24,9 @@ type (
 		RemoveReferenceTokenByClientID(ctx context.Context, clientID string) error
 		RemoveReferenceTokenBySubject(ctx context.Context, subject string) error
 		RemoveReferenceTokenByClientIdAndSubject(ctx context.Context, clientID string, subject string) error
+	}
+	IInternalReferenceTokenStore interface {
+		IReferenceTokenStore
+		RemoveExpired(ctx context.Context)
 	}
 )

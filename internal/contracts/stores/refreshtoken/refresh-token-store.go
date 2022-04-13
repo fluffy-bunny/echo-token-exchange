@@ -5,9 +5,9 @@ import (
 	"time"
 )
 
-//go:generate genny -pkg $GOPACKAGE -in=../../../../genny/sarulabsdi/interface-types.go -out=gen-$GOFILE gen "InterfaceType=IRefreshTokenStore"
+//go:generate genny -pkg $GOPACKAGE -in=../../../../genny/sarulabsdi/interface-types.go -out=gen-$GOFILE gen "InterfaceType=IRefreshTokenStore,IInternalRefreshTokenStore"
 
-//go:generate mockgen -package=$GOPACKAGE -destination=../../../mocks/stores/$GOPACKAGE/mock_$GOFILE   echo-starter/internal/contracts/stores/$GOPACKAGE IRefreshTokenStore
+//go:generate mockgen -package=$GOPACKAGE -destination=../../../mocks/stores/$GOPACKAGE/mock_$GOFILE   echo-starter/internal/contracts/stores/$GOPACKAGE IRefreshTokenStore,IInternalRefreshTokenStore
 
 type (
 	RefreshTokenInfo struct {
@@ -27,5 +27,9 @@ type (
 		RemoveRefreshTokenByClientID(ctx context.Context, clientID string) error
 		RemoveRefreshTokenBySubject(ctx context.Context, subject string) error
 		RemoveRefreshTokenByClientIdAndSubject(ctx context.Context, clientID string, subject string) error
+	}
+	IInternalRefreshTokenStore interface {
+		IRefreshTokenStore
+		RemoveExpired(ctx context.Context)
 	}
 )

@@ -17,7 +17,7 @@
 		"slidingRefreshTokenLifetime": 900,
 		"identityTokenLifetime": 2600000,
 		"refreshTokenUsage": 1,
-		"refreshTokenExpiration": 1,
+		"refreshTokenExpiration": 300,
 		"accessTokenType": 0,
 		"claims": [{
 			"type": "artificer-ns",
@@ -61,7 +61,7 @@
 		"slidingRefreshTokenLifetime": 900,
 		"identityTokenLifetime": 2600000,
 		"refreshTokenUsage": 1,
-		"refreshTokenExpiration": 1,
+		"refreshTokenExpiration": 300,
 		"accessTokenType": 0,
 		"claims": [{
 			"type": "artificer-ns",

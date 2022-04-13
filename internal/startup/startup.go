@@ -40,9 +40,7 @@ import (
 
 	// OAuth2
 	//----------------------------------------------------------------------------------------------------------------------
-	services_go_oauth2_client_stores_inmemory "echo-starter/internal/services/go-oauth2/oauth2/client_stores/inmemory"
-	services_go_oauth2_token_stores_inmemory "echo-starter/internal/services/go-oauth2/oauth2/token_stores/inmemory"
-	services_go_oauth2_token_stores_redis "echo-starter/internal/services/go-oauth2/oauth2/token_stores/redis"
+
 	services_stores_jwttoken "echo-starter/internal/services/stores/jwttoken"
 	services_stores_keymaterial "echo-starter/internal/services/stores/keymaterial"
 	services_stores_referencetoken_inmemory "echo-starter/internal/services/stores/referencetoken/inmemory"
@@ -68,6 +66,8 @@ import (
 
 	middleware_claimsprincipal "echo-starter/internal/middleware/claimsprincipal"
 	middleware_session "echo-starter/internal/middleware/session"
+	middleware_stores "echo-starter/internal/middleware/stores"
+
 	services_claimsprovider "echo-starter/internal/services/claimsprovider"
 	services_handlers_auth_unauthorized "echo-starter/internal/services/handlers/auth/unauthorized"
 	services_handlers_error "echo-starter/internal/services/handlers/error"
@@ -240,28 +240,26 @@ func (s *Startup) addAppHandlers(builder *di.Builder) {
 	//----------------------------------------------------------------------------------------------------------------------
 	switch s.config.TokenStoreProvider {
 	case "inmemory":
-		services_go_oauth2_token_stores_inmemory.AddSingletonITokenStore(builder)
+		services_stores_refreshtoken_inmemory.AddSingletonIRefreshTokenStore(builder)
 	case "redis":
-		services_go_oauth2_token_stores_redis.AddSingletonITokenStore(builder)
 	default:
 		panic("token store provider not supported")
 	}
 	switch s.config.ClientStoreProvider {
 	case "inmemory":
-		services_go_oauth2_client_stores_inmemory.AddSingletonIClientStore(builder)
+		services_clients_inmemory.AddSingletonIClientStore(builder, s.clients)
 	default:
 		panic("client store provider not supported")
 	}
+	services_stores_referencetoken_inmemory.AddSingletonIReferenceTokenStore(builder)
+
 	services_tokenhandlers_ClientCredentialsTokenHandler.AddScopedIClientCredentialsTokenHandler(builder)
 	services_tokenhandlers_TokenExchangeTokenHandler.AddScopedITokenExchangeTokenHandler(builder)
 	services_tokenhandlers_RefreshTokenHandler.AddScopedIRefreshTokenHandler(builder)
-	services_stores_refreshtoken_inmemory.AddSingletonIRefreshTokenStore(builder)
-	services_stores_referencetoken_inmemory.AddSingletonIReferenceTokenStore(builder)
 	services_tokenhandlers.AddScopedITokenHandlerAccessor(builder)
 
 	services_stores_keymaterial.AddSingletonIKeyMaterial(builder)
 	services_stores_jwttoken.AddSingletonIJwtTokenStore(builder)
-	services_clients_inmemory.AddSingletonIClientStore(builder, s.clients)
 	services_clients_clientrequest.AddScopedIClientRequest(builder)
 	services_apiresources_inmemory.AddSingletonIAPIResources(builder, s.apiResources)
 
@@ -311,6 +309,7 @@ func (s *Startup) Configure(e *echo.Echo, root di.Container) error {
 			return id.String()
 		},
 	}))
+	e.Use(middleware_stores.EnsureClearExpiredStorageItems(s.GetContainer()))
 	// DevelopmentMiddlewareUsingClaimsMap adds all the needed claims so that FinalAuthVerificationMiddlewareUsingClaimsMap succeeds
 	//e.Use(middleware_claimsprincipal.DevelopmentMiddlewareUsingClaimsMap(echostarter_auth.BuildGrpcEntrypointPermissionsClaimsMap(), true))
 	e.Use(middleware_session.EnsureAuthTokenRefresh(s.GetContainer()))
