@@ -6,7 +6,7 @@ import (
 	"echo-starter/tests"
 
 	contracts_config "echo-starter/internal/contracts/config"
-	"echo-starter/internal/services/stores/referencetoken"
+	"echo-starter/internal/services/stores/tokenstore"
 
 	di "github.com/fluffy-bunny/sarulabsdi"
 	"github.com/golang/mock/gomock"
@@ -23,9 +23,9 @@ func TestStore(t *testing.T) {
 			},
 		}
 		di.AddSingletonTypeByObj(builder, config)
-		AddSingletonIReferenceTokenStore(builder)
+		AddSingletonITokenStore(builder)
 		ctn := builder.Build()
-		referencetoken.RunTestSuite(t, ctn)
+		tokenstore.RunTestSuite(t, ctn)
 
 	})
 }

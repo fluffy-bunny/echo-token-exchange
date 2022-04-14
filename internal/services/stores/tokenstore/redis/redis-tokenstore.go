@@ -28,7 +28,6 @@ type (
 	service struct {
 		Config *contracts_config.Config `inject:"config"`
 		lock   *sync.RWMutex
-		tokens map[string]*contracts_stores_tokenstore.ReferenceTokenInfo
 		opts   *redis.Options
 		cli    *redis.Client
 		ns     string
@@ -49,23 +48,19 @@ func (s *service) Ctor() {
 	if len(s.Config.RedisOptionsReferenceTokenStore.Namespace) > 0 {
 		s.ns = s.Config.RedisOptionsReferenceTokenStore.Namespace[0]
 	}
-	s.tokens = make(map[string]*contracts_stores_tokenstore.ReferenceTokenInfo)
 }
 func (s *service) Close() {
 	s.cli.Close()
 }
 func assertImplementation() {
-	var _ contracts_stores_tokenstore.IReferenceTokenStore = (*service)(nil)
-	var _ contracts_stores_tokenstore.IInternalReferenceTokenStore = (*service)(nil)
-
+	var _ contracts_stores_tokenstore.ITokenStore = (*service)(nil)
 }
 
 var reflectType = reflect.TypeOf((*service)(nil))
 
-// AddSingletonIReferenceTokenStore registers the *service.
-func AddSingletonIReferenceTokenStore(builder *di.Builder) {
-	contracts_stores_tokenstore.AddSingletonIReferenceTokenStore(builder, reflectType,
-		contracts_stores_tokenstore.ReflectTypeIInternalReferenceTokenStore)
+// AddSingletonITokenStore registers the *service.
+func AddSingletonITokenStore(builder *di.Builder) {
+	contracts_stores_tokenstore.AddSingletonITokenStore(builder, reflectType)
 }
 func (s *service) wrapClientIDKey(clientID string) string {
 	return fmt.Sprintf("%s:client_id:%s", s.ns, clientID)
@@ -89,7 +84,7 @@ func (s *service) checkError(result redis.Cmder) (bool, error) {
 	}
 	return false, nil
 }
-func (s *service) StoreReferenceToken(ctx context.Context, info *contracts_stores_tokenstore.ReferenceTokenInfo) (handle string, err error) {
+func (s *service) StoreToken(ctx context.Context, info *contracts_stores_tokenstore.TokenInfo) (handle string, err error) {
 
 	//--~--~--~--~--~-- BARBED WIRE --~--~--~--~--~--~--
 	s.lock.Lock()
@@ -126,7 +121,7 @@ func (s *service) StoreReferenceToken(ctx context.Context, info *contracts_store
 
 	return handle, nil
 }
-func (s *service) parseToken(result *redis.StringCmd) (*contracts_stores_tokenstore.ReferenceTokenInfo, error) {
+func (s *service) parseToken(result *redis.StringCmd) (*contracts_stores_tokenstore.TokenInfo, error) {
 	if ok, err := s.checkError(result); err != nil {
 		return nil, err
 	} else if ok {
@@ -141,14 +136,14 @@ func (s *service) parseToken(result *redis.StringCmd) (*contracts_stores_tokenst
 		return nil, err
 	}
 
-	token := contracts_stores_tokenstore.ReferenceTokenInfo{}
+	token := contracts_stores_tokenstore.TokenInfo{}
 	if err := jsonUnmarshal(buf, &token); err != nil {
 		return nil, err
 	}
 	return &token, nil
 }
 
-func (s *service) GetReferenceToken(ctx context.Context, handle string) (*contracts_stores_tokenstore.ReferenceTokenInfo, error) {
+func (s *service) GetToken(ctx context.Context, handle string) (*contracts_stores_tokenstore.TokenInfo, error) {
 
 	if core_utils.IsEmptyOrNil(handle) {
 		return nil, errors.New("handle is empty")
@@ -161,7 +156,7 @@ func (s *service) GetReferenceToken(ctx context.Context, handle string) (*contra
 	result := s.cli.Get(ctx, s.wrapperKey(handle))
 	return s.parseToken(result)
 }
-func (s *service) UpdateReferenceToken(ctx context.Context, handle string, info *contracts_stores_tokenstore.ReferenceTokenInfo) error {
+func (s *service) UpdateToken(ctx context.Context, handle string, info *contracts_stores_tokenstore.TokenInfo) error {
 
 	if core_utils.IsEmptyOrNil(handle) {
 		return errors.New("handle is empty")
@@ -197,13 +192,13 @@ func (s *service) UpdateReferenceToken(ctx context.Context, handle string, info 
 
 	return nil
 }
-func (s *service) RemoveReferenceToken(ctx context.Context, handle string) error {
+func (s *service) RemoveToken(ctx context.Context, handle string) error {
 
 	if core_utils.IsEmptyOrNil(handle) {
 		return errors.New("handle is empty")
 	}
 	// is it even here?
-	info, err := s.GetReferenceToken(ctx, handle)
+	info, err := s.GetToken(ctx, handle)
 	if err != nil {
 		return err
 	}
@@ -256,7 +251,7 @@ func (s *service) removeOneSetBlock(ctx context.Context, setKey string) (more bo
 	return true, nil
 }
 
-func (s *service) RemoveReferenceTokenByClientID(ctx context.Context, clientID string) error {
+func (s *service) RemoveTokenByClientID(ctx context.Context, clientID string) error {
 	if core_utils.IsEmptyOrNil(clientID) {
 		return errors.New("client_id is empty")
 	}
@@ -273,11 +268,11 @@ func (s *service) RemoveReferenceTokenByClientID(ctx context.Context, clientID s
 
 	return nil
 }
-func (s *service) RemoveReferenceTokenBySubject(ctx context.Context, subject string) error {
+func (s *service) RemoveTokenBySubject(ctx context.Context, subject string) error {
 	if core_utils.IsEmptyOrNil(subject) {
 		return errors.New("subject is empty")
 	}
-	setKey := s.wrapClientIDKey(subject)
+	setKey := s.wrapSubjectKey(subject)
 	for {
 		more, err := s.removeOneSetBlock(ctx, setKey)
 		if err != nil {
@@ -290,7 +285,7 @@ func (s *service) RemoveReferenceTokenBySubject(ctx context.Context, subject str
 
 	return nil
 }
-func (s *service) RemoveReferenceTokenByClientIdAndSubject(ctx context.Context, clientID string, subject string) error {
+func (s *service) RemoveTokenByClientIdAndSubject(ctx context.Context, clientID string, subject string) error {
 
 	if core_utils.IsEmptyOrNil(clientID) {
 		return errors.New("client_id is empty")
@@ -304,7 +299,7 @@ func (s *service) RemoveReferenceTokenByClientIdAndSubject(ctx context.Context, 
 	defer s.lock.Unlock()
 	//--~--~--~--~--~-- BARBED WIRE --~--~--~--~--~--~--
 	clientSubjectKey := s.wrapClientSubjectKey(clientID, subject)
-	handleKey := s.cli.Get(ctx, clientSubjectKey).String()
+	handleKey, _ := s.cli.Get(ctx, clientSubjectKey).Result()
 	if core_utils.IsEmptyOrNil(handleKey) {
 		return errors.New("not found")
 	}
@@ -322,30 +317,4 @@ func (s *service) RemoveReferenceTokenByClientIdAndSubject(ctx context.Context, 
 	}
 
 	return nil
-}
-func (s *service) RemoveExpired(ctx context.Context) {
-
-	//--~--~--~--~--~-- BARBED WIRE --~--~--~--~--~--~--
-	s.lock.RLock()
-	defer s.lock.RUnlock()
-	//--~--~--~--~--~-- BARBED WIRE --~--~--~--~--~--~--
-	now := time.Now()
-	var handles []string
-	for k, v := range s.tokens {
-		if now.After(v.Expiration) {
-			handles = append(handles, k)
-		}
-	}
-	if len(handles) > 0 {
-		go func() {
-			//--~--~--~--~--~-- BARBED WIRE --~--~--~--~--~--~--
-			s.lock.Lock()
-			defer s.lock.Unlock()
-			//--~--~--~--~--~-- BARBED WIRE --~--~--~--~--~--~--
-			for _, v := range handles {
-				delete(s.tokens, v)
-			}
-		}()
-	}
-
 }
