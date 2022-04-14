@@ -1,10 +1,11 @@
-package inmemory
+package redis
 
 import (
 	"testing"
 
 	"echo-starter/tests"
 
+	contracts_config "echo-starter/internal/contracts/config"
 	"echo-starter/internal/services/stores/referencetoken"
 
 	di "github.com/fluffy-bunny/sarulabsdi"
@@ -14,6 +15,14 @@ import (
 func TestStore(t *testing.T) {
 	tests.RunTest(t, func(ctrl *gomock.Controller) {
 		builder, _ := di.NewBuilder(di.App, di.Request, "transient")
+		config := &contracts_config.Config{
+			RedisOptionsReferenceTokenStore: contracts_config.RedisOptions{
+				Addr:     "localhost:6379",
+				Network:  "tcp",
+				Password: "eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81",
+			},
+		}
+		di.AddSingletonTypeByObj(builder, config)
 		AddSingletonIReferenceTokenStore(builder)
 		ctn := builder.Build()
 		referencetoken.RunTestSuite(t, ctn)

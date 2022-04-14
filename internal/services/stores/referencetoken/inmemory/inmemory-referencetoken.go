@@ -63,7 +63,7 @@ func (s *service) GetReferenceToken(ctx context.Context, handle string) (*contra
 	//--~--~--~--~--~-- BARBED WIRE --~--~--~--~--~--~--
 	h, ok := s.tokens[handle]
 	if !ok {
-		return nil, errors.New("not found")
+		return nil, nil
 	}
 	return h, nil
 
@@ -80,7 +80,7 @@ func (s *service) UpdateReferenceToken(ctx context.Context, handle string, info 
 	//--~--~--~--~--~-- BARBED WIRE --~--~--~--~--~--~--
 	_, ok := s.tokens[handle]
 	if !ok {
-		return errors.New("not found")
+		return nil
 	}
 
 	s.tokens[handle] = info
@@ -97,7 +97,7 @@ func (s *service) RemoveReferenceToken(ctx context.Context, handle string) error
 	//--~--~--~--~--~-- BARBED WIRE --~--~--~--~--~--~--
 	_, ok := s.tokens[handle]
 	if !ok {
-		return errors.New("not found")
+		return nil
 	}
 	delete(s.tokens, handle)
 	return nil
