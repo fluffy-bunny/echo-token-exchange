@@ -5,11 +5,9 @@ import (
 	contracts_config "echo-starter/internal/contracts/config"
 	contracts_stores_apiresources "echo-starter/internal/contracts/stores/apiresources"
 	contracts_clients "echo-starter/internal/contracts/stores/clients"
-	contracts_stores_jwttoken "echo-starter/internal/contracts/stores/jwttoken"
 	contracts_stores_keymaterial "echo-starter/internal/contracts/stores/keymaterial"
-
-	contracts_stores_referencetoken "echo-starter/internal/contracts/stores/referencetoken"
 	contracts_stores_refreshtoken "echo-starter/internal/contracts/stores/refreshtoken"
+	contracts_stores_tokenstore "echo-starter/internal/contracts/stores/tokenstore"
 	contracts_tokenhandlers "echo-starter/internal/contracts/tokenhandlers"
 	"echo-starter/internal/models"
 	echo_oauth2 "echo-starter/internal/services/go-oauth2/oauth2"
@@ -25,6 +23,7 @@ import (
 	contracts_logger "github.com/fluffy-bunny/grpcdotnetgo/pkg/contracts/logger"
 	contracts_handler "github.com/fluffy-bunny/grpcdotnetgo/pkg/echo/contracts/handler"
 	core_hashset "github.com/fluffy-bunny/grpcdotnetgo/pkg/gods/sets/hashset"
+	core_utils "github.com/fluffy-bunny/grpcdotnetgo/pkg/utils"
 	di "github.com/fluffy-bunny/sarulabsdi"
 	"github.com/go-oauth2/oauth2/v4"
 	"github.com/go-oauth2/oauth2/v4/errors"
@@ -36,16 +35,16 @@ import (
 
 type (
 	service struct {
-		Config               *contracts_config.Config                             `inject:""`
-		Logger               contracts_logger.ILogger                             `inject:""`
-		ClientStore          contracts_clients.IClientStore                       `inject:""`
-		APIResources         contracts_stores_apiresources.IAPIResources          `inject:""`
-		KeyMaterial          contracts_stores_keymaterial.IKeyMaterial            `inject:""`
-		JwtTokenStore        contracts_stores_jwttoken.IJwtTokenStore             `inject:""`
-		ClientRequest        contracts_clients.IClientRequest                     `inject:""`
-		TokenHandlerAccessor contracts_tokenhandlers.ITokenHandlerAccessor        `inject:""`
-		RefreshTokenStore    contracts_stores_refreshtoken.IRefreshTokenStore     `inject:""`
-		ReferenceTokenStore  contracts_stores_referencetoken.IReferenceTokenStore `inject:""`
+		Config               *contracts_config.Config                         `inject:""`
+		Logger               contracts_logger.ILogger                         `inject:""`
+		ClientStore          contracts_clients.IClientStore                   `inject:""`
+		APIResources         contracts_stores_apiresources.IAPIResources      `inject:""`
+		KeyMaterial          contracts_stores_keymaterial.IKeyMaterial        `inject:""`
+		JwtTokenStore        contracts_stores_tokenstore.IJwtTokenStore       `inject:""`
+		ClientRequest        contracts_clients.IClientRequest                 `inject:""`
+		TokenHandlerAccessor contracts_tokenhandlers.ITokenHandlerAccessor    `inject:""`
+		RefreshTokenStore    contracts_stores_refreshtoken.IRefreshTokenStore `inject:""`
+		ReferenceTokenStore  contracts_stores_tokenstore.IReferenceTokenStore `inject:""`
 		TokenHandler         contracts_tokenhandlers.ITokenHandler
 		accessGenerate       echo_oauth2.AccessGenerate
 		signingKey           *models.SigningKey
@@ -238,20 +237,61 @@ func (s *service) GenerateAccessToken(ctx context.Context,
 
 	ti.SetAccessExpiresIn(time.Duration(client.AccessTokenLifetime) * time.Second)
 
+	expiresAt := createAt.Add(time.Second * time.Duration(client.AccessTokenLifetime))
 	standardClaims := &jwt.StandardClaims{
 		IssuedAt:  createAt.Unix(),
-		ExpiresAt: createAt.Add(time.Second * time.Duration(client.AccessTokenLifetime)).Unix(),
+		ExpiresAt: expiresAt.Unix(),
 		Issuer:    s.issuer,
 		Audience:  client.ClientID,
 		Subject:   subject,
 		Id:        xid.New().String(),
 	}
-	jwtToken, err := s.JwtTokenStore.MintToken(ctx, standardClaims, claims)
-	if err != nil {
-		return nil, err
+	var buildClaimsMap = func(ctx context.Context, standardClaims *jwt.StandardClaims, extras models.IClaims) models.IClaims {
+		audienceSet := core_hashset.NewStringSet()
+		if !core_utils.IsEmptyOrNil(standardClaims.Audience) {
+			audienceSet.Add(standardClaims.Audience)
+		}
+		if !core_utils.IsNil(extras) {
+			extraAudInterface := extras.Get("aud")
+			switch extraAudInterface.(type) {
+			case string:
+				audienceSet.Add(extraAudInterface.(string))
+			case []string:
+				audienceSet.Add(extraAudInterface.([]string)...)
+			}
+		}
+		extras.Set("aud", audienceSet.Values())
+
+		var standard map[string]interface{}
+		standardJSON, _ := json.Marshal(standardClaims)
+		json.Unmarshal(standardJSON, &standard)
+		delete(standard, "aud")
+
+		for k, v := range standard {
+			extras.Set(k, v)
+		}
+		return extras
+	}
+	claims = buildClaimsMap(ctx, standardClaims, claims)
+
+	var err error
+	var tokenHandle string
+	if client.AccessTokenType == models.Reference {
+		referenceTokenInfo := &contracts_stores_tokenstore.ReferenceTokenInfo{
+			ClientID:   client.ClientID,
+			Subject:    subject,
+			Expiration: expiresAt,
+			Response:   claims.Claims(),
+		}
+		tokenHandle, err = s.ReferenceTokenStore.StoreReferenceToken(ctx, referenceTokenInfo)
+	} else {
+		tokenHandle, err = s.JwtTokenStore.MintToken(ctx, claims)
+		if err != nil {
+			return nil, err
+		}
 	}
 
-	ti.SetAccess(jwtToken)
+	ti.SetAccess(tokenHandle)
 
 	if client.AllowOfflineAccess && scopeSet.Contains("offline_access") {
 		var absoluteExpiration = time.Now().Add(time.Second * time.Duration(client.AbsoluteRefreshTokenLifetime))

@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"reflect"
 
-	contracts_stores_referencetoken "echo-starter/internal/contracts/stores/referencetoken"
+	contracts_stores_tokenstore "echo-starter/internal/contracts/stores/tokenstore"
 
 	contracts_handler "github.com/fluffy-bunny/grpcdotnetgo/pkg/echo/contracts/handler"
 	core_utils "github.com/fluffy-bunny/grpcdotnetgo/pkg/utils"
@@ -15,7 +15,7 @@ import (
 
 type (
 	service struct {
-		ReferenceTokenStore contracts_stores_referencetoken.IReferenceTokenStore `inject:""`
+		ReferenceTokenStore contracts_stores_tokenstore.IReferenceTokenStore `inject:""`
 	}
 )
 

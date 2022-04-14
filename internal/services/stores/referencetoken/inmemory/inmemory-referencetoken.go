@@ -2,7 +2,7 @@ package inmemory
 
 import (
 	"context"
-	contracts_stores_referencetoken "echo-starter/internal/contracts/stores/referencetoken"
+	contracts_stores_tokenstore "echo-starter/internal/contracts/stores/tokenstore"
 	"errors"
 	"reflect"
 	"sync"
@@ -16,7 +16,7 @@ import (
 type (
 	service struct {
 		lock   *sync.RWMutex
-		tokens map[string]*contracts_stores_referencetoken.ReferenceTokenInfo
+		tokens map[string]*contracts_stores_tokenstore.ReferenceTokenInfo
 	}
 	validated struct {
 		scopes []string
@@ -25,11 +25,11 @@ type (
 
 func (s *service) Ctor() {
 	s.lock = &sync.RWMutex{}
-	s.tokens = make(map[string]*contracts_stores_referencetoken.ReferenceTokenInfo)
+	s.tokens = make(map[string]*contracts_stores_tokenstore.ReferenceTokenInfo)
 }
 func assertImplementation() {
-	var _ contracts_stores_referencetoken.IReferenceTokenStore = (*service)(nil)
-	var _ contracts_stores_referencetoken.IInternalReferenceTokenStore = (*service)(nil)
+	var _ contracts_stores_tokenstore.IReferenceTokenStore = (*service)(nil)
+	var _ contracts_stores_tokenstore.IInternalReferenceTokenStore = (*service)(nil)
 
 }
 
@@ -37,10 +37,11 @@ var reflectType = reflect.TypeOf((*service)(nil))
 
 // AddSingletonIReferenceTokenStore registers the *service.
 func AddSingletonIReferenceTokenStore(builder *di.Builder) {
-	contracts_stores_referencetoken.AddSingletonIReferenceTokenStore(builder, reflectType,
-		contracts_stores_referencetoken.ReflectTypeIInternalReferenceTokenStore)
+	contracts_stores_tokenstore.AddSingletonIReferenceTokenStore(builder, reflectType,
+		contracts_stores_tokenstore.ReflectTypeIInternalReferenceTokenStore)
 }
-func (s *service) StoreReferenceToken(ctx context.Context, info *contracts_stores_referencetoken.ReferenceTokenInfo) (handle string, err error) {
+
+func (s *service) StoreReferenceToken(ctx context.Context, info *contracts_stores_tokenstore.ReferenceTokenInfo) (handle string, err error) {
 
 	//--~--~--~--~--~-- BARBED WIRE --~--~--~--~--~--~--
 	s.lock.Lock()
@@ -50,7 +51,7 @@ func (s *service) StoreReferenceToken(ctx context.Context, info *contracts_store
 	s.tokens[handle] = info
 	return handle, nil
 }
-func (s *service) GetReferenceToken(ctx context.Context, handle string) (*contracts_stores_referencetoken.ReferenceTokenInfo, error) {
+func (s *service) GetReferenceToken(ctx context.Context, handle string) (*contracts_stores_tokenstore.ReferenceTokenInfo, error) {
 
 	if core_utils.IsEmptyOrNil(handle) {
 		return nil, errors.New("handle is empty")
@@ -67,7 +68,7 @@ func (s *service) GetReferenceToken(ctx context.Context, handle string) (*contra
 	return h, nil
 
 }
-func (s *service) UpdateReferenceToken(ctx context.Context, handle string, info *contracts_stores_referencetoken.ReferenceTokenInfo) error {
+func (s *service) UpdateReferenceToken(ctx context.Context, handle string, info *contracts_stores_tokenstore.ReferenceTokenInfo) error {
 
 	if core_utils.IsEmptyOrNil(handle) {
 		return errors.New("handle is empty")

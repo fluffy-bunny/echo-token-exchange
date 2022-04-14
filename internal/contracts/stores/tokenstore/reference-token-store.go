@@ -1,4 +1,4 @@
-package referencetoken
+package tokenstore
 
 import (
 	"context"
