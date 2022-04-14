@@ -15,12 +15,14 @@ import (
 
 	echo_contracts_startup "github.com/fluffy-bunny/grpcdotnetgo/pkg/echo/contracts/startup"
 
+	"echo-starter/tests"
+
 	"github.com/fluffy-bunny/grpcdotnetgo/pkg/echo/runtime"
 	"github.com/golang/mock/gomock"
 )
 
 func TestHealthCheck(t *testing.T) {
-	RunTest(t, func(ctrl *gomock.Controller) {
+	tests.RunTest(t, func(ctrl *gomock.Controller) {
 
 		folderChanger := NewFolderChanger("../../cmd/server")
 		defer folderChanger.ChangeBack()
@@ -39,7 +41,7 @@ func TestHealthCheck(t *testing.T) {
 		startup.AddHooks(hooks)
 
 		r := runtime.New(startup)
-		future := ExecuteWithPromiseAsync(r)
+		future := tests.ExecuteWithPromiseAsync(r)
 
 		<-startChan
 
