@@ -12,7 +12,7 @@ import (
 const middlewareLogName = "ensure-clear-expired-storage-items"
 
 func EnsureClearExpiredStorageItems(container di.Container) echo.MiddlewareFunc {
-	tokenStore, _ := contracts_stores_tokenstore.SafeGetIInternalReferenceTokenStoreFromContainer(container)
+	tokenStore, _ := contracts_stores_tokenstore.SafeGetIInternalTokenStoreFromContainer(container)
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			if tokenStore != nil {

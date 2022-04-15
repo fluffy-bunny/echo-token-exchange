@@ -30,6 +30,7 @@ func (s *service) Ctor() {
 }
 func assertImplementation() {
 	var _ contracts_stores_tokenstore.ITokenStore = (*service)(nil)
+	var _ contracts_stores_tokenstore.IInternalTokenStore = (*service)(nil)
 
 }
 
@@ -37,7 +38,8 @@ var reflectType = reflect.TypeOf((*service)(nil))
 
 // AddSingletonITokenStore registers the *service.
 func AddSingletonITokenStore(builder *di.Builder) {
-	contracts_stores_tokenstore.AddSingletonITokenStore(builder, reflectType)
+	contracts_stores_tokenstore.AddSingletonITokenStore(builder, reflectType,
+		contracts_stores_tokenstore.ReflectTypeIInternalTokenStore)
 }
 
 func (s *service) StoreToken(ctx context.Context, info *models.TokenInfo) (handle string, err error) {
@@ -153,7 +155,7 @@ func (s *service) RemoveTokenByClientIdAndSubject(ctx context.Context, clientID 
 	}
 	return nil
 }
-func (s *service) RemoveExpired(ctx context.Context) {
+func (s *service) RemoveExpired(ctx context.Context) error {
 
 	//--~--~--~--~--~-- BARBED WIRE --~--~--~--~--~--~--
 	s.lock.RLock()
@@ -177,5 +179,5 @@ func (s *service) RemoveExpired(ctx context.Context) {
 			}
 		}()
 	}
-
+	return nil
 }

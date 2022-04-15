@@ -36,17 +36,16 @@ import (
 
 type (
 	service struct {
-		Now                  contracts_timeutils.TimeNow                      `inject:""`
-		Config               *contracts_config.Config                         `inject:""`
-		Logger               contracts_logger.ILogger                         `inject:""`
-		ClientStore          contracts_clients.IClientStore                   `inject:""`
-		APIResources         contracts_stores_apiresources.IAPIResources      `inject:""`
-		KeyMaterial          contracts_stores_keymaterial.IKeyMaterial        `inject:""`
-		JwtTokenStore        contracts_stores_tokenstore.IJwtTokenStore       `inject:""`
-		ClientRequest        contracts_clients.IClientRequest                 `inject:""`
-		TokenHandlerAccessor contracts_tokenhandlers.ITokenHandlerAccessor    `inject:""`
-		RefreshTokenStore    contracts_stores_tokenstore.ITokenStore          `inject:""`
-		ReferenceTokenStore  contracts_stores_tokenstore.IReferenceTokenStore `inject:""`
+		Now                  contracts_timeutils.TimeNow                   `inject:""`
+		Config               *contracts_config.Config                      `inject:""`
+		Logger               contracts_logger.ILogger                      `inject:""`
+		ClientStore          contracts_clients.IClientStore                `inject:""`
+		APIResources         contracts_stores_apiresources.IAPIResources   `inject:""`
+		KeyMaterial          contracts_stores_keymaterial.IKeyMaterial     `inject:""`
+		JwtTokenStore        contracts_stores_tokenstore.IJwtTokenStore    `inject:""`
+		ClientRequest        contracts_clients.IClientRequest              `inject:""`
+		TokenHandlerAccessor contracts_tokenhandlers.ITokenHandlerAccessor `inject:""`
+		ReferenceTokenStore  contracts_stores_tokenstore.ITokenStore       `inject:""`
 		TokenHandler         contracts_tokenhandlers.ITokenHandler
 		accessGenerate       echo_oauth2.AccessGenerate
 		signingKey           *models.SigningKey
@@ -279,13 +278,17 @@ func (s *service) GenerateAccessToken(ctx context.Context,
 	var err error
 	var tokenHandle string
 	if client.AccessTokenType == models.Reference {
-		referenceTokenInfo := &contracts_stores_tokenstore.ReferenceTokenInfo{
-			ClientID:   client.ClientID,
-			Subject:    subject,
-			Expiration: expiresAt,
-			Response:   claims.Claims(),
-		}
-		tokenHandle, err = s.ReferenceTokenStore.StoreReferenceToken(ctx, referenceTokenInfo)
+		tokenHandle, err = s.ReferenceTokenStore.StoreToken(ctx, &models.TokenInfo{
+			Metadata: models.TokenMetadata{
+				Type:       "reference_token",
+				ClientID:   client.ClientID,
+				Subject:    subject,
+				Expiration: expiresAt,
+				IssedAt:    now,
+			},
+			Data: claims.Claims(),
+		})
+
 	} else {
 		tokenHandle, err = s.JwtTokenStore.MintToken(ctx, claims)
 		if err != nil {
@@ -312,7 +315,7 @@ func (s *service) GenerateAccessToken(ctx context.Context,
 		}
 
 		data := structs.Map(rtInfo)
-		handle, err := s.RefreshTokenStore.StoreToken(ctx, &models.TokenInfo{
+		handle, err := s.ReferenceTokenStore.StoreToken(ctx, &models.TokenInfo{
 			Metadata: models.TokenMetadata{
 				Type:       "refresh_token",
 				ClientID:   client.ClientID,

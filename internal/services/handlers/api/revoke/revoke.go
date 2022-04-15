@@ -16,8 +16,7 @@ import (
 
 type (
 	service struct {
-		RefreshTokenStore   contracts_stores_tokenstore.ITokenStore          `inject:""`
-		ReferenceTokenStore contracts_stores_tokenstore.IReferenceTokenStore `inject:""`
+		ReferenceTokenStore contracts_stores_tokenstore.ITokenStore `inject:""`
 	}
 )
 
@@ -65,15 +64,15 @@ func (s *service) post(c echo.Context) error {
 	switch u.TokenTypeHint {
 	// REFRESH_TOKEN
 	case "refresh_token":
-		if err := s.RefreshTokenStore.RemoveToken(ctx, u.Token); err != nil {
+		if err := s.ReferenceTokenStore.RemoveToken(ctx, u.Token); err != nil {
 			return err
 		}
 	case "refresh_token:subject":
-		if err := s.RefreshTokenStore.RemoveTokenBySubject(ctx, u.Token); err != nil {
+		if err := s.ReferenceTokenStore.RemoveTokenBySubject(ctx, u.Token); err != nil {
 			return err
 		}
 	case "refresh_token:client_id":
-		if err := s.RefreshTokenStore.RemoveTokenByClientID(ctx, u.Token); err != nil {
+		if err := s.ReferenceTokenStore.RemoveTokenByClientID(ctx, u.Token); err != nil {
 			return err
 		}
 	case "refresh_token:client_id:subject":
@@ -84,20 +83,20 @@ func (s *service) post(c echo.Context) error {
 		if core_utils.IsEmptyOrNil(items[0]) || core_utils.IsEmptyOrNil(items[1]) {
 			return echo.NewHTTPError(http.StatusBadRequest, "invalid token")
 		}
-		if err := s.RefreshTokenStore.RemoveTokenByClientIdAndSubject(ctx, items[0], items[1]); err != nil {
+		if err := s.ReferenceTokenStore.RemoveTokenByClientIdAndSubject(ctx, items[0], items[1]); err != nil {
 			return err
 		}
 		// ACCESS_TOKEN
 	case "access_token":
-		if err := s.ReferenceTokenStore.RemoveReferenceToken(ctx, u.Token); err != nil {
+		if err := s.ReferenceTokenStore.RemoveToken(ctx, u.Token); err != nil {
 			return err
 		}
 	case "access_token:subject":
-		if err := s.ReferenceTokenStore.RemoveReferenceTokenBySubject(ctx, u.Token); err != nil {
+		if err := s.ReferenceTokenStore.RemoveTokenBySubject(ctx, u.Token); err != nil {
 			return err
 		}
 	case "access_token:client_id":
-		if err := s.ReferenceTokenStore.RemoveReferenceTokenByClientID(ctx, u.Token); err != nil {
+		if err := s.ReferenceTokenStore.RemoveTokenByClientID(ctx, u.Token); err != nil {
 			return err
 		}
 	case "access_token:client_id:subject":
@@ -108,7 +107,7 @@ func (s *service) post(c echo.Context) error {
 		if core_utils.IsEmptyOrNil(items[0]) || core_utils.IsEmptyOrNil(items[1]) {
 			return echo.NewHTTPError(http.StatusBadRequest, "invalid token")
 		}
-		if err := s.ReferenceTokenStore.RemoveReferenceTokenByClientIdAndSubject(ctx, items[0], items[1]); err != nil {
+		if err := s.ReferenceTokenStore.RemoveTokenByClientIdAndSubject(ctx, items[0], items[1]); err != nil {
 			return err
 		}
 	}
