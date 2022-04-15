@@ -6,6 +6,7 @@ import (
 	"context"
 	contracts_config "echo-starter/internal/contracts/config"
 	contracts_stores_tokenstore "echo-starter/internal/contracts/stores/tokenstore"
+	"echo-starter/internal/models"
 	"errors"
 	"fmt"
 	"reflect"
@@ -84,7 +85,7 @@ func (s *service) checkError(result redis.Cmder) (bool, error) {
 	}
 	return false, nil
 }
-func (s *service) StoreToken(ctx context.Context, info *contracts_stores_tokenstore.TokenInfo) (handle string, err error) {
+func (s *service) StoreToken(ctx context.Context, info *models.TokenInfo) (handle string, err error) {
 
 	//--~--~--~--~--~-- BARBED WIRE --~--~--~--~--~--~--
 	s.lock.Lock()
@@ -98,18 +99,18 @@ func (s *service) StoreToken(ctx context.Context, info *contracts_stores_tokenst
 	pipe := s.cli.TxPipeline()
 
 	basicID := handle
-	expirationDuration := info.Expiration.Sub(time.Now())
+	expirationDuration := info.Metadata.Expiration.Sub(time.Now())
 	aexp := expirationDuration
 	rexp := aexp
 
 	handleKey := s.wrapperKey(basicID)
 
 	// we need to know every handle that was created on behalf of a client
-	pipe.SAdd(ctx, s.wrapClientIDKey(info.ClientID), handleKey)
-	if !core_utils.IsEmptyOrNil(info.Subject) {
+	pipe.SAdd(ctx, s.wrapClientIDKey(info.Metadata.ClientID), handleKey)
+	if !core_utils.IsEmptyOrNil(info.Metadata.Subject) {
 		// we need to know every handle that was created on behalf of a subject
-		pipe.SAdd(ctx, s.wrapSubjectKey(info.Subject), handleKey)
-		clientSubjectKey := s.wrapClientSubjectKey(info.ClientID, info.Subject)
+		pipe.SAdd(ctx, s.wrapSubjectKey(info.Metadata.Subject), handleKey)
+		clientSubjectKey := s.wrapClientSubjectKey(info.Metadata.ClientID, info.Metadata.Subject)
 		pipe.Set(ctx, clientSubjectKey, handleKey, rexp)
 	}
 	// finally recored the token itself
@@ -121,7 +122,7 @@ func (s *service) StoreToken(ctx context.Context, info *contracts_stores_tokenst
 
 	return handle, nil
 }
-func (s *service) parseToken(result *redis.StringCmd) (*contracts_stores_tokenstore.TokenInfo, error) {
+func (s *service) parseToken(result *redis.StringCmd) (*models.TokenInfo, error) {
 	if ok, err := s.checkError(result); err != nil {
 		return nil, err
 	} else if ok {
@@ -136,14 +137,14 @@ func (s *service) parseToken(result *redis.StringCmd) (*contracts_stores_tokenst
 		return nil, err
 	}
 
-	token := contracts_stores_tokenstore.TokenInfo{}
+	token := models.TokenInfo{}
 	if err := jsonUnmarshal(buf, &token); err != nil {
 		return nil, err
 	}
 	return &token, nil
 }
 
-func (s *service) GetToken(ctx context.Context, handle string) (*contracts_stores_tokenstore.TokenInfo, error) {
+func (s *service) GetToken(ctx context.Context, handle string) (*models.TokenInfo, error) {
 
 	if core_utils.IsEmptyOrNil(handle) {
 		return nil, errors.New("handle is empty")
@@ -156,7 +157,7 @@ func (s *service) GetToken(ctx context.Context, handle string) (*contracts_store
 	result := s.cli.Get(ctx, s.wrapperKey(handle))
 	return s.parseToken(result)
 }
-func (s *service) UpdateToken(ctx context.Context, handle string, info *contracts_stores_tokenstore.TokenInfo) error {
+func (s *service) UpdateToken(ctx context.Context, handle string, info *models.TokenInfo) error {
 
 	if core_utils.IsEmptyOrNil(handle) {
 		return errors.New("handle is empty")
@@ -178,7 +179,7 @@ func (s *service) UpdateToken(ctx context.Context, handle string, info *contract
 	pipe := s.cli.TxPipeline()
 
 	basicID := handle
-	expirationDuration := info.Expiration.Sub(time.Now())
+	expirationDuration := info.Metadata.Expiration.Sub(time.Now())
 	aexp := expirationDuration
 	rexp := aexp
 
@@ -211,11 +212,11 @@ func (s *service) RemoveToken(ctx context.Context, handle string) error {
 	pipe := s.cli.TxPipeline()
 
 	// we need to know every handle that was created on behalf of a client
-	pipe.SRem(ctx, s.wrapClientIDKey(info.ClientID), s.wrapperKey(handle))
-	if !core_utils.IsEmptyOrNil(info.Subject) {
+	pipe.SRem(ctx, s.wrapClientIDKey(info.Metadata.ClientID), s.wrapperKey(handle))
+	if !core_utils.IsEmptyOrNil(info.Metadata.Subject) {
 		// we need to know every handle that was created on behalf of a subject
-		pipe.SRem(ctx, s.wrapSubjectKey(info.Subject), s.wrapperKey(handle))
-		clientSubjectKey := s.wrapClientSubjectKey(info.ClientID, info.Subject)
+		pipe.SRem(ctx, s.wrapSubjectKey(info.Metadata.Subject), s.wrapperKey(handle))
+		clientSubjectKey := s.wrapClientSubjectKey(info.Metadata.ClientID, info.Metadata.Subject)
 		pipe.Del(ctx, clientSubjectKey)
 	}
 	// finally delete the token itself

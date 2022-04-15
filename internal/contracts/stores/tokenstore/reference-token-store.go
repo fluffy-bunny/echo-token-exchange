@@ -2,6 +2,7 @@ package tokenstore
 
 import (
 	"context"
+	"echo-starter/internal/models"
 	"time"
 )
 
@@ -16,16 +17,11 @@ type (
 		Response   map[string]interface{} `json:"response"`
 		Expiration time.Time              `json:"expiration"`
 	}
-	TokenInfo struct {
-		ClientID   string                 `json:"client_id"`
-		Subject    string                 `json:"subject"`
-		Data       map[string]interface{} `json:"data"`
-		Expiration time.Time              `json:"expiration"`
-	}
+
 	ITokenStore interface {
-		StoreToken(ctx context.Context, info *TokenInfo) (handle string, err error)
-		GetToken(ctx context.Context, handle string) (*TokenInfo, error)
-		UpdateToken(ctx context.Context, handle string, info *TokenInfo) error
+		StoreToken(ctx context.Context, info *models.TokenInfo) (handle string, err error)
+		GetToken(ctx context.Context, handle string) (*models.TokenInfo, error)
+		UpdateToken(ctx context.Context, handle string, info *models.TokenInfo) error
 		RemoveToken(ctx context.Context, handle string) error
 		RemoveTokenByClientID(ctx context.Context, clientID string) error
 		RemoveTokenBySubject(ctx context.Context, subject string) error

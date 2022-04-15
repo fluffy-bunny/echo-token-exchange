@@ -7,6 +7,7 @@ package tokenstore
 import (
 	context "context"
 	tokenstore "echo-starter/internal/contracts/stores/tokenstore"
+	models "echo-starter/internal/models"
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
@@ -294,10 +295,10 @@ func (m *MockITokenStore) EXPECT() *MockITokenStoreMockRecorder {
 }
 
 // GetToken mocks base method.
-func (m *MockITokenStore) GetToken(arg0 context.Context, arg1 string) (*tokenstore.TokenInfo, error) {
+func (m *MockITokenStore) GetToken(arg0 context.Context, arg1 string) (*models.TokenInfo, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetToken", arg0, arg1)
-	ret0, _ := ret[0].(*tokenstore.TokenInfo)
+	ret0, _ := ret[0].(*models.TokenInfo)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -365,7 +366,7 @@ func (mr *MockITokenStoreMockRecorder) RemoveTokenBySubject(arg0, arg1 interface
 }
 
 // StoreToken mocks base method.
-func (m *MockITokenStore) StoreToken(arg0 context.Context, arg1 *tokenstore.TokenInfo) (string, error) {
+func (m *MockITokenStore) StoreToken(arg0 context.Context, arg1 *models.TokenInfo) (string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "StoreToken", arg0, arg1)
 	ret0, _ := ret[0].(string)
@@ -380,7 +381,7 @@ func (mr *MockITokenStoreMockRecorder) StoreToken(arg0, arg1 interface{}) *gomoc
 }
 
 // UpdateToken mocks base method.
-func (m *MockITokenStore) UpdateToken(arg0 context.Context, arg1 string, arg2 *tokenstore.TokenInfo) error {
+func (m *MockITokenStore) UpdateToken(arg0 context.Context, arg1 string, arg2 *models.TokenInfo) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateToken", arg0, arg1, arg2)
 	ret0, _ := ret[0].(error)

@@ -7,6 +7,7 @@ import (
 	"time"
 
 	contracts_stores_tokenstore "echo-starter/internal/contracts/stores/tokenstore"
+	"echo-starter/internal/models"
 
 	di "github.com/fluffy-bunny/sarulabsdi"
 	"github.com/go-test/deep"
@@ -17,19 +18,23 @@ import (
 func RunTestSuite(t *testing.T, ctn di.Container) {
 	now := time.Now()
 	store := contracts_stores_tokenstore.GetITokenStoreFromContainer(ctn)
-	expectedTokenInfo := &contracts_stores_tokenstore.TokenInfo{
-		ClientID:   "client-id",
-		Subject:    "subject",
-		Expiration: now.Add(time.Hour),
+	expectedTokenInfo := &models.TokenInfo{
+		Metadata: models.TokenMetadata{
+			ClientID:   "client-id",
+			Subject:    "subject",
+			Expiration: now.Add(time.Hour),
+		},
 		Data: map[string]interface{}{
 			"response-key": "response-value",
 		},
 	}
 
-	expectedTokenInfo2 := &contracts_stores_tokenstore.TokenInfo{
-		ClientID:   "client-id2",
-		Subject:    "subject2",
-		Expiration: now.Add(time.Hour),
+	expectedTokenInfo2 := &models.TokenInfo{
+		Metadata: models.TokenMetadata{
+			ClientID:   "client-id2",
+			Subject:    "subject2",
+			Expiration: now.Add(time.Hour),
+		},
 		Data: map[string]interface{}{
 			"response-key": "response-value",
 		},
@@ -66,7 +71,7 @@ func RunTestSuite(t *testing.T, ctn di.Container) {
 		require.NoError(t, err)
 		require.Nil(t, deep.Equal(expectedTokenInfo, actualTokenInfo))
 	}
-	err = store.RemoveTokenByClientID(context.Background(), expectedTokenInfo.ClientID)
+	err = store.RemoveTokenByClientID(context.Background(), expectedTokenInfo.Metadata.ClientID)
 	require.NoError(t, err)
 
 	for _, handle := range handles {
@@ -77,9 +82,9 @@ func RunTestSuite(t *testing.T, ctn di.Container) {
 	handles = make([]string, 0)
 	// diff client_id, same subject
 	for i := 0; i < 10; i++ {
-		nrt := &contracts_stores_tokenstore.TokenInfo{}
+		nrt := &models.TokenInfo{}
 		copier.Copy(&nrt, expectedTokenInfo)
-		nrt.ClientID = "client-id-" + fmt.Sprintf("%d", i)
+		nrt.Metadata.ClientID = "client-id-" + fmt.Sprintf("%d", i)
 
 		handle, err := store.StoreToken(context.Background(), nrt)
 		require.NoError(t, err)
@@ -88,14 +93,14 @@ func RunTestSuite(t *testing.T, ctn di.Container) {
 	}
 	for i := 0; i < 10; i++ {
 		handle := handles[i]
-		nrt := &contracts_stores_tokenstore.TokenInfo{}
+		nrt := &models.TokenInfo{}
 		copier.Copy(&nrt, expectedTokenInfo)
-		nrt.ClientID = "client-id-" + fmt.Sprintf("%d", i)
+		nrt.Metadata.ClientID = "client-id-" + fmt.Sprintf("%d", i)
 		actualTokenInfo, err := store.GetToken(context.Background(), handle)
 		require.NoError(t, err)
 		require.Nil(t, deep.Equal(nrt, actualTokenInfo))
 	}
-	err = store.RemoveTokenBySubject(context.Background(), expectedTokenInfo.Subject)
+	err = store.RemoveTokenBySubject(context.Background(), expectedTokenInfo.Metadata.Subject)
 	require.NoError(t, err)
 	for _, handle := range handles {
 		actualTokenInfo, err := store.GetToken(context.Background(), handle)
@@ -105,16 +110,16 @@ func RunTestSuite(t *testing.T, ctn di.Container) {
 	handles = make([]string, 0)
 
 	for i := 0; i < 2; i++ {
-		nrt := &contracts_stores_tokenstore.TokenInfo{}
+		nrt := &models.TokenInfo{}
 		copier.Copy(&nrt, expectedTokenInfo)
-		nrt.ClientID = "client-id-" + fmt.Sprintf("%d", i)
+		nrt.Metadata.ClientID = "client-id-" + fmt.Sprintf("%d", i)
 
 		handle, err := store.StoreToken(context.Background(), nrt)
 		require.NoError(t, err)
 		require.NotEmpty(t, handle)
 		handles = append(handles, handle)
 	}
-	err = store.RemoveTokenByClientIdAndSubject(context.Background(), "client-id-0", expectedTokenInfo.Subject)
+	err = store.RemoveTokenByClientIdAndSubject(context.Background(), "client-id-0", expectedTokenInfo.Metadata.Subject)
 	require.NoError(t, err)
 	actualTokenInfo, err = store.GetToken(context.Background(), handles[0])
 	require.NoError(t, err)
@@ -122,5 +127,5 @@ func RunTestSuite(t *testing.T, ctn di.Container) {
 	actualTokenInfo, err = store.GetToken(context.Background(), handles[1])
 	require.NoError(t, err)
 	require.NotNil(t, actualTokenInfo)
-	require.Equal(t, "client-id-1", actualTokenInfo.ClientID)
+	require.Equal(t, "client-id-1", actualTokenInfo.Metadata.ClientID)
 }

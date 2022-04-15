@@ -6,7 +6,6 @@ import (
 	contracts_stores_apiresources "echo-starter/internal/contracts/stores/apiresources"
 	contracts_clients "echo-starter/internal/contracts/stores/clients"
 	contracts_stores_keymaterial "echo-starter/internal/contracts/stores/keymaterial"
-	contracts_stores_refreshtoken "echo-starter/internal/contracts/stores/refreshtoken"
 	contracts_stores_tokenstore "echo-starter/internal/contracts/stores/tokenstore"
 	contracts_tokenhandlers "echo-starter/internal/contracts/tokenhandlers"
 	"echo-starter/internal/models"
@@ -20,7 +19,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/fatih/structs"
 	contracts_logger "github.com/fluffy-bunny/grpcdotnetgo/pkg/contracts/logger"
+	contracts_timeutils "github.com/fluffy-bunny/grpcdotnetgo/pkg/contracts/timeutils"
 	contracts_handler "github.com/fluffy-bunny/grpcdotnetgo/pkg/echo/contracts/handler"
 	core_hashset "github.com/fluffy-bunny/grpcdotnetgo/pkg/gods/sets/hashset"
 	core_utils "github.com/fluffy-bunny/grpcdotnetgo/pkg/utils"
@@ -35,6 +36,7 @@ import (
 
 type (
 	service struct {
+		Now                  contracts_timeutils.TimeNow                      `inject:""`
 		Config               *contracts_config.Config                         `inject:""`
 		Logger               contracts_logger.ILogger                         `inject:""`
 		ClientStore          contracts_clients.IClientStore                   `inject:""`
@@ -43,7 +45,7 @@ type (
 		JwtTokenStore        contracts_stores_tokenstore.IJwtTokenStore       `inject:""`
 		ClientRequest        contracts_clients.IClientRequest                 `inject:""`
 		TokenHandlerAccessor contracts_tokenhandlers.ITokenHandlerAccessor    `inject:""`
-		RefreshTokenStore    contracts_stores_refreshtoken.IRefreshTokenStore `inject:""`
+		RefreshTokenStore    contracts_stores_tokenstore.ITokenStore          `inject:""`
 		ReferenceTokenStore  contracts_stores_tokenstore.IReferenceTokenStore `inject:""`
 		TokenHandler         contracts_tokenhandlers.ITokenHandler
 		accessGenerate       echo_oauth2.AccessGenerate
@@ -220,7 +222,7 @@ func (s *service) GenerateAccessToken(ctx context.Context,
 	validatedResult *contracts_tokenhandlers.ValidatedTokenRequestResult,
 	subject string,
 	claims models.IClaims) (oauth2.TokenInfo, error) {
-
+	now := s.Now()
 	//------------------------------------------------------------------------
 	client := s.ClientRequest.GetClient()
 
@@ -232,7 +234,7 @@ func (s *service) GenerateAccessToken(ctx context.Context,
 	ti.SetScope(scope)
 	scopes := strings.Split(scope, " ")
 	scopeSet := core_hashset.NewStringSet(scopes...)
-	createAt := time.Now()
+	createAt := now
 	ti.SetAccessCreateAt(createAt)
 
 	ti.SetAccessExpiresIn(time.Duration(client.AccessTokenLifetime) * time.Second)
@@ -294,21 +296,33 @@ func (s *service) GenerateAccessToken(ctx context.Context,
 	ti.SetAccess(tokenHandle)
 
 	if client.AllowOfflineAccess && scopeSet.Contains("offline_access") {
-		var absoluteExpiration = time.Now().Add(time.Second * time.Duration(client.AbsoluteRefreshTokenLifetime))
+		var absoluteExpiration = now.Add(time.Second * time.Duration(client.AbsoluteRefreshTokenLifetime))
 		if client.AbsoluteRefreshTokenLifetime <= 0 {
-			absoluteExpiration = time.Now().Add(time.Hour * 24 * 365 * 10) // 10 years
+			absoluteExpiration = now.Add(time.Hour * 24 * 365 * 10) // 10 years
 		}
-		var expiration = time.Now().Add(time.Second * time.Duration(client.RefreshTokenExpiration))
-		handle, err := s.RefreshTokenStore.StoreRefreshToken(ctx,
-			&contracts_stores_refreshtoken.RefreshTokenInfo{
-				ClientID:           client.ClientID,
-				Subject:            subject,
-				Scope:              scope,
-				GrantType:          validatedResult.GrantType,
-				Expiration:         expiration,
-				AbsoluteExpiration: absoluteExpiration,
-				Params:             validatedResult.Params,
-			})
+		var expiration = now.Add(time.Second * time.Duration(client.RefreshTokenExpiration))
+		rtInfo := &models.RefreshTokenInfo{
+			ClientID:           client.ClientID,
+			Subject:            subject,
+			Scope:              scope,
+			GrantType:          validatedResult.GrantType,
+			Expiration:         expiration,
+			AbsoluteExpiration: absoluteExpiration,
+			Params:             validatedResult.Params,
+		}
+
+		data := structs.Map(rtInfo)
+		handle, err := s.RefreshTokenStore.StoreToken(ctx, &models.TokenInfo{
+			Metadata: models.TokenMetadata{
+				Type:       "refresh_token",
+				ClientID:   client.ClientID,
+				Subject:    subject,
+				Expiration: expiration,
+				IssedAt:    now,
+			},
+			Data: data,
+		})
+
 		if err != nil {
 			return nil, err
 		}

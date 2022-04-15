@@ -3,6 +3,7 @@ package inmemory
 import (
 	"context"
 	contracts_stores_tokenstore "echo-starter/internal/contracts/stores/tokenstore"
+	"echo-starter/internal/models"
 	"errors"
 	"reflect"
 	"sync"
@@ -16,7 +17,7 @@ import (
 type (
 	service struct {
 		lock   *sync.RWMutex
-		tokens map[string]*contracts_stores_tokenstore.TokenInfo
+		tokens map[string]*models.TokenInfo
 	}
 	validated struct {
 		scopes []string
@@ -25,7 +26,7 @@ type (
 
 func (s *service) Ctor() {
 	s.lock = &sync.RWMutex{}
-	s.tokens = make(map[string]*contracts_stores_tokenstore.TokenInfo)
+	s.tokens = make(map[string]*models.TokenInfo)
 }
 func assertImplementation() {
 	var _ contracts_stores_tokenstore.ITokenStore = (*service)(nil)
@@ -39,7 +40,7 @@ func AddSingletonITokenStore(builder *di.Builder) {
 	contracts_stores_tokenstore.AddSingletonITokenStore(builder, reflectType)
 }
 
-func (s *service) StoreToken(ctx context.Context, info *contracts_stores_tokenstore.TokenInfo) (handle string, err error) {
+func (s *service) StoreToken(ctx context.Context, info *models.TokenInfo) (handle string, err error) {
 
 	//--~--~--~--~--~-- BARBED WIRE --~--~--~--~--~--~--
 	s.lock.Lock()
@@ -49,7 +50,7 @@ func (s *service) StoreToken(ctx context.Context, info *contracts_stores_tokenst
 	s.tokens[handle] = info
 	return handle, nil
 }
-func (s *service) GetToken(ctx context.Context, handle string) (*contracts_stores_tokenstore.TokenInfo, error) {
+func (s *service) GetToken(ctx context.Context, handle string) (*models.TokenInfo, error) {
 
 	if core_utils.IsEmptyOrNil(handle) {
 		return nil, errors.New("handle is empty")
@@ -66,7 +67,7 @@ func (s *service) GetToken(ctx context.Context, handle string) (*contracts_store
 	return h, nil
 
 }
-func (s *service) UpdateToken(ctx context.Context, handle string, info *contracts_stores_tokenstore.TokenInfo) error {
+func (s *service) UpdateToken(ctx context.Context, handle string, info *models.TokenInfo) error {
 
 	if core_utils.IsEmptyOrNil(handle) {
 		return errors.New("handle is empty")
@@ -110,7 +111,7 @@ func (s *service) RemoveTokenByClientID(ctx context.Context, clientID string) er
 	defer s.lock.Unlock()
 	//--~--~--~--~--~-- BARBED WIRE --~--~--~--~--~--~--
 	for k, v := range s.tokens {
-		if v.ClientID == clientID {
+		if v.Metadata.ClientID == clientID {
 			delete(s.tokens, k)
 		}
 	}
@@ -127,7 +128,7 @@ func (s *service) RemoveTokenBySubject(ctx context.Context, subject string) erro
 	//--~--~--~--~--~-- BARBED WIRE --~--~--~--~--~--~--
 
 	for k, v := range s.tokens {
-		if v.Subject == subject {
+		if v.Metadata.Subject == subject {
 			delete(s.tokens, k)
 		}
 	}
@@ -146,7 +147,7 @@ func (s *service) RemoveTokenByClientIdAndSubject(ctx context.Context, clientID 
 	defer s.lock.Unlock()
 	//--~--~--~--~--~-- BARBED WIRE --~--~--~--~--~--~--
 	for k, v := range s.tokens {
-		if v.ClientID == clientID && v.Subject == subject {
+		if v.Metadata.ClientID == clientID && v.Metadata.Subject == subject {
 			delete(s.tokens, k)
 		}
 	}
@@ -161,7 +162,7 @@ func (s *service) RemoveExpired(ctx context.Context) {
 	now := time.Now()
 	var handles []string
 	for k, v := range s.tokens {
-		if now.After(v.Expiration) {
+		if now.After(v.Metadata.Expiration) {
 			handles = append(handles, k)
 		}
 	}

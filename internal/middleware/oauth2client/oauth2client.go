@@ -30,6 +30,9 @@ func _clientInfoHandler(c echo.Context, clientStore contracts_clients.IClientSto
 	}
 
 	client, _, _ = clientStore.GetClient(r.Context(), clientID)
+	if client == nil {
+		return nil, errors.ErrInvalidClient
+	}
 	var match bool
 	for _, sc := range client.ClientSecrets {
 		match, _ = utils.ComparePasswordHash(clientSecret, sc.Value)

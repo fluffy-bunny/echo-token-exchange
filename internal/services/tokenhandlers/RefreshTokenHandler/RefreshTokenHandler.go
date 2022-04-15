@@ -2,28 +2,25 @@ package RefreshTokenHandler
 
 import (
 	"context"
-
-	"github.com/go-oauth2/oauth2/v4/errors"
-
-	"net/http"
-	"reflect"
-
-	contracts_stores_refreshtoken "echo-starter/internal/contracts/stores/refreshtoken"
+	contracts_stores_tokenstore "echo-starter/internal/contracts/stores/tokenstore"
 	contracts_tokenhandlers "echo-starter/internal/contracts/tokenhandlers"
 	"echo-starter/internal/models"
 	"echo-starter/internal/utils"
 	"echo-starter/internal/wellknown"
+	"net/http"
+	"reflect"
 
 	core_utils "github.com/fluffy-bunny/grpcdotnetgo/pkg/utils"
-
 	di "github.com/fluffy-bunny/sarulabsdi"
+	"github.com/go-oauth2/oauth2/v4/errors"
+	"github.com/mitchellh/mapstructure"
 )
 
 type (
 	service struct {
 		TokenExchangeTokenHandler     contracts_tokenhandlers.ITokenExchangeTokenHandler     `inject:""`
 		ClientCredentialsTokenHandler contracts_tokenhandlers.IClientCredentialsTokenHandler `inject:""`
-		RefreshTokenStore             contracts_stores_refreshtoken.IRefreshTokenStore       `inject:""`
+		RefreshTokenStore             contracts_stores_tokenstore.ITokenStore                `inject:""`
 	}
 	validated struct {
 		scopes []string
@@ -58,27 +55,38 @@ func (s *service) ValidationTokenRequest(r *http.Request) (result *contracts_tok
 	return validated, nil
 }
 func (s *service) ProcessTokenRequest(ctx context.Context, result *contracts_tokenhandlers.ValidatedTokenRequestResult) (models.IClaims, error) {
-	rt, err := s.RefreshTokenStore.GetRefreshToken(ctx, result.Params["refresh_token"])
+	handle, _ := result.Params["refresh_token"]
+	rt, err := s.RefreshTokenStore.GetToken(ctx, handle)
 	if err != nil {
 		return nil, errors.ErrInvalidRequest
 	}
-	if rt.ClientID != result.ClientID {
+	if rt == nil {
+		return nil, errors.ErrInvalidRequest
+	}
+	if rt.Metadata.Type != "refresh_token" {
+		return nil, errors.ErrInvalidRequest
+	}
+	if rt.Metadata.ClientID != result.ClientID {
 		return nil, errors.New("clientID mismatch")
 	}
 	// if no scope is passed then we use the scope from the last run
 	scope, ok := result.Params["scope"]
-
-	result.Params = rt.Params
+	rtInfo := &models.RefreshTokenInfo{}
+	err = mapstructure.Decode(rt.Data, rtInfo)
+	if err != nil {
+		return nil, err
+	}
+	result.Params = rtInfo.Params
 	if ok {
 		// override the sone passed into the refresh_token request
 		result.Params["scope"] = scope
 	}
 	newValidatedResult := &contracts_tokenhandlers.ValidatedTokenRequestResult{
-		GrantType: rt.GrantType,
-		ClientID:  rt.ClientID,
+		GrantType: rtInfo.GrantType,
+		ClientID:  rtInfo.ClientID,
 		Params:    result.Params,
 	}
-	switch rt.GrantType {
+	switch rtInfo.GrantType {
 	case wellknown.OAuth2GrantType_ClientCredentials:
 		return s.ClientCredentialsTokenHandler.ProcessTokenRequest(ctx, newValidatedResult)
 	case wellknown.OAuth2GrantType_TokenExchange:
