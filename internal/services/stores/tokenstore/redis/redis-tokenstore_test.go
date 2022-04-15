@@ -1,6 +1,7 @@
 package redis
 
 import (
+	"os"
 	"testing"
 
 	"echo-starter/tests"
@@ -13,6 +14,11 @@ import (
 )
 
 func TestStore(t *testing.T) {
+	appEnv := os.Getenv("APPLICATION_ENVIRONMENT")
+	if appEnv != "Development" {
+		t.Skip("skipping redis tests")
+		return
+	}
 	tests.RunTest(t, func(ctrl *gomock.Controller) {
 		builder, _ := di.NewBuilder(di.App, di.Request, "transient")
 		config := &contracts_config.Config{
