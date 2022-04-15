@@ -11,7 +11,7 @@ import (
 
 type (
 	ITokenStore interface {
-		StoreToken(ctx context.Context, info *models.TokenInfo) (handle string, err error)
+		StoreToken(ctx context.Context, handle string, info *models.TokenInfo) (string, error)
 		GetToken(ctx context.Context, handle string) (*models.TokenInfo, error)
 		UpdateToken(ctx context.Context, handle string, info *models.TokenInfo) error
 		RemoveToken(ctx context.Context, handle string) error

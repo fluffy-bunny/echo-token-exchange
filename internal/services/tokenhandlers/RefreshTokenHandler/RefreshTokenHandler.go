@@ -2,6 +2,7 @@ package RefreshTokenHandler
 
 import (
 	"context"
+	contracts_clients "echo-starter/internal/contracts/stores/clients"
 	contracts_stores_tokenstore "echo-starter/internal/contracts/stores/tokenstore"
 	contracts_tokenhandlers "echo-starter/internal/contracts/tokenhandlers"
 	"echo-starter/internal/models"
@@ -20,7 +21,8 @@ type (
 	service struct {
 		TokenExchangeTokenHandler     contracts_tokenhandlers.ITokenExchangeTokenHandler     `inject:""`
 		ClientCredentialsTokenHandler contracts_tokenhandlers.IClientCredentialsTokenHandler `inject:""`
-		RefreshTokenStore             contracts_stores_tokenstore.ITokenStore                `inject:""`
+		ReferenceTokenStore           contracts_stores_tokenstore.ITokenStore                `inject:""`
+		ClientRequest                 contracts_clients.IClientRequest                       `inject:""`
 	}
 	validated struct {
 		scopes []string
@@ -56,7 +58,7 @@ func (s *service) ValidationTokenRequest(r *http.Request) (result *contracts_tok
 }
 func (s *service) ProcessTokenRequest(ctx context.Context, result *contracts_tokenhandlers.ValidatedTokenRequestResult) (models.IClaims, error) {
 	handle, _ := result.Params["refresh_token"]
-	rt, err := s.RefreshTokenStore.GetToken(ctx, handle)
+	rt, err := s.ReferenceTokenStore.GetToken(ctx, handle)
 	if err != nil {
 		return nil, errors.ErrInvalidRequest
 	}
@@ -67,7 +69,7 @@ func (s *service) ProcessTokenRequest(ctx context.Context, result *contracts_tok
 		return nil, errors.ErrInvalidRequest
 	}
 	if rt.Metadata.ClientID != result.ClientID {
-		return nil, errors.New("clientID mismatch")
+		return nil, errors.New("client_id mismatch")
 	}
 	// if no scope is passed then we use the scope from the last run
 	scope, ok := result.Params["scope"]
@@ -86,14 +88,33 @@ func (s *service) ProcessTokenRequest(ctx context.Context, result *contracts_tok
 		ClientID:  rtInfo.ClientID,
 		Params:    result.Params,
 	}
+	client := s.ClientRequest.GetClient()
+	refreshHandle := handle
+	if client.RefreshTokenUsage == models.OneTimeOnly {
+		handle = utils.GenerateHandle()
+	}
+	newValidatedResult.RefreshTokenHandle = handle
+
+	var (
+		claims models.IClaims
+	)
 	switch rtInfo.GrantType {
 	case wellknown.OAuth2GrantType_ClientCredentials:
-		return s.ClientCredentialsTokenHandler.ProcessTokenRequest(ctx, newValidatedResult)
+		claims, err = s.ClientCredentialsTokenHandler.ProcessTokenRequest(ctx, newValidatedResult)
 	case wellknown.OAuth2GrantType_TokenExchange:
-		return s.TokenExchangeTokenHandler.ProcessTokenRequest(ctx, newValidatedResult)
+		claims, err = s.TokenExchangeTokenHandler.ProcessTokenRequest(ctx, newValidatedResult)
 
 	default:
 		return nil, errors.ErrUnsupportedGrantType
 	}
-
+	result.GrantType = rtInfo.GrantType
+	if err != nil {
+		return nil, err
+	}
+	if client.RefreshTokenUsage == models.OneTimeOnly {
+		// revoke the old token
+		s.ReferenceTokenStore.RemoveToken(ctx, refreshHandle)
+	}
+	result.RefreshTokenHandle = handle
+	return claims, nil
 }

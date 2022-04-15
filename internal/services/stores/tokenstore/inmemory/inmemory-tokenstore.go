@@ -11,7 +11,6 @@ import (
 
 	core_utils "github.com/fluffy-bunny/grpcdotnetgo/pkg/utils"
 	di "github.com/fluffy-bunny/sarulabsdi"
-	"github.com/rs/xid"
 )
 
 type (
@@ -42,13 +41,16 @@ func AddSingletonITokenStore(builder *di.Builder) {
 		contracts_stores_tokenstore.ReflectTypeIInternalTokenStore)
 }
 
-func (s *service) StoreToken(ctx context.Context, info *models.TokenInfo) (handle string, err error) {
+func (s *service) StoreToken(ctx context.Context, handle string, info *models.TokenInfo) (string, error) {
 
 	//--~--~--~--~--~-- BARBED WIRE --~--~--~--~--~--~--
 	s.lock.Lock()
 	defer s.lock.Unlock()
 	//--~--~--~--~--~-- BARBED WIRE --~--~--~--~--~--~--
-	handle = xid.New().String()
+	if core_utils.IsEmptyOrNil(handle) {
+		return "", errors.New("handle is empty")
+	}
+
 	s.tokens[handle] = info
 	return handle, nil
 }

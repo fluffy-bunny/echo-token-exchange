@@ -17,7 +17,6 @@ import (
 	di "github.com/fluffy-bunny/sarulabsdi"
 	"github.com/go-redis/redis/v8"
 	jsoniter "github.com/json-iterator/go"
-	"github.com/rs/xid"
 )
 
 var (
@@ -85,13 +84,16 @@ func (s *service) checkError(result redis.Cmder) (bool, error) {
 	}
 	return false, nil
 }
-func (s *service) StoreToken(ctx context.Context, info *models.TokenInfo) (handle string, err error) {
+func (s *service) StoreToken(ctx context.Context, handle string, info *models.TokenInfo) (string, error) {
 
 	//--~--~--~--~--~-- BARBED WIRE --~--~--~--~--~--~--
 	s.lock.Lock()
 	defer s.lock.Unlock()
 	//--~--~--~--~--~-- BARBED WIRE --~--~--~--~--~--~--
-	handle = xid.New().String()
+	if core_utils.IsEmptyOrNil(handle) {
+		return "", errors.New("handle is empty")
+	}
+
 	jv, err := jsonMarshal(info)
 	if err != nil {
 		return "", err

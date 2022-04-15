@@ -8,6 +8,7 @@ import (
 
 	contracts_stores_tokenstore "echo-starter/internal/contracts/stores/tokenstore"
 	"echo-starter/internal/models"
+	"echo-starter/internal/utils"
 
 	di "github.com/fluffy-bunny/sarulabsdi"
 	"github.com/go-test/deep"
@@ -41,8 +42,9 @@ func RunTestSuite(t *testing.T, ctn di.Container) {
 	}
 	// prove our deep comparison works
 	require.NotNil(t, deep.Equal(expectedTokenInfo, expectedTokenInfo2))
+	handle := utils.GenerateHandle()
 
-	handle, err := store.StoreToken(context.Background(), expectedTokenInfo)
+	handle, err := store.StoreToken(context.Background(), handle, expectedTokenInfo)
 	require.NoError(t, err)
 	require.NotEmpty(t, handle)
 	actualTokenInfo, err := store.GetToken(context.Background(), handle)
@@ -61,7 +63,8 @@ func RunTestSuite(t *testing.T, ctn di.Container) {
 
 	handles := make([]string, 0)
 	for i := 0; i < 10; i++ {
-		handle, err := store.StoreToken(context.Background(), expectedTokenInfo)
+		handle := utils.GenerateHandle()
+		handle, err := store.StoreToken(context.Background(), handle, expectedTokenInfo)
 		require.NoError(t, err)
 		require.NotEmpty(t, handle)
 		handles = append(handles, handle)
@@ -85,8 +88,8 @@ func RunTestSuite(t *testing.T, ctn di.Container) {
 		nrt := &models.TokenInfo{}
 		copier.Copy(&nrt, expectedTokenInfo)
 		nrt.Metadata.ClientID = "client-id-" + fmt.Sprintf("%d", i)
-
-		handle, err := store.StoreToken(context.Background(), nrt)
+		handle := utils.GenerateHandle()
+		handle, err := store.StoreToken(context.Background(), handle, nrt)
 		require.NoError(t, err)
 		require.NotEmpty(t, handle)
 		handles = append(handles, handle)
@@ -113,8 +116,8 @@ func RunTestSuite(t *testing.T, ctn di.Container) {
 		nrt := &models.TokenInfo{}
 		copier.Copy(&nrt, expectedTokenInfo)
 		nrt.Metadata.ClientID = "client-id-" + fmt.Sprintf("%d", i)
-
-		handle, err := store.StoreToken(context.Background(), nrt)
+		handle := utils.GenerateHandle()
+		handle, err := store.StoreToken(context.Background(), handle, nrt)
 		require.NoError(t, err)
 		require.NotEmpty(t, handle)
 		handles = append(handles, handle)

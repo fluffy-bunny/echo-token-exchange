@@ -11,6 +11,7 @@ import (
 	"echo-starter/internal/models"
 	echo_oauth2 "echo-starter/internal/services/go-oauth2/oauth2"
 	"echo-starter/internal/utils"
+
 	"echo-starter/internal/wellknown"
 	"encoding/json"
 	"fmt"
@@ -39,7 +40,6 @@ type (
 		Now                  contracts_timeutils.TimeNow                   `inject:""`
 		Config               *contracts_config.Config                      `inject:""`
 		Logger               contracts_logger.ILogger                      `inject:""`
-		ClientStore          contracts_clients.IClientStore                `inject:""`
 		APIResources         contracts_stores_apiresources.IAPIResources   `inject:""`
 		KeyMaterial          contracts_stores_keymaterial.IKeyMaterial     `inject:""`
 		JwtTokenStore        contracts_stores_tokenstore.IJwtTokenStore    `inject:""`
@@ -278,7 +278,8 @@ func (s *service) GenerateAccessToken(ctx context.Context,
 	var err error
 	var tokenHandle string
 	if client.AccessTokenType == models.Reference {
-		tokenHandle, err = s.ReferenceTokenStore.StoreToken(ctx, &models.TokenInfo{
+		handle := utils.GenerateHandle()
+		tokenHandle, err = s.ReferenceTokenStore.StoreToken(ctx, handle, &models.TokenInfo{
 			Metadata: models.TokenMetadata{
 				Type:       "reference_token",
 				ClientID:   client.ClientID,
@@ -299,6 +300,9 @@ func (s *service) GenerateAccessToken(ctx context.Context,
 	ti.SetAccess(tokenHandle)
 
 	if client.AllowOfflineAccess && scopeSet.Contains("offline_access") {
+		if core_utils.IsEmptyOrNil(validatedResult.RefreshTokenHandle) {
+			panic("refresh token handle is empty") // fix your code
+		}
 		var absoluteExpiration = now.Add(time.Second * time.Duration(client.AbsoluteRefreshTokenLifetime))
 		if client.AbsoluteRefreshTokenLifetime <= 0 {
 			absoluteExpiration = now.Add(time.Hour * 24 * 365 * 10) // 10 years
@@ -315,16 +319,18 @@ func (s *service) GenerateAccessToken(ctx context.Context,
 		}
 
 		data := structs.Map(rtInfo)
-		handle, err := s.ReferenceTokenStore.StoreToken(ctx, &models.TokenInfo{
-			Metadata: models.TokenMetadata{
-				Type:       "refresh_token",
-				ClientID:   client.ClientID,
-				Subject:    subject,
-				Expiration: expiration,
-				IssedAt:    now,
-			},
-			Data: data,
-		})
+		handle, err := s.ReferenceTokenStore.StoreToken(ctx,
+			validatedResult.RefreshTokenHandle,
+			&models.TokenInfo{
+				Metadata: models.TokenMetadata{
+					Type:       "refresh_token",
+					ClientID:   client.ClientID,
+					Subject:    subject,
+					Expiration: expiration,
+					IssedAt:    now,
+				},
+				Data: data,
+			})
 
 		if err != nil {
 			return nil, err
