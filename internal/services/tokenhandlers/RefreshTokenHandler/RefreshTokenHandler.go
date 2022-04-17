@@ -52,12 +52,12 @@ func (s *service) ValidationTokenRequest(r *http.Request) (result *contracts_tok
 		}
 	}
 	safeAddParam("scope")
-	safeAddParam("refresh_token")
+	safeAddParam(models.TokenTypeRefreshToken)
 
 	return validated, nil
 }
 func (s *service) ProcessTokenRequest(ctx context.Context, result *contracts_tokenhandlers.ValidatedTokenRequestResult) (models.IClaims, error) {
-	handle, _ := result.Params["refresh_token"]
+	handle, _ := result.Params[models.TokenTypeRefreshToken]
 	rt, err := s.ReferenceTokenStore.GetToken(ctx, handle)
 	if err != nil {
 		return nil, errors.ErrInvalidRequest
@@ -65,7 +65,7 @@ func (s *service) ProcessTokenRequest(ctx context.Context, result *contracts_tok
 	if rt == nil {
 		return nil, errors.ErrInvalidRequest
 	}
-	if rt.Metadata.Type != "refresh_token" {
+	if rt.Metadata.Type != models.TokenTypeRefreshToken {
 		return nil, errors.ErrInvalidRequest
 	}
 	if rt.Metadata.ClientID != result.ClientID {

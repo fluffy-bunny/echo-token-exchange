@@ -85,7 +85,7 @@ services:
         ALLOW_EMPTY_PASSWORD: 'no'
 #        REDIS_DISABLE_COMMANDS: 'FLUSHDB, FLUSHALL'
         #- REDIS_DISABLE_COMMANDS=FLUSHDB,FLUSHALL
-      command: redis-server --loadmodule "/usr/lib/redis/modules/rejson.so" --requirepass "$REDIS_PASSWORD"
+      command: redis-server --loadmodule "/usr/lib/redis/modules/rejson.so" --loadmodule "/usr/lib/redis/modules/redisearch.so" --requirepass "$REDIS_PASSWORD"
 
   
 volumes:

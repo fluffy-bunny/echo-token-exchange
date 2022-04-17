@@ -25,3 +25,19 @@ type (
 		AbsoluteExpiration time.Time         `json:"absolute_expiration" mapstructure:"absolute_expiration"`
 	}
 )
+
+const (
+	TokenTypeRefreshToken                = "refresh_token"
+	TokenTypeRefreshTokenSubject         = "refresh_token:subject"
+	TokenTypeRefreshTokenClientId        = "refresh_token:client_id"
+	TokenTypeRefreshTokenClientIdSubject = "refresh_token:client_id:subject"
+
+	TokenTypeAccessToken                = "access_token"
+	TokenTypeAccessTokenSubject         = "access_token:subject"
+	TokenTypeAccessTokenClientId        = "access_token:client_id"
+	TokenTypeAccessTokenClientIdSubject = "access_token:client_id:subject"
+
+	TokenTypeReferenceToken   = "reference_token"
+	TokenTypeSubjectToken     = "subject_token"
+	TokenTypeSubjectTokenType = "subject_token_type"
+)

@@ -3,6 +3,7 @@ module echo-starter
 go 1.18
 
 //replace github.com/fluffy-bunny/grpcdotnetgo => ../grpcdotnetgo
+replace github.com/fluffy-bunny/rejonson/v8 => ../rejonson
 
 require (
 	github.com/ahmetb/go-linq v3.0.0+incompatible
@@ -13,6 +14,7 @@ require (
 	github.com/containerd/containerd v1.6.1
 	github.com/fatih/structs v1.1.0
 	github.com/fluffy-bunny/grpcdotnetgo v0.1.248
+	github.com/fluffy-bunny/rejonson/v8 v8.0.0-20220416160058-92e678684acc
 	github.com/fluffy-bunny/sarulabsdi v0.1.63
 	github.com/go-oauth2/oauth2/v4 v4.4.3
 	github.com/go-oauth2/redis/v4 v4.1.1
@@ -69,8 +71,10 @@ require (
 	github.com/gogo/status v1.1.0 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
+	github.com/google/go-cmp v0.5.7 // indirect
 	github.com/gorilla/context v1.1.1 // indirect
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0 // indirect
+	github.com/gustavotero7/redisearch v0.2.2 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/jedib0t/go-pretty/v6 v6.3.0 // indirect

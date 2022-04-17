@@ -1,6 +1,7 @@
 package introspect
 
 import (
+	"echo-starter/internal/models"
 	"echo-starter/internal/wellknown"
 	"net/http"
 	"reflect"
@@ -69,7 +70,7 @@ func (s *service) post(c echo.Context) error {
 	if tokenInfo == nil {
 		return echo.NewHTTPError(http.StatusNotFound, "not found")
 	}
-	if tokenInfo.Metadata.Type != "refrence_token" {
+	if tokenInfo.Metadata.Type != models.TokenTypeReferenceToken {
 		return echo.NewHTTPError(http.StatusNotFound, "not found")
 	}
 	if tokenInfo.Metadata.Expiration.Before(now) {

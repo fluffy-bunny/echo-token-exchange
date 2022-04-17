@@ -210,7 +210,7 @@ func (s *service) GetTokenData(ti oauth2.TokenInfo) map[string]interface{} {
 	}
 
 	if refresh := ti.GetRefresh(); refresh != "" {
-		data["refresh_token"] = refresh
+		data[models.TokenTypeRefreshToken] = refresh
 	}
 
 	return data
@@ -281,7 +281,7 @@ func (s *service) GenerateAccessToken(ctx context.Context,
 		handle := utils.GenerateHandle()
 		tokenHandle, err = s.ReferenceTokenStore.StoreToken(ctx, handle, &models.TokenInfo{
 			Metadata: models.TokenMetadata{
-				Type:       "reference_token",
+				Type:       models.TokenTypeReferenceToken,
 				ClientID:   client.ClientID,
 				Subject:    subject,
 				Expiration: expiresAt,
@@ -323,7 +323,7 @@ func (s *service) GenerateAccessToken(ctx context.Context,
 			validatedResult.RefreshTokenHandle,
 			&models.TokenInfo{
 				Metadata: models.TokenMetadata{
-					Type:       "refresh_token",
+					Type:       models.TokenTypeRefreshToken,
 					ClientID:   client.ClientID,
 					Subject:    subject,
 					Expiration: expiration,

@@ -50,9 +50,9 @@ func (s *service) get(c echo.Context) error {
 		RevocationEndpoint:    rootPath + wellknown.OAuth2RevokePath,
 		IntrospectionEndpoint: rootPath + wellknown.OAuth2IntrospectPath,
 		GrantTypesSupported: []string{
-			"refresh_token",
-			"urn:ietf:params:oauth:grant-type:token-exchange",
-			"client_credentials",
+			wellknown.OAuth2GrantType_ClientCredentials,
+			wellknown.OAuth2GrantType_RefreshToken,
+			wellknown.OAuth2GrantType_TokenExchange,
 		},
 	}
 	return c.JSON(http.StatusOK, discovery)

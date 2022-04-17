@@ -1,6 +1,7 @@
 package revoke
 
 import (
+	"echo-starter/internal/models"
 	"echo-starter/internal/wellknown"
 	"net/http"
 	"reflect"
@@ -63,19 +64,19 @@ func (s *service) post(c echo.Context) error {
 	}
 	switch u.TokenTypeHint {
 	// REFRESH_TOKEN
-	case "refresh_token":
+	case models.TokenTypeRefreshToken:
 		if err := s.ReferenceTokenStore.RemoveToken(ctx, u.Token); err != nil {
 			return err
 		}
-	case "refresh_token:subject":
+	case models.TokenTypeRefreshTokenSubject:
 		if err := s.ReferenceTokenStore.RemoveTokenBySubject(ctx, u.Token); err != nil {
 			return err
 		}
-	case "refresh_token:client_id":
+	case models.TokenTypeRefreshTokenClientId:
 		if err := s.ReferenceTokenStore.RemoveTokenByClientID(ctx, u.Token); err != nil {
 			return err
 		}
-	case "refresh_token:client_id:subject":
+	case models.TokenTypeRefreshTokenClientIdSubject:
 		items := strings.Split(u.Token, ":")
 		if len(items) != 2 {
 			return echo.NewHTTPError(http.StatusBadRequest, "invalid token")
@@ -87,19 +88,19 @@ func (s *service) post(c echo.Context) error {
 			return err
 		}
 		// ACCESS_TOKEN
-	case "access_token":
+	case models.TokenTypeAccessToken:
 		if err := s.ReferenceTokenStore.RemoveToken(ctx, u.Token); err != nil {
 			return err
 		}
-	case "access_token:subject":
+	case models.TokenTypeAccessTokenSubject:
 		if err := s.ReferenceTokenStore.RemoveTokenBySubject(ctx, u.Token); err != nil {
 			return err
 		}
-	case "access_token:client_id":
+	case models.TokenTypeAccessTokenClientId:
 		if err := s.ReferenceTokenStore.RemoveTokenByClientID(ctx, u.Token); err != nil {
 			return err
 		}
-	case "access_token:client_id:subject":
+	case models.TokenTypeAccessTokenClientIdSubject:
 		items := strings.Split(u.Token, ":")
 		if len(items) != 2 {
 			return echo.NewHTTPError(http.StatusBadRequest, "invalid token")

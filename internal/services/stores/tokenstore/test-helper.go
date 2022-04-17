@@ -2,6 +2,7 @@ package tokenstore
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"testing"
 	"time"
@@ -19,18 +20,40 @@ import (
 func RunTestSuite(t *testing.T, ctn di.Container) {
 	now := time.Now()
 	store := contracts_stores_tokenstore.GetITokenStoreFromContainer(ctn)
-	expectedTokenInfo := &models.TokenInfo{
+	expectedTokenInfoOri := &models.TokenInfo{
 		Metadata: models.TokenMetadata{
-			ClientID:   "client-id",
-			Subject:    "subject",
+			Type:       models.TokenTypeReferenceToken,
+			ClientID:   "0000",
+			Subject:    "1111",
 			Expiration: now.Add(time.Hour),
 		},
 		Data: map[string]interface{}{
-			"response-key": "response-value",
+			"aud": []string{
+				"b2b-client",
+				"users",
+				"invoices",
+			},
+			"client_id": "b2b-client",
+			"exp":       1650123272,
+			"iat":       1650119672,
+			"iss":       "http://localhost:1323",
+			"jti":       "c9dd7u1ld5lnsc78u3f0",
+			"scope": []string{
+				"offline_access",
+				"a",
+				"b",
+				"c",
+				"users.read",
+				"invoices",
+			},
 		},
 	}
+	// marshaling to map to do deep comparison
+	expectedTokenInfoM := map[string]interface{}{}
+	jM, _ := json.Marshal(expectedTokenInfoOri)
+	json.Unmarshal(jM, &expectedTokenInfoM)
 
-	expectedTokenInfo2 := &models.TokenInfo{
+	expectedTokenInfo2Ori := &models.TokenInfo{
 		Metadata: models.TokenMetadata{
 			ClientID:   "client-id2",
 			Subject:    "subject2",
@@ -40,16 +63,24 @@ func RunTestSuite(t *testing.T, ctn di.Container) {
 			"response-key": "response-value",
 		},
 	}
+	expectedTokenInfo2 := map[string]interface{}{}
+	jM2, _ := json.Marshal(expectedTokenInfo2Ori)
+	json.Unmarshal(jM2, &expectedTokenInfo2)
+
 	// prove our deep comparison works
-	require.NotNil(t, deep.Equal(expectedTokenInfo, expectedTokenInfo2))
+	require.NotNil(t, deep.Equal(expectedTokenInfoM, expectedTokenInfo2))
 	handle := utils.GenerateHandle()
 
-	handle, err := store.StoreToken(context.Background(), handle, expectedTokenInfo)
+	handle, err := store.StoreToken(context.Background(), handle, expectedTokenInfoOri)
 	require.NoError(t, err)
 	require.NotEmpty(t, handle)
 	actualTokenInfo, err := store.GetToken(context.Background(), handle)
 	require.NoError(t, err)
-	require.Nil(t, deep.Equal(expectedTokenInfo, actualTokenInfo))
+	actualTokenInfoM := map[string]interface{}{}
+	jM, _ = json.Marshal(actualTokenInfo)
+	json.Unmarshal(jM, &actualTokenInfoM)
+
+	require.Nil(t, deep.Equal(expectedTokenInfoM, actualTokenInfoM))
 
 	actualTokenInfo, err = store.GetToken(context.Background(), "garbage")
 	require.NoError(t, err)
@@ -64,17 +95,22 @@ func RunTestSuite(t *testing.T, ctn di.Container) {
 	handles := make([]string, 0)
 	for i := 0; i < 10; i++ {
 		handle := utils.GenerateHandle()
-		handle, err := store.StoreToken(context.Background(), handle, expectedTokenInfo)
+		handle, err := store.StoreToken(context.Background(), handle, expectedTokenInfoOri)
 		require.NoError(t, err)
 		require.NotEmpty(t, handle)
 		handles = append(handles, handle)
+		defer store.RemoveToken(context.Background(), handle)
 	}
 	for _, handle := range handles {
 		actualTokenInfo, err := store.GetToken(context.Background(), handle)
 		require.NoError(t, err)
-		require.Nil(t, deep.Equal(expectedTokenInfo, actualTokenInfo))
+		actualTokenInfoM := map[string]interface{}{}
+		jM, _ = json.Marshal(actualTokenInfo)
+		json.Unmarshal(jM, &actualTokenInfoM)
+
+		require.Nil(t, deep.Equal(expectedTokenInfoM, actualTokenInfoM))
 	}
-	err = store.RemoveTokenByClientID(context.Background(), expectedTokenInfo.Metadata.ClientID)
+	err = store.RemoveTokenByClientID(context.Background(), expectedTokenInfoOri.Metadata.ClientID)
 	require.NoError(t, err)
 
 	for _, handle := range handles {
@@ -86,8 +122,8 @@ func RunTestSuite(t *testing.T, ctn di.Container) {
 	// diff client_id, same subject
 	for i := 0; i < 10; i++ {
 		nrt := &models.TokenInfo{}
-		copier.Copy(&nrt, expectedTokenInfo)
-		nrt.Metadata.ClientID = "client-id-" + fmt.Sprintf("%d", i)
+		copier.Copy(&nrt, expectedTokenInfoM)
+		nrt.Metadata.ClientID = "cli" + fmt.Sprintf("%d", i)
 		handle := utils.GenerateHandle()
 		handle, err := store.StoreToken(context.Background(), handle, nrt)
 		require.NoError(t, err)
@@ -97,13 +133,23 @@ func RunTestSuite(t *testing.T, ctn di.Container) {
 	for i := 0; i < 10; i++ {
 		handle := handles[i]
 		nrt := &models.TokenInfo{}
-		copier.Copy(&nrt, expectedTokenInfo)
-		nrt.Metadata.ClientID = "client-id-" + fmt.Sprintf("%d", i)
+		copier.Copy(&nrt, expectedTokenInfoM)
+		nrt.Metadata.ClientID = "cli" + fmt.Sprintf("%d", i)
+
+		nrtM := map[string]interface{}{}
+		jM, _ := json.Marshal(nrt)
+		json.Unmarshal(jM, &nrtM)
+
 		actualTokenInfo, err := store.GetToken(context.Background(), handle)
 		require.NoError(t, err)
-		require.Nil(t, deep.Equal(nrt, actualTokenInfo))
+		actualTokenInfoM := map[string]interface{}{}
+		jM, _ = json.Marshal(actualTokenInfo)
+		json.Unmarshal(jM, &actualTokenInfoM)
+
+		require.Nil(t, deep.Equal(nrtM, actualTokenInfoM))
+
 	}
-	err = store.RemoveTokenBySubject(context.Background(), expectedTokenInfo.Metadata.Subject)
+	err = store.RemoveTokenBySubject(context.Background(), expectedTokenInfoOri.Metadata.Subject)
 	require.NoError(t, err)
 	for _, handle := range handles {
 		actualTokenInfo, err := store.GetToken(context.Background(), handle)
@@ -114,15 +160,15 @@ func RunTestSuite(t *testing.T, ctn di.Container) {
 
 	for i := 0; i < 2; i++ {
 		nrt := &models.TokenInfo{}
-		copier.Copy(&nrt, expectedTokenInfo)
-		nrt.Metadata.ClientID = "client-id-" + fmt.Sprintf("%d", i)
+		copier.Copy(&nrt, expectedTokenInfoM)
+		nrt.Metadata.ClientID = "cli" + fmt.Sprintf("%d", i)
 		handle := utils.GenerateHandle()
 		handle, err := store.StoreToken(context.Background(), handle, nrt)
 		require.NoError(t, err)
 		require.NotEmpty(t, handle)
 		handles = append(handles, handle)
 	}
-	err = store.RemoveTokenByClientIdAndSubject(context.Background(), "client-id-0", expectedTokenInfo.Metadata.Subject)
+	err = store.RemoveTokenByClientIdAndSubject(context.Background(), "cli0", expectedTokenInfoOri.Metadata.Subject)
 	require.NoError(t, err)
 	actualTokenInfo, err = store.GetToken(context.Background(), handles[0])
 	require.NoError(t, err)
@@ -130,5 +176,5 @@ func RunTestSuite(t *testing.T, ctn di.Container) {
 	actualTokenInfo, err = store.GetToken(context.Background(), handles[1])
 	require.NoError(t, err)
 	require.NotNil(t, actualTokenInfo)
-	require.Equal(t, "client-id-1", actualTokenInfo.Metadata.ClientID)
+	require.Equal(t, "cli1", actualTokenInfo.Metadata.ClientID)
 }

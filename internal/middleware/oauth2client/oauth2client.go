@@ -2,6 +2,7 @@ package claimsprincipal
 
 import (
 	"echo-starter/internal/models"
+	"fmt"
 	"strings"
 
 	contracts_clients "echo-starter/internal/contracts/stores/clients"
@@ -91,18 +92,18 @@ func AuthenticateOAuth2Client(root di.Container) echo.MiddlewareFunc {
 			// validate that the required form arguments are present
 			switch grantType {
 			case wellknown.OAuth2GrantType_RefreshToken:
-				refreshToken := r.FormValue("refresh_token")
+				refreshToken := r.FormValue(models.TokenTypeRefreshToken)
 				if core_utils.IsEmptyOrNil(refreshToken) {
-					return c.JSON(401, "refresh_token is required")
+					return c.JSON(401, fmt.Sprintf("%s is required", models.TokenTypeRefreshToken))
 				}
 			case wellknown.OAuth2GrantType_TokenExchange:
-				subjectToken := r.FormValue("subject_token")
+				subjectToken := r.FormValue(models.TokenTypeSubjectToken)
 				if core_utils.IsEmptyOrNil(subjectToken) {
-					return c.JSON(401, "subject_token is required")
+					return c.JSON(401, fmt.Sprintf("%s is required", models.TokenTypeSubjectToken))
 				}
-				subjectTokenType := r.FormValue("subject_token_type")
+				subjectTokenType := r.FormValue(models.TokenTypeSubjectTokenType)
 				if core_utils.IsEmptyOrNil(subjectTokenType) {
-					return c.JSON(401, "subject_token_type is required")
+					return c.JSON(401, fmt.Sprintf("%s is required", models.TokenTypeSubjectTokenType))
 				}
 			}
 
