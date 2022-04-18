@@ -122,7 +122,7 @@ func RunTestSuite(t *testing.T, ctn di.Container) {
 	// diff client_id, same subject
 	for i := 0; i < 10; i++ {
 		nrt := &models.TokenInfo{}
-		copier.Copy(&nrt, expectedTokenInfoM)
+		copier.Copy(&nrt, expectedTokenInfoOri)
 		nrt.Metadata.ClientID = "cli" + fmt.Sprintf("%d", i)
 		handle := utils.GenerateHandle()
 		handle, err := store.StoreToken(context.Background(), handle, nrt)
@@ -133,7 +133,7 @@ func RunTestSuite(t *testing.T, ctn di.Container) {
 	for i := 0; i < 10; i++ {
 		handle := handles[i]
 		nrt := &models.TokenInfo{}
-		copier.Copy(&nrt, expectedTokenInfoM)
+		copier.Copy(&nrt, expectedTokenInfoOri)
 		nrt.Metadata.ClientID = "cli" + fmt.Sprintf("%d", i)
 
 		nrtM := map[string]interface{}{}
@@ -160,7 +160,7 @@ func RunTestSuite(t *testing.T, ctn di.Container) {
 
 	for i := 0; i < 2; i++ {
 		nrt := &models.TokenInfo{}
-		copier.Copy(&nrt, expectedTokenInfoM)
+		copier.Copy(&nrt, expectedTokenInfoOri)
 		nrt.Metadata.ClientID = "cli" + fmt.Sprintf("%d", i)
 		handle := utils.GenerateHandle()
 		handle, err := store.StoreToken(context.Background(), handle, nrt)

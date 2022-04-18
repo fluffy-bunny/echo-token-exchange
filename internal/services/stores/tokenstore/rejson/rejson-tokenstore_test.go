@@ -1,7 +1,6 @@
 package rejson
 
 import (
-	"context"
 	"log"
 	"os"
 	"testing"
@@ -35,17 +34,19 @@ func TestStore(t *testing.T) {
 		di.AddSingletonTypeByObj(builder, config)
 		AddSingletonITokenStore(builder)
 		ctn := builder.Build()
-
-		cli := redis.NewClient(&redis.Options{
+		redisOptions := &redis.Options{
 			Addr:     config.RedisOptionsReferenceTokenStore.Addr,
 			Network:  config.RedisOptionsReferenceTokenStore.Network,
 			Password: config.RedisOptionsReferenceTokenStore.Password,
 			Username: config.RedisOptionsReferenceTokenStore.Username,
-		})
+		}
+		cli := redis.NewClient(redisOptions)
+
+		//		search := redisearch.New(redisOptions)
+		//		createSearchIndexes("echoTokenStoreIdx", search)
+		//		defer search.DropIndex(context.Background(), "echoTokenStoreIdx", true)
 		defer func() {
-			if err := cli.FlushAll(context.Background()).Err(); err != nil {
-				log.Fatalf("goredis - failed to flush: %v", err)
-			}
+
 			if err := cli.Close(); err != nil {
 				log.Fatalf("goredis - failed to communicate to redis-server: %v", err)
 			}

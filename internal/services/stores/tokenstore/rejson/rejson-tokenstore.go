@@ -13,12 +13,12 @@ import (
 	"sync"
 	"time"
 
+	"github.com/fluffy-bunny/go-redis-search/ftsearch"
 	contracts_logger "github.com/fluffy-bunny/grpcdotnetgo/pkg/contracts/logger"
 	core_utils "github.com/fluffy-bunny/grpcdotnetgo/pkg/utils"
 	"github.com/fluffy-bunny/rejonson/v8"
 	di "github.com/fluffy-bunny/sarulabsdi"
 	"github.com/go-redis/redis/v8"
-	"github.com/gustavotero7/redisearch"
 	jsoniter "github.com/json-iterator/go"
 )
 
@@ -35,8 +35,8 @@ type (
 		opts           *redis.Options
 		cli            *redis.Client
 		ns             string
-		search         redisearch.Client
 		rejonsonClient *rejonson.Client
+		ftSearch       *ftsearch.Client
 	}
 	validated struct {
 		scopes []string
@@ -63,7 +63,8 @@ func (s *service) Ctor() {
 	}
 
 	s.rejonsonClient = rejonson.ExtendClient(s.cli)
-	s.search = redisearch.New(redisOptions)
+
+	s.ftSearch = ftsearch.NewClient(s.cli)
 
 }
 func (s *service) Close() {
@@ -133,7 +134,7 @@ func (s *service) StoreToken(ctx context.Context, handle string, info *models.To
 	json, err := jsonMarshal(info)
 	pipeline.JsonSet(ctx, handleKey, ".", string(json))
 	pipeline.Expire(ctx, handleKey, rexp)
-	_, err = pipeline.Exec(context.Background())
+	_, err = pipeline.Exec(ctx)
 	if err != nil {
 		return "", err
 	}
@@ -304,15 +305,34 @@ func (s *service) RemoveTokenByClientID(ctx context.Context, clientID string) (e
 	if core_utils.IsEmptyOrNil(clientID) {
 		return errors.New("client_id is empty")
 	}
-	setKey := s.wrapClientIDKey(clientID)
+
+	var max int64 = 1000
+
+	var totalProcessed int64 = 0
 	for {
-		more, err := s.removeOneSetBlock(ctx, setKey)
+		queryString := fmt.Sprintf("@client_id:%s", clientID)
+		query := ftsearch.NewQuery().
+			WithIndex("echoTokenStoreIdx").
+			WithQueryString(queryString).
+			WithLimit(0, max)
+
+		qResult, err := s.ftSearch.Search(ctx, query)
 		if err != nil {
 			return err
 		}
-		if !more {
+		if qResult.Count == 0 {
 			break
 		}
+
+		if qResult != nil {
+			pipeline := s.rejonsonClient.Pipeline()
+			for key := range qResult.Data {
+				pipeline.Del(ctx, key)
+			}
+			_, err = pipeline.Exec(ctx)
+		}
+		totalProcessed += int64(len(qResult.Data))
+
 	}
 
 	return nil
@@ -330,19 +350,39 @@ func (s *service) RemoveTokenBySubject(ctx context.Context, subject string) (err
 	if core_utils.IsEmptyOrNil(subject) {
 		return errors.New("subject is empty")
 	}
-	setKey := s.wrapSubjectKey(subject)
+
+	var max int64 = 1000
+
+	var totalProcessed int64 = 0
 	for {
-		more, err := s.removeOneSetBlock(ctx, setKey)
+		queryString := fmt.Sprintf("@subject:%s", subject)
+		query := ftsearch.NewQuery().
+			WithIndex("echoTokenStoreIdx").
+			WithQueryString(queryString).
+			WithLimit(0, max)
+
+		qResult, err := s.ftSearch.Search(ctx, query)
 		if err != nil {
 			return err
 		}
-		if !more {
+		if qResult.Count == 0 {
 			break
 		}
+
+		if qResult != nil {
+			pipeline := s.rejonsonClient.Pipeline()
+			for key := range qResult.Data {
+				pipeline.Del(ctx, key)
+			}
+			_, err = pipeline.Exec(ctx)
+		}
+		totalProcessed += int64(len(qResult.Data))
+
 	}
 
 	return nil
 }
+
 func (s *service) RemoveTokenByClientIdAndSubject(ctx context.Context, clientID string, subject string) (err error) {
 	//=================== PANIC RECOVERY ======================
 	defer func() {
@@ -360,56 +400,34 @@ func (s *service) RemoveTokenByClientIdAndSubject(ctx context.Context, clientID 
 		return errors.New("subject is empty")
 	}
 
-	//--~--~--~--~--~-- BARBED WIRE --~--~--~--~--~--~--
-	s.lock.Lock()
-	defer s.lock.Unlock()
-	//--~--~--~--~--~-- BARBED WIRE --~--~--~--~--~--~--
-	clientSubjectKey := s.wrapClientSubjectKey(clientID, subject)
-	handleKey, _ := s.cli.Get(ctx, clientSubjectKey).Result()
-	if core_utils.IsEmptyOrNil(handleKey) {
-		return errors.New("not found")
-	}
-	pipe := s.cli.TxPipeline()
+	var max int64 = 1000
 
-	// we need to know every handle that was created on behalf of a client
-	pipe.SRem(ctx, s.wrapClientIDKey(clientID), handleKey)
-	pipe.SRem(ctx, s.wrapSubjectKey(subject), handleKey)
-	pipe.Del(ctx, clientSubjectKey)
-	// finally delete the token itself
-	pipe.Del(ctx, handleKey)
+	var totalProcessed int64 = 0
+	for {
+		queryString := fmt.Sprintf("@client_id:%s,@subject:%s", clientID, subject)
+		query := ftsearch.NewQuery().
+			WithIndex("echoTokenStoreIdx").
+			WithQueryString(queryString).
+			WithLimit(0, max)
 
-	if _, err := pipe.Exec(ctx); err != nil {
-		return err
+		qResult, err := s.ftSearch.Search(ctx, query)
+		if err != nil {
+			return err
+		}
+		if qResult.Count == 0 {
+			break
+		}
+
+		if qResult != nil {
+			pipeline := s.rejonsonClient.Pipeline()
+			for key := range qResult.Data {
+				pipeline.Del(ctx, key)
+			}
+			_, err = pipeline.Exec(ctx)
+		}
+		totalProcessed += int64(len(qResult.Data))
+
 	}
 
 	return nil
-}
-
-func (s *service) createSearchIndexs() error {
-	err := s.search.CreateIndex(context.Background(), redisearch.IndexOptions{
-		IndexName: "echoTokenStoreIdx",
-
-		Schema: map[string]redisearch.FieldSchema{
-			"type": {
-				Type: redisearch.FieldTypeText,
-				Options: []redisearch.SchemaOpt{
-					redisearch.SchemaOptWeight(2.0),
-				},
-			},
-			"client_id": {
-				Type: redisearch.FieldTypeText,
-				Options: []redisearch.SchemaOpt{
-					redisearch.SchemaOptWeight(2.0),
-				},
-			},
-			"subject": {
-				Type: redisearch.FieldTypeText,
-				Options: []redisearch.SchemaOpt{
-					redisearch.SchemaOptWeight(2.0),
-				},
-			},
-		},
-	}, true)
-	// warning, if 2nd argument is TRUE, all data matching the index prefix will be deleted from redis
-	return err
 }

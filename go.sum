@@ -361,8 +361,12 @@ github.com/fatih/structs v1.1.0/go.mod h1:9NiDSp5zOcgEDl+j00MP/WkGVPOlPRLejGD8Ga
 github.com/fatih/structtag v1.2.0 h1:/OdNE99OxoI/PqaW/SuSK9uxxT3f/tcSZgon/ssNSx4=
 github.com/fatih/structtag v1.2.0/go.mod h1:mBJUNpUnHmRKrKlQQlmCrh5PuhftFbNv8Ys4/aAZl94=
 github.com/felixge/httpsnoop v1.0.1/go.mod h1:m8KPJKqk1gH5J9DgRY2ASl2lWCfGKXixSwevea8zH2U=
+github.com/fluffy-bunny/go-redis-search v0.0.3 h1:/YP0Ffegr1cyZgvlSYIezLMWB9eLWY+3cwxbXycfrtw=
+github.com/fluffy-bunny/go-redis-search v0.0.3/go.mod h1:nggfnMwCOwx9oBnbk2QITn7+D7R6wi1iPoiox//AOV0=
 github.com/fluffy-bunny/grpcdotnetgo v0.1.248 h1:6PcyotPB6c//r67RdHE1r3DvRPi+z+LyCjCAzLCvimI=
 github.com/fluffy-bunny/grpcdotnetgo v0.1.248/go.mod h1:PVWeGNqspaoBiT1K8ltRTCxkIZetJSUUELc8hEWorMc=
+github.com/fluffy-bunny/rejonson/v8 v8.0.0-20220416160058-92e678684acc h1:kF1UWdbZ6/bjKNCmxmBuegVIP1JZXlBryBZx2eyB5K0=
+github.com/fluffy-bunny/rejonson/v8 v8.0.0-20220416160058-92e678684acc/go.mod h1:2LhsdotnAJu349ne3gzCjo10ZKK/RL7QrVfHjXGYmb4=
 github.com/fluffy-bunny/sarulabsdi v0.1.63 h1:mPkC25DBsWn0hE4xNMdVBcsY5TdtMwfR2/nntOOFkFA=
 github.com/fluffy-bunny/sarulabsdi v0.1.63/go.mod h1:/4TxiZYWMoADjmgKH3X7+scWtMqyJzRTPN0vNk1U20c=
 github.com/fluffy-bunny/viperEx v0.0.26 h1:6Dih/t8tw1RskFwdqZE71ddmYX+z3ZCu+i8tiFdXM18=
@@ -422,7 +426,6 @@ github.com/go-openapi/swag v0.19.5/go.mod h1:POnQmlKehdgb5mhVOsnJFsivZCEZ/vjK9gh
 github.com/go-openapi/swag v0.19.14/go.mod h1:QYRuS/SOXUCsnplDa677K7+DxSOj6IPNl/eQntq43wQ=
 github.com/go-redis/redis/v8 v8.0.0-beta.5/go.mod h1:Mm9EH/5UMRx680UIryN6rd5XFn/L7zORPqLV+1D5thQ=
 github.com/go-redis/redis/v8 v8.3.3/go.mod h1:jszGxBCez8QA1HWSmQxJO9Y82kNibbUmeYhKWrBejTU=
-github.com/go-redis/redis/v8 v8.11.3/go.mod h1:xNJ9xDG09FsIPwh3bWdk+0oDWHbtF9rPN0F/oD9XeKc=
 github.com/go-redis/redis/v8 v8.11.5 h1:AcZZR7igkdvfVmQTPnu9WE37LRrO/YrBH5zWyjDC0oI=
 github.com/go-redis/redis/v8 v8.11.5/go.mod h1:gREzHqY1hg6oD9ngVRbLStwAWKhA0FEgq8Jd4h5lpwo=
 github.com/go-session/session v3.1.2+incompatible/go.mod h1:8B3iivBQjrz/JtC68Np2T1yBBLxTan3mn/3OM0CyRt0=
@@ -564,8 +567,6 @@ github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0/go.mod h1:8NvIoxWQoOIhqOTXgf
 github.com/grpc-ecosystem/grpc-gateway v1.9.0/go.mod h1:vNeuVxBJEsws4ogUvrchl83t/GYV9WGTSLVdBhOQFDY=
 github.com/grpc-ecosystem/grpc-gateway v1.9.5/go.mod h1:vNeuVxBJEsws4ogUvrchl83t/GYV9WGTSLVdBhOQFDY=
 github.com/grpc-ecosystem/grpc-gateway v1.16.0/go.mod h1:BDjrQk3hbvj6Nolgz8mAMFbcEtjT1g+wF4CSlocrBnw=
-github.com/gustavotero7/redisearch v0.2.2 h1:9Kb830WD3PVUFPZOS9fGn7j7ZYbXD3hQ07iau8kMjro=
-github.com/gustavotero7/redisearch v0.2.2/go.mod h1:wz9GZsDDZt7S8uypviZzLEHTYhoiKJMs7dJ2Epmu1VE=
 github.com/hashicorp/consul/api v1.1.0/go.mod h1:VmuI/Lkw1nC05EYQWNKwWGbkg+FbDBtguAZLlVdkD9Q=
 github.com/hashicorp/consul/sdk v0.1.1/go.mod h1:VKf9jXwCTEY1QZP2MOLRhb5i/I/ssyNV1vwHyQBF0x8=
 github.com/hashicorp/errwrap v0.0.0-20141028054710-7554cd9344ce/go.mod h1:YH+1FKiLXxHSkmPseP+kNlulaMuP3n2brvKWEqk/Jc4=
