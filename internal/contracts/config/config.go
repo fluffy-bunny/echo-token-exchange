@@ -11,6 +11,24 @@ const (
 )
 
 type (
+	RedisOptions struct {
+		// The network type, either tcp or unix.
+		// Default is tcp.
+		Network string `json:"network" mapstructure:"NETWORK"`
+		// host:port address.
+		Addr string `json:"addr" mapstructure:"ADDR"`
+		// Use the specified Username to authenticate the current connection
+		// with one of the connections defined in the ACL list when connecting
+		// to a Redis 6.0 instance, or greater, that is using the Redis ACL system.
+		Username string `json:"username" mapstructure:"USERNAME"`
+		// Optional password. Must match the password specified in the
+		// requirepass server configuration option (if connecting to a Redis 5.0 instance, or lower),
+		// or the User Password when connecting to a Redis 6.0 instance, or greater,
+		// that is using the Redis ACL system.
+		Password string `json:"password" mapstructure:"PASSWORD"`
+
+		Namespace []string `json:"namespace" mapstructure:"NAMESPACE"`
+	}
 	oidcConfig struct {
 		Domain       string `json:"domain" mapstructure:"DOMAIN"`
 		ClientID     string `json:"client_id" mapstructure:"CLIENT_ID"`
@@ -57,10 +75,12 @@ type (
 		AuthProvider string `json:"authProvider" mapstructure:"AUTH_PROVIDER"`
 		SigningKeys  string `json:"signingKeys" mapstructure:"SIGNING_KEYS" redact:"true"`
 
-		ClientStoreProvider string             `json:"clientStoreProvider" mapstructure:"CLIENT_STORE_PROVIDER"`
-		TokenStoreProvider  string             `json:"tokenStoreProvider" mapstructure:"TOKEN_STORE_PROVIDER"`
-		AllowedGrantTypes   []oauth2.GrantType `json:"allowedGrantTypes" mapstructure:"ALLOWED_GRANT_TYPES"`
-		TokenType           string             `json:"tokenType" mapstructure:"TOKEN_TYPE"`
+		ClientStoreProvider             string             `json:"clientStoreProvider" mapstructure:"CLIENT_STORE_PROVIDER"`
+		TokenStoreProvider              string             `json:"tokenStoreProvider" mapstructure:"TOKEN_STORE_PROVIDER"`
+		AllowedGrantTypes               []oauth2.GrantType `json:"allowedGrantTypes" mapstructure:"ALLOWED_GRANT_TYPES"`
+		TokenType                       string             `json:"tokenType" mapstructure:"TOKEN_TYPE"`
+		RedisOptionsReferenceTokenStore RedisOptions       `json:"redisOptionsReferenceTokenStore" mapstructure:"REDIS_OPTIONS_REFERENCE_TOKEN_STORE"`
+		RedisOptionsRefreshTokenStore   RedisOptions       `json:"redisOptionsRefreshTokenStore" mapstructure:"REDIS_OPTIONS_REFRESH_TOKEN_STORE"`
 	}
 )
 
@@ -101,8 +121,22 @@ var (
 	"TOKEN_STORE_PROVIDER": "inmemory",
 	"SIGNING_KEYS": "",
 	"ALLOWED_GRANT_TYPES": "client_credentials,refresh_token,urn:ietf:params:oauth:grant-type:token-exchange",
-	"TOKEN_TYPE": "Bearer"
+	"TOKEN_TYPE": "Bearer",
+	"REDIS_OPTIONS_REFERENCE_TOKEN_STORE": {
+		"NETWORK": "tcp",
+		"ADDR": "localhost:6379",
+		"NAMESPACE": "a,b,c",
+		"USERNAME": "",
+		"PASSWORD": ""
+	},
+	"REDIS_OPTIONS_REFRESH_TOKEN_STORE": {
+		"NETWORK": "tcp",
+		"ADDR": "localhost:6379",
+		"NAMESPACE": "a,b,c",
+		"USERNAME": "",
+		"PASSWORD": ""
 
+	}
 
 }
 `)

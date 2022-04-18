@@ -43,7 +43,8 @@ jobs:
       run: |
        echo new_tag: ${{needs.pre_flight.outputs.new_tag}} 
        echo changelog: ${{needs.pre_flight.outputs.changelog}}
-    - uses: actions/checkout@v2
+       
+    - uses: actions/checkout@v3
 
     - name: Set up Go
       uses: actions/setup-go@v2
@@ -114,7 +115,7 @@ jobs:
          echo new_tag: ${{needs.pre_flight.outputs.new_tag}} 
          echo changelog: ${{needs.pre_flight.outputs.changelog}}
 
-      - uses: actions/checkout@v2.3.4
+      - uses: actions/checkout@v3
         with:
           submodules: true
 

@@ -12,9 +12,10 @@ import (
 
 type (
 	ValidatedTokenRequestResult struct {
-		ClientID  string `json:"client_id"`
-		GrantType string `json:"grant_type"`
-		Params    map[string]string
+		ClientID           string `json:"client_id"`
+		GrantType          string `json:"grant_type"`
+		Params             map[string]string
+		RefreshTokenHandle string
 	}
 	ITokenHandler interface {
 		ValidationTokenRequest(r *http.Request) (result *ValidatedTokenRequestResult, err error)

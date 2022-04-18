@@ -35,8 +35,9 @@ func AddScopedIClientCredentialsTokenHandler(builder *di.Builder) {
 
 func (s *service) ValidationTokenRequest(r *http.Request) (result *contracts_tokenhandlers.ValidatedTokenRequestResult, err error) {
 	validated := &contracts_tokenhandlers.ValidatedTokenRequestResult{
-		GrantType: r.FormValue("grant_type"),
-		Params:    make(map[string]string),
+		GrantType:          r.FormValue("grant_type"),
+		Params:             make(map[string]string),
+		RefreshTokenHandle: utils.GenerateHandle(),
 	}
 	var safeAddParam = func(key string) {
 		val := utils.TrimLeftAndRight(r.FormValue(key))

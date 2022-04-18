@@ -10,6 +10,7 @@ type (
 		Delete(key string) error
 		Get(key string) interface{}
 		JwtClaims() jwt.Claims
+		Claims() Claims
 	}
 )
 
@@ -17,6 +18,10 @@ type (
 func (a *Claims) Valid() error {
 	return nil
 }
+func (a *Claims) Claims() Claims {
+	return *a
+}
+
 func (a *Claims) Set(key string, value interface{}) error {
 	(*a)[key] = value
 	return nil
