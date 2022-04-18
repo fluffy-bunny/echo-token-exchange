@@ -43,8 +43,7 @@ import (
 
 	services_stores_jwttoken "echo-starter/internal/services/stores/jwttoken"
 	services_stores_keymaterial "echo-starter/internal/services/stores/keymaterial"
-	services_stores_referencetoken_inmemory "echo-starter/internal/services/stores/referencetoken/inmemory"
-	services_stores_refreshtoken_inmemory "echo-starter/internal/services/stores/refreshtoken/inmemory"
+	services_stores_tokenstore_inmemory "echo-starter/internal/services/stores/tokenstore/inmemory"
 
 	services_tokenhandlers "echo-starter/internal/services/tokenhandlers"
 	services_tokenhandlers_ClientCredentialsTokenHandler "echo-starter/internal/services/tokenhandlers/ClientCredentialsTokenHandler"
@@ -243,7 +242,7 @@ func (s *Startup) addAppHandlers(builder *di.Builder) {
 	//----------------------------------------------------------------------------------------------------------------------
 	switch s.config.TokenStoreProvider {
 	case "inmemory":
-		services_stores_refreshtoken_inmemory.AddSingletonIRefreshTokenStore(builder)
+		services_stores_tokenstore_inmemory.AddSingletonITokenStore(builder)
 	case "redis":
 	default:
 		panic("token store provider not supported")
@@ -254,7 +253,6 @@ func (s *Startup) addAppHandlers(builder *di.Builder) {
 	default:
 		panic("client store provider not supported")
 	}
-	services_stores_referencetoken_inmemory.AddSingletonIReferenceTokenStore(builder)
 
 	services_tokenhandlers_ClientCredentialsTokenHandler.AddScopedIClientCredentialsTokenHandler(builder)
 	services_tokenhandlers_TokenExchangeTokenHandler.AddScopedITokenExchangeTokenHandler(builder)

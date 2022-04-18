@@ -62,7 +62,7 @@
 		"identityTokenLifetime": 2600000,
 		"refreshTokenUsage": 1,
 		"refreshTokenExpiration": 300,
-		"accessTokenType": 0,
+		"accessTokenType": 1,
 		"claims": [{
 			"type": "artificer-ns",
 			"value": "private namespace"

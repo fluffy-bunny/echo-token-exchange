@@ -3,17 +3,14 @@ package jwttoken
 import (
 	"context"
 	contracts_config "echo-starter/internal/contracts/config"
-	contracts_stores_jwttoken "echo-starter/internal/contracts/stores/jwttoken"
 	contracts_stores_keymaterial "echo-starter/internal/contracts/stores/keymaterial"
+	contracts_stores_tokenstore "echo-starter/internal/contracts/stores/tokenstore"
 	"echo-starter/internal/models"
-	"encoding/json"
 	"fmt"
 	"reflect"
 	"strings"
 
 	contracts_logger "github.com/fluffy-bunny/grpcdotnetgo/pkg/contracts/logger"
-	core_hashset "github.com/fluffy-bunny/grpcdotnetgo/pkg/gods/sets/hashset"
-	core_utils "github.com/fluffy-bunny/grpcdotnetgo/pkg/utils"
 	di "github.com/fluffy-bunny/sarulabsdi"
 	"github.com/golang-jwt/jwt"
 )
@@ -27,17 +24,17 @@ type (
 )
 
 func assertImplementation() {
-	var _ contracts_stores_jwttoken.IJwtTokenStore = (*service)(nil)
+	var _ contracts_stores_tokenstore.IJwtTokenStore = (*service)(nil)
 }
 
 var reflectType = reflect.TypeOf((*service)(nil))
 
 // AddSingletonIJwtTokenStore registers the *service as a singleton.
 func AddSingletonIJwtTokenStore(builder *di.Builder) {
-	contracts_stores_jwttoken.AddSingletonIJwtTokenStore(builder, reflectType)
+	contracts_stores_tokenstore.AddSingletonIJwtTokenStore(builder, reflectType)
 }
 
-func (s *service) MintToken(ctx context.Context, standardClaims *jwt.StandardClaims, extras models.IClaims) (jwtToken string, err error) {
+func (s *service) MintToken(ctx context.Context, extras models.IClaims) (jwtToken string, err error) {
 	signingKey, err := s.KeyMaterial.GetSigningKey()
 	if err != nil {
 		return "", err
@@ -79,30 +76,6 @@ func (s *service) MintToken(ctx context.Context, standardClaims *jwt.StandardCla
 		}
 		key = v
 		return key, nil
-	}
-
-	audienceSet := core_hashset.NewStringSet()
-	if !core_utils.IsEmptyOrNil(standardClaims.Audience) {
-		audienceSet.Add(standardClaims.Audience)
-	}
-	if !core_utils.IsNil(extras) {
-		extraAudInterface := extras.Get("aud")
-		switch extraAudInterface.(type) {
-		case string:
-			audienceSet.Add(extraAudInterface.(string))
-		case []string:
-			audienceSet.Add(extraAudInterface.([]string)...)
-		}
-	}
-	extras.Set("aud", audienceSet.Values())
-
-	var standard map[string]interface{}
-	standardJSON, _ := json.Marshal(standardClaims)
-	json.Unmarshal(standardJSON, &standard)
-	delete(standard, "aud")
-
-	for k, v := range standard {
-		extras.Set(k, v)
 	}
 
 	token := jwt.NewWithClaims(method, extras.JwtClaims())

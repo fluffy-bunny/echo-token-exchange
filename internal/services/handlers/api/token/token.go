@@ -5,15 +5,13 @@ import (
 	contracts_config "echo-starter/internal/contracts/config"
 	contracts_stores_apiresources "echo-starter/internal/contracts/stores/apiresources"
 	contracts_clients "echo-starter/internal/contracts/stores/clients"
-	contracts_stores_jwttoken "echo-starter/internal/contracts/stores/jwttoken"
 	contracts_stores_keymaterial "echo-starter/internal/contracts/stores/keymaterial"
-
-	contracts_stores_referencetoken "echo-starter/internal/contracts/stores/referencetoken"
-	contracts_stores_refreshtoken "echo-starter/internal/contracts/stores/refreshtoken"
+	contracts_stores_tokenstore "echo-starter/internal/contracts/stores/tokenstore"
 	contracts_tokenhandlers "echo-starter/internal/contracts/tokenhandlers"
 	"echo-starter/internal/models"
 	echo_oauth2 "echo-starter/internal/services/go-oauth2/oauth2"
 	"echo-starter/internal/utils"
+
 	"echo-starter/internal/wellknown"
 	"encoding/json"
 	"fmt"
@@ -22,9 +20,12 @@ import (
 	"strings"
 	"time"
 
+	"github.com/fatih/structs"
 	contracts_logger "github.com/fluffy-bunny/grpcdotnetgo/pkg/contracts/logger"
+	contracts_timeutils "github.com/fluffy-bunny/grpcdotnetgo/pkg/contracts/timeutils"
 	contracts_handler "github.com/fluffy-bunny/grpcdotnetgo/pkg/echo/contracts/handler"
 	core_hashset "github.com/fluffy-bunny/grpcdotnetgo/pkg/gods/sets/hashset"
+	core_utils "github.com/fluffy-bunny/grpcdotnetgo/pkg/utils"
 	di "github.com/fluffy-bunny/sarulabsdi"
 	"github.com/go-oauth2/oauth2/v4"
 	"github.com/go-oauth2/oauth2/v4/errors"
@@ -36,16 +37,15 @@ import (
 
 type (
 	service struct {
-		Config               *contracts_config.Config                             `inject:""`
-		Logger               contracts_logger.ILogger                             `inject:""`
-		ClientStore          contracts_clients.IClientStore                       `inject:""`
-		APIResources         contracts_stores_apiresources.IAPIResources          `inject:""`
-		KeyMaterial          contracts_stores_keymaterial.IKeyMaterial            `inject:""`
-		JwtTokenStore        contracts_stores_jwttoken.IJwtTokenStore             `inject:""`
-		ClientRequest        contracts_clients.IClientRequest                     `inject:""`
-		TokenHandlerAccessor contracts_tokenhandlers.ITokenHandlerAccessor        `inject:""`
-		RefreshTokenStore    contracts_stores_refreshtoken.IRefreshTokenStore     `inject:""`
-		ReferenceTokenStore  contracts_stores_referencetoken.IReferenceTokenStore `inject:""`
+		Now                  contracts_timeutils.TimeNow                   `inject:""`
+		Config               *contracts_config.Config                      `inject:""`
+		Logger               contracts_logger.ILogger                      `inject:""`
+		APIResources         contracts_stores_apiresources.IAPIResources   `inject:""`
+		KeyMaterial          contracts_stores_keymaterial.IKeyMaterial     `inject:""`
+		JwtTokenStore        contracts_stores_tokenstore.IJwtTokenStore    `inject:""`
+		ClientRequest        contracts_clients.IClientRequest              `inject:""`
+		TokenHandlerAccessor contracts_tokenhandlers.ITokenHandlerAccessor `inject:""`
+		ReferenceTokenStore  contracts_stores_tokenstore.ITokenStore       `inject:""`
 		TokenHandler         contracts_tokenhandlers.ITokenHandler
 		accessGenerate       echo_oauth2.AccessGenerate
 		signingKey           *models.SigningKey
@@ -210,7 +210,7 @@ func (s *service) GetTokenData(ti oauth2.TokenInfo) map[string]interface{} {
 	}
 
 	if refresh := ti.GetRefresh(); refresh != "" {
-		data["refresh_token"] = refresh
+		data[models.TokenTypeRefreshToken] = refresh
 	}
 
 	return data
@@ -221,7 +221,7 @@ func (s *service) GenerateAccessToken(ctx context.Context,
 	validatedResult *contracts_tokenhandlers.ValidatedTokenRequestResult,
 	subject string,
 	claims models.IClaims) (oauth2.TokenInfo, error) {
-
+	now := s.Now()
 	//------------------------------------------------------------------------
 	client := s.ClientRequest.GetClient()
 
@@ -233,42 +233,105 @@ func (s *service) GenerateAccessToken(ctx context.Context,
 	ti.SetScope(scope)
 	scopes := strings.Split(scope, " ")
 	scopeSet := core_hashset.NewStringSet(scopes...)
-	createAt := time.Now()
+	createAt := now
 	ti.SetAccessCreateAt(createAt)
 
 	ti.SetAccessExpiresIn(time.Duration(client.AccessTokenLifetime) * time.Second)
 
+	expiresAt := createAt.Add(time.Second * time.Duration(client.AccessTokenLifetime))
 	standardClaims := &jwt.StandardClaims{
 		IssuedAt:  createAt.Unix(),
-		ExpiresAt: createAt.Add(time.Second * time.Duration(client.AccessTokenLifetime)).Unix(),
+		ExpiresAt: expiresAt.Unix(),
 		Issuer:    s.issuer,
 		Audience:  client.ClientID,
 		Subject:   subject,
 		Id:        xid.New().String(),
 	}
-	jwtToken, err := s.JwtTokenStore.MintToken(ctx, standardClaims, claims)
-	if err != nil {
-		return nil, err
+	var buildClaimsMap = func(ctx context.Context, standardClaims *jwt.StandardClaims, extras models.IClaims) models.IClaims {
+		audienceSet := core_hashset.NewStringSet()
+		if !core_utils.IsEmptyOrNil(standardClaims.Audience) {
+			audienceSet.Add(standardClaims.Audience)
+		}
+		if !core_utils.IsNil(extras) {
+			extraAudInterface := extras.Get("aud")
+			switch extraAudInterface.(type) {
+			case string:
+				audienceSet.Add(extraAudInterface.(string))
+			case []string:
+				audienceSet.Add(extraAudInterface.([]string)...)
+			}
+		}
+		extras.Set("aud", audienceSet.Values())
+
+		var standard map[string]interface{}
+		standardJSON, _ := json.Marshal(standardClaims)
+		json.Unmarshal(standardJSON, &standard)
+		delete(standard, "aud")
+
+		for k, v := range standard {
+			extras.Set(k, v)
+		}
+		return extras
+	}
+	claims = buildClaimsMap(ctx, standardClaims, claims)
+
+	var err error
+	var tokenHandle string
+	if client.AccessTokenType == models.Reference {
+		handle := utils.GenerateHandle()
+		tokenHandle, err = s.ReferenceTokenStore.StoreToken(ctx, handle, &models.TokenInfo{
+			Metadata: models.TokenMetadata{
+				Type:       models.TokenTypeReferenceToken,
+				ClientID:   client.ClientID,
+				Subject:    subject,
+				Expiration: expiresAt,
+				IssedAt:    now,
+			},
+			Data: claims.Claims(),
+		})
+
+	} else {
+		tokenHandle, err = s.JwtTokenStore.MintToken(ctx, claims)
+		if err != nil {
+			return nil, err
+		}
 	}
 
-	ti.SetAccess(jwtToken)
+	ti.SetAccess(tokenHandle)
 
 	if client.AllowOfflineAccess && scopeSet.Contains("offline_access") {
-		var absoluteExpiration = time.Now().Add(time.Second * time.Duration(client.AbsoluteRefreshTokenLifetime))
-		if client.AbsoluteRefreshTokenLifetime <= 0 {
-			absoluteExpiration = time.Now().Add(time.Hour * 24 * 365 * 10) // 10 years
+		if core_utils.IsEmptyOrNil(validatedResult.RefreshTokenHandle) {
+			panic("refresh token handle is empty") // fix your code
 		}
-		var expiration = time.Now().Add(time.Second * time.Duration(client.RefreshTokenExpiration))
-		handle, err := s.RefreshTokenStore.StoreRefreshToken(ctx,
-			&contracts_stores_refreshtoken.RefreshTokenInfo{
-				ClientID:           client.ClientID,
-				Subject:            subject,
-				Scope:              scope,
-				GrantType:          validatedResult.GrantType,
-				Expiration:         expiration,
-				AbsoluteExpiration: absoluteExpiration,
-				Params:             validatedResult.Params,
+		var absoluteExpiration = now.Add(time.Second * time.Duration(client.AbsoluteRefreshTokenLifetime))
+		if client.AbsoluteRefreshTokenLifetime <= 0 {
+			absoluteExpiration = now.Add(time.Hour * 24 * 365 * 10) // 10 years
+		}
+		var expiration = now.Add(time.Second * time.Duration(client.RefreshTokenExpiration))
+		rtInfo := &models.RefreshTokenInfo{
+			ClientID:           client.ClientID,
+			Subject:            subject,
+			Scope:              scope,
+			GrantType:          validatedResult.GrantType,
+			Expiration:         expiration,
+			AbsoluteExpiration: absoluteExpiration,
+			Params:             validatedResult.Params,
+		}
+
+		data := structs.Map(rtInfo)
+		handle, err := s.ReferenceTokenStore.StoreToken(ctx,
+			validatedResult.RefreshTokenHandle,
+			&models.TokenInfo{
+				Metadata: models.TokenMetadata{
+					Type:       models.TokenTypeRefreshToken,
+					ClientID:   client.ClientID,
+					Subject:    subject,
+					Expiration: expiration,
+					IssedAt:    now,
+				},
+				Data: data,
 			})
+
 		if err != nil {
 			return nil, err
 		}
