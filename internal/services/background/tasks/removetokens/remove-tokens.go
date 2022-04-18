@@ -37,6 +37,13 @@ var reflectType = reflect.TypeOf((*service)(nil))
 func AddSingletonISingletonTask(builder *di.Builder) {
 	contracts_background_tasks.AddSingletonISingletonTask(builder, reflectType)
 }
+func (s *service) GetPatterns() []string {
+	return []string{
+		contracts_background_tasks_removetokens.TypeRemoveTokenByClientID,
+		contracts_background_tasks_removetokens.TypeRemoveTokenBySubject,
+		contracts_background_tasks_removetokens.TypeRemoveTokenByClientIDAndSubject,
+	}
+}
 func (s *service) processRemoveTokenByClientID(ctx context.Context, t *asynq.Task) error {
 
 	var p contracts_background_tasks_removetokens.TokenRemoveByClientID

@@ -286,3 +286,278 @@ func _getImplementedISingletonTaskNames(implementedTypes ...reflect.Type) string
 	}
 	return builder.String()
 }
+
+// ReflectTypeITaskEngine used when your service claims to implement ITaskEngine
+var ReflectTypeITaskEngine = di.GetInterfaceReflectType((*ITaskEngine)(nil))
+
+// AddSingletonITaskEngine adds a type that implements ITaskEngine
+func AddSingletonITaskEngine(builder *di.Builder, implType reflect.Type, implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeITaskEngine)
+	_logAddITaskEngine("SINGLETON", implType, _getImplementedITaskEngineNames(implementedTypes...),
+		_logITaskEngineExtra{
+			Name:  "DI-BY",
+			Value: "type",
+		})
+	di.AddSingleton(builder, implType, implementedTypes...)
+}
+
+// AddSingletonITaskEngineWithMetadata adds a type that implements ITaskEngine
+func AddSingletonITaskEngineWithMetadata(builder *di.Builder, implType reflect.Type, metaData map[string]interface{}, implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeITaskEngine)
+	_logAddITaskEngine("SINGLETON", implType, _getImplementedITaskEngineNames(implementedTypes...),
+		_logITaskEngineExtra{
+			Name:  "DI-BY",
+			Value: "type",
+		},
+		_logITaskEngineExtra{
+			Name:  "DI-M",
+			Value: metaData,
+		})
+	di.AddSingletonWithMetadata(builder, implType, metaData, implementedTypes...)
+}
+
+// AddSingletonITaskEngineByObj adds a prebuilt obj
+func AddSingletonITaskEngineByObj(builder *di.Builder, obj interface{}, implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeITaskEngine)
+	_logAddITaskEngine("SINGLETON", reflect.TypeOf(obj), _getImplementedITaskEngineNames(implementedTypes...),
+		_logITaskEngineExtra{
+			Name:  "DI-BY",
+			Value: "obj",
+		})
+	di.AddSingletonWithImplementedTypesByObj(builder, obj, implementedTypes...)
+}
+
+// AddSingletonITaskEngineByObjWithMetadata adds a prebuilt obj
+func AddSingletonITaskEngineByObjWithMetadata(builder *di.Builder, obj interface{}, metaData map[string]interface{}, implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeITaskEngine)
+	_logAddITaskEngine("SINGLETON", reflect.TypeOf(obj), _getImplementedITaskEngineNames(implementedTypes...),
+		_logITaskEngineExtra{
+			Name:  "DI-BY",
+			Value: "obj",
+		},
+		_logITaskEngineExtra{
+			Name:  "DI-M",
+			Value: metaData,
+		})
+
+	di.AddSingletonWithImplementedTypesByObjWithMetadata(builder, obj, metaData, implementedTypes...)
+}
+
+// AddSingletonITaskEngineByFunc adds a type by a custom func
+func AddSingletonITaskEngineByFunc(builder *di.Builder, implType reflect.Type, build func(ctn di.Container) (interface{}, error), implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeITaskEngine)
+	_logAddITaskEngine("SINGLETON", implType, _getImplementedITaskEngineNames(implementedTypes...),
+		_logITaskEngineExtra{
+			Name:  "DI-BY",
+			Value: "func",
+		})
+	di.AddSingletonWithImplementedTypesByFunc(builder, implType, build, implementedTypes...)
+}
+
+// AddSingletonITaskEngineByFuncWithMetadata adds a type by a custom func
+func AddSingletonITaskEngineByFuncWithMetadata(builder *di.Builder, implType reflect.Type, build func(ctn di.Container) (interface{}, error), metaData map[string]interface{}, implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeITaskEngine)
+	_logAddITaskEngine("SINGLETON", implType, _getImplementedITaskEngineNames(implementedTypes...),
+		_logITaskEngineExtra{
+			Name:  "DI-BY",
+			Value: "func",
+		},
+		_logITaskEngineExtra{
+			Name:  "DI-M",
+			Value: metaData,
+		})
+
+	di.AddSingletonWithImplementedTypesByFuncWithMetadata(builder, implType, build, metaData, implementedTypes...)
+}
+
+// AddTransientITaskEngine adds a type that implements ITaskEngine
+func AddTransientITaskEngine(builder *di.Builder, implType reflect.Type, implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeITaskEngine)
+	_logAddITaskEngine("TRANSIENT", implType, _getImplementedITaskEngineNames(implementedTypes...),
+		_logITaskEngineExtra{
+			Name:  "DI-BY",
+			Value: "type",
+		})
+
+	di.AddTransientWithImplementedTypes(builder, implType, implementedTypes...)
+}
+
+// AddTransientITaskEngineWithMetadata adds a type that implements ITaskEngine
+func AddTransientITaskEngineWithMetadata(builder *di.Builder, implType reflect.Type, metaData map[string]interface{}, implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeITaskEngine)
+	_logAddITaskEngine("TRANSIENT", implType, _getImplementedITaskEngineNames(implementedTypes...),
+		_logITaskEngineExtra{
+			Name:  "DI-BY",
+			Value: "type",
+		},
+		_logITaskEngineExtra{
+			Name:  "DI-M",
+			Value: metaData,
+		})
+
+	di.AddTransientWithImplementedTypesWithMetadata(builder, implType, metaData, implementedTypes...)
+}
+
+// AddTransientITaskEngineByFunc adds a type by a custom func
+func AddTransientITaskEngineByFunc(builder *di.Builder, implType reflect.Type, build func(ctn di.Container) (interface{}, error), implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeITaskEngine)
+	_logAddITaskEngine("TRANSIENT", implType, _getImplementedITaskEngineNames(implementedTypes...),
+		_logITaskEngineExtra{
+			Name:  "DI-BY",
+			Value: "func",
+		})
+
+	di.AddTransientWithImplementedTypesByFunc(builder, implType, build, implementedTypes...)
+}
+
+// AddTransientITaskEngineByFuncWithMetadata adds a type by a custom func
+func AddTransientITaskEngineByFuncWithMetadata(builder *di.Builder, implType reflect.Type, build func(ctn di.Container) (interface{}, error), metaData map[string]interface{}, implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeITaskEngine)
+	_logAddITaskEngine("TRANSIENT", implType, _getImplementedITaskEngineNames(implementedTypes...),
+		_logITaskEngineExtra{
+			Name:  "DI-BY",
+			Value: "func",
+		},
+		_logITaskEngineExtra{
+			Name:  "DI-M",
+			Value: metaData,
+		})
+
+	di.AddTransientWithImplementedTypesByFuncWithMetadata(builder, implType, build, metaData, implementedTypes...)
+}
+
+// AddScopedITaskEngine adds a type that implements ITaskEngine
+func AddScopedITaskEngine(builder *di.Builder, implType reflect.Type, implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeITaskEngine)
+	_logAddITaskEngine("SCOPED", implType, _getImplementedITaskEngineNames(implementedTypes...),
+		_logITaskEngineExtra{
+			Name:  "DI-BY",
+			Value: "type",
+		})
+	di.AddScopedWithImplementedTypes(builder, implType, implementedTypes...)
+}
+
+// AddScopedITaskEngineWithMetadata adds a type that implements ITaskEngine
+func AddScopedITaskEngineWithMetadata(builder *di.Builder, implType reflect.Type, metaData map[string]interface{}, implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeITaskEngine)
+	_logAddITaskEngine("SCOPED", implType, _getImplementedITaskEngineNames(implementedTypes...),
+		_logITaskEngineExtra{
+			Name:  "DI-BY",
+			Value: "type",
+		},
+		_logITaskEngineExtra{
+			Name:  "DI-M",
+			Value: metaData,
+		})
+	di.AddScopedWithImplementedTypesWithMetadata(builder, implType, metaData, implementedTypes...)
+}
+
+// AddScopedITaskEngineByFunc adds a type by a custom func
+func AddScopedITaskEngineByFunc(builder *di.Builder, implType reflect.Type, build func(ctn di.Container) (interface{}, error), implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeITaskEngine)
+	_logAddITaskEngine("SCOPED", implType, _getImplementedITaskEngineNames(implementedTypes...),
+		_logITaskEngineExtra{
+			Name:  "DI-BY",
+			Value: "func",
+		})
+	di.AddScopedWithImplementedTypesByFunc(builder, implType, build, implementedTypes...)
+}
+
+// AddScopedITaskEngineByFuncWithMetadata adds a type by a custom func
+func AddScopedITaskEngineByFuncWithMetadata(builder *di.Builder, implType reflect.Type, build func(ctn di.Container) (interface{}, error), metaData map[string]interface{}, implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeITaskEngine)
+	_logAddITaskEngine("SCOPED", implType, _getImplementedITaskEngineNames(implementedTypes...),
+		_logITaskEngineExtra{
+			Name:  "DI-BY",
+			Value: "func",
+		},
+		_logITaskEngineExtra{
+			Name:  "DI-M",
+			Value: metaData,
+		})
+
+	di.AddScopedWithImplementedTypesByFuncWithMetadata(builder, implType, build, metaData, implementedTypes...)
+}
+
+// RemoveAllITaskEngine removes all ITaskEngine from the DI
+func RemoveAllITaskEngine(builder *di.Builder) {
+	builder.RemoveAllByType(ReflectTypeITaskEngine)
+}
+
+// GetITaskEngineFromContainer alternative to SafeGetITaskEngineFromContainer but panics of object is not present
+func GetITaskEngineFromContainer(ctn di.Container) ITaskEngine {
+	return ctn.GetByType(ReflectTypeITaskEngine).(ITaskEngine)
+}
+
+// GetManyITaskEngineFromContainer alternative to SafeGetManyITaskEngineFromContainer but panics of object is not present
+func GetManyITaskEngineFromContainer(ctn di.Container) []ITaskEngine {
+	objs := ctn.GetManyByType(ReflectTypeITaskEngine)
+	var results []ITaskEngine
+	for _, obj := range objs {
+		results = append(results, obj.(ITaskEngine))
+	}
+	return results
+}
+
+// SafeGetITaskEngineFromContainer trys to get the object by type, will not panic, returns nil and error
+func SafeGetITaskEngineFromContainer(ctn di.Container) (ITaskEngine, error) {
+	obj, err := ctn.SafeGetByType(ReflectTypeITaskEngine)
+	if err != nil {
+		return nil, err
+	}
+	return obj.(ITaskEngine), nil
+}
+
+// GetITaskEngineDefinition returns that last definition registered that this container can provide
+func GetITaskEngineDefinition(ctn di.Container) *di.Def {
+	def := ctn.GetDefinitionByType(ReflectTypeITaskEngine)
+	return def
+}
+
+// GetITaskEngineDefinitions returns all definitions that this container can provide
+func GetITaskEngineDefinitions(ctn di.Container) []*di.Def {
+	defs := ctn.GetDefinitionsByType(ReflectTypeITaskEngine)
+	return defs
+}
+
+// SafeGetManyITaskEngineFromContainer trys to get the object by type, will not panic, returns nil and error
+func SafeGetManyITaskEngineFromContainer(ctn di.Container) ([]ITaskEngine, error) {
+	objs, err := ctn.SafeGetManyByType(ReflectTypeITaskEngine)
+	if err != nil {
+		return nil, err
+	}
+	var results []ITaskEngine
+	for _, obj := range objs {
+		results = append(results, obj.(ITaskEngine))
+	}
+	return results, nil
+}
+
+type _logITaskEngineExtra struct {
+	Name  string
+	Value interface{}
+}
+
+func _logAddITaskEngine(scopeType string, implType reflect.Type, interfaces string, extra ..._logITaskEngineExtra) {
+	infoEvent := log.Info().
+		Str("DI", scopeType).
+		Str("DI-I", interfaces).
+		Str("DI-B", implType.Elem().String())
+
+	for _, extra := range extra {
+		infoEvent = infoEvent.Interface(extra.Name, extra.Value)
+	}
+
+	infoEvent.Send()
+
+}
+func _getImplementedITaskEngineNames(implementedTypes ...reflect.Type) string {
+	builder := strings.Builder{}
+	for idx, implementedType := range implementedTypes {
+		builder.WriteString(implementedType.Name())
+		if idx < len(implementedTypes)-1 {
+			builder.WriteString(", ")
+		}
+	}
+	return builder.String()
+}

@@ -2,7 +2,8 @@ module echo-starter
 
 go 1.18
 
-//replace github.com/fluffy-bunny/grpcdotnetgo => ../grpcdotnetgo
+replace github.com/fluffy-bunny/grpcdotnetgo => ../grpcdotnetgo
+
 //replace github.com/fluffy-bunny/rejonson/v8 => ../rejonson
 
 require (
@@ -26,6 +27,7 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/gorilla/securecookie v1.1.1
 	github.com/gorilla/sessions v1.2.1
+	github.com/hibiken/asynq v0.23.0
 	github.com/jinzhu/copier v0.3.5
 	github.com/json-iterator/go v1.1.12
 	github.com/labstack/echo-contrib v0.12.0
@@ -76,7 +78,6 @@ require (
 	github.com/gorilla/context v1.1.1 // indirect
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
-	github.com/hibiken/asynq v0.23.0 // indirect
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/jedib0t/go-pretty/v6 v6.3.0 // indirect
 	github.com/klauspost/compress v1.15.0 // indirect

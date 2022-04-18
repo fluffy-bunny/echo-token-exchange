@@ -26,6 +26,7 @@ import (
 
 	"github.com/gorilla/securecookie"
 
+	services_background_taskengine "echo-starter/internal/services/background/taskengine"
 	services_background_tasks_removetokens "echo-starter/internal/services/background/tasks/removetokens"
 
 	services_auth_cookie_token_store "echo-starter/internal/services/auth/cookie_token_store"
@@ -74,6 +75,8 @@ import (
 	services_handlers_error "echo-starter/internal/services/handlers/error"
 	services_handlers_home "echo-starter/internal/services/handlers/home"
 
+	contracts_background_tasks "echo-starter/internal/contracts/background/tasks"
+
 	core_contracts "github.com/fluffy-bunny/grpcdotnetgo/pkg/contracts/core"
 	contracts_cookies "github.com/fluffy-bunny/grpcdotnetgo/pkg/echo/contracts/cookies"
 	core_middleware_session "github.com/fluffy-bunny/grpcdotnetgo/pkg/echo/middleware/session"
@@ -93,6 +96,8 @@ type Startup struct {
 	ctrl         *gomock.Controller
 	clients      []models.Client
 	apiResources []models.APIResource
+	taskEngine   contracts_background_tasks.ITaskEngine
+	container    di.Container
 }
 
 func assertImplementation() {
@@ -118,8 +123,17 @@ func NewStartup() echo_contracts_startup.IStartup {
 			if startup.config.ApplicationEnvironment == "Development" {
 				di.Dump(container)
 			}
+			startup.container = container
 			return nil
-		}}
+		},
+		PreStartHook: func(echo *echo.Echo) error {
+			startup.taskEngine = contracts_background_tasks.GetITaskEngineFromContainer(startup.container)
+			return startup.taskEngine.Start()
+		},
+		PreShutdownHook: func(echo *echo.Echo) error {
+			return startup.taskEngine.Stop()
+		},
+	}
 
 	startup.AddHooks(hooks)
 
@@ -230,6 +244,10 @@ func (s *Startup) addSecureCookieOptions(builder *di.Builder) {
 }
 
 func (s *Startup) addBackgroundTasksHandlers(builder *di.Builder) {
+	// Add the engine
+	services_background_taskengine.AddSingletonITaskEngine(builder)
+
+	// add all the handlers
 	services_background_tasks_removetokens.AddSingletonISingletonTask(builder)
 }
 func (s *Startup) addAppHandlers(builder *di.Builder) {
