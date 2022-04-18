@@ -28,7 +28,10 @@ services:
     image: traefik/whoami
     labels:
       - "traefik.http.routers.whoami.rule=Host(`whoami.docker.localhost`)"
-
+    command:
+       # It tells whoami to start listening on 2001 instead of 80
+       - --port 2001
+       - --name iamfoo
 
  # echostarter
  #============================================================================
@@ -87,7 +90,20 @@ services:
         #- REDIS_DISABLE_COMMANDS=FLUSHDB,FLUSHALL
       command: redis-server --loadmodule "/usr/lib/redis/modules/rejson.so" --loadmodule "/usr/lib/redis/modules/redisearch.so" --requirepass "$REDIS_PASSWORD"
 
-  
+  asynqmon:
+    image: hibiken/asynqmon:latest
+    labels:
+      - "traefik.http.routers.whoami.rule=Host(`asynqmon.docker.localhost`)"
+    container_name: asynqmon
+    ports:
+      - 8980:81
+    command:
+      - '--port=81'
+      - '--redis-addr=redis:${REDIS_PORT}'
+      - '--redis-password=${REDIS_PASSWORD}'
+    restart: always
+    depends_on:
+      - redis
 volumes:
   redis_data:
     driver: local

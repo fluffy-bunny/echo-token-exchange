@@ -26,6 +26,8 @@ import (
 
 	"github.com/gorilla/securecookie"
 
+	services_background_tasks_removetokens "echo-starter/internal/services/background/tasks/removetokens"
+
 	services_auth_cookie_token_store "echo-starter/internal/services/auth/cookie_token_store"
 	services_apiresources_inmemory "echo-starter/internal/services/stores/apiresources/inmemory"
 	services_clients_clientrequest "echo-starter/internal/services/stores/clients/clientrequest"
@@ -227,6 +229,9 @@ func (s *Startup) addSecureCookieOptions(builder *di.Builder) {
 	})
 }
 
+func (s *Startup) addBackgroundTasksHandlers(builder *di.Builder) {
+	services_background_tasks_removetokens.AddSingletonISingletonTask(builder)
+}
 func (s *Startup) addAppHandlers(builder *di.Builder) {
 
 	services_handlers_healthz.AddScopedIHandler(builder)
@@ -299,6 +304,8 @@ func (s *Startup) ConfigureServices(builder *di.Builder) error {
 
 	// add our app handlers
 	s.addAppHandlers(builder)
+
+	s.addBackgroundTasksHandlers(builder)
 
 	services_claimsprovider.AddSingletonIClaimsProvider(builder)
 	return nil
