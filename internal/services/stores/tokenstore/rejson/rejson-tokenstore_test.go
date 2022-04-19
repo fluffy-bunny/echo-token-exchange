@@ -1,6 +1,7 @@
 package rejson
 
 import (
+	"context"
 	"log"
 	"os"
 	"testing"
@@ -8,6 +9,8 @@ import (
 	contracts_config "echo-starter/internal/contracts/config"
 	"echo-starter/internal/services/stores/tokenstore"
 	"echo-starter/tests"
+
+	"github.com/fluffy-bunny/go-redis-search/ftsearch"
 
 	services_logger "github.com/fluffy-bunny/grpcdotnetgo/pkg/services/logger"
 	di "github.com/fluffy-bunny/sarulabsdi"
@@ -41,12 +44,33 @@ func TestStore(t *testing.T) {
 			Username: config.RedisOptionsReferenceTokenStore.Username,
 		}
 		cli := redis.NewClient(redisOptions)
+		indexName := "echoTokenStoreIdx"
+		var ftSearch *ftsearch.Client
+		ftSearch = ftsearch.NewClient(cli)
+		results, err := ftSearch.DropIndex(context.Background(), ftsearch.NewDropIndex().WithIndex(indexName))
+		if err != nil {
+			log.Println(err)
+		}
+		log.Println(results)
 
+		create := ftsearch.NewCreate().WithIndex(indexName).OnJSON().
+			WithSchema(ftsearch.NewSchema().
+				WithIdentifier("$.metadata.type").AsAttribute("type").AttributeType("TEXT")).
+			WithSchema(ftsearch.NewSchema().
+				WithIdentifier("$.metadata.client_id").AsAttribute("client_id").AttributeType("TEXT")).
+			WithSchema(ftsearch.NewSchema().
+				WithIdentifier("$.metadata.subject").AsAttribute("subject").AttributeType("TEXT"))
+		results2, err := ftSearch.CreateIndex(context.Background(), create)
+		if err != nil {
+			log.Println(err)
+		}
+		log.Println(results2)
 		//		search := redisearch.New(redisOptions)
 		//		createSearchIndexes("echoTokenStoreIdx", search)
 		//		defer search.DropIndex(context.Background(), "echoTokenStoreIdx", true)
 		defer func() {
-
+			// drop the index on the way out
+			ftSearch.DropIndex(context.Background(), ftsearch.NewDropIndex().WithIndex(indexName))
 			if err := cli.Close(); err != nil {
 				log.Fatalf("goredis - failed to communicate to redis-server: %v", err)
 			}

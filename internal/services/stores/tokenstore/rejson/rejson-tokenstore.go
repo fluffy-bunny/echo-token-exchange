@@ -258,39 +258,6 @@ func (s *service) RemoveToken(ctx context.Context, handle string) (err error) {
 
 	return nil
 }
-func (s *service) removeOneSetBlock(ctx context.Context, setKey string) (more bool, err error) {
-	//=================== PANIC RECOVERY ======================
-	defer func() {
-		if e := recover(); e != nil {
-			err = fmt.Errorf("%v", e)
-			s.Logger.Error().Err(err).Send()
-			more = false
-		}
-	}()
-	//=================== PANIC RECOVERY ======================
-
-	//--~--~--~--~--~-- BARBED WIRE --~--~--~--~--~--~--
-	s.lock.Lock()
-	defer s.lock.Unlock()
-	//--~--~--~--~--~-- BARBED WIRE --~--~--~--~--~--~--
-
-	keys, _, err := s.cli.SScan(ctx, setKey, 0, "", 0).Result()
-	if err != nil {
-		return false, err
-	}
-	if len(keys) == 0 {
-		return false, nil
-	}
-	pipe := s.cli.TxPipeline()
-	for _, key := range keys {
-		pipe.Del(ctx, key)
-		pipe.SRem(ctx, setKey, key)
-	}
-	if _, err := pipe.Exec(ctx); err != nil {
-		return false, err
-	}
-	return true, nil
-}
 
 func (s *service) RemoveTokenByClientID(ctx context.Context, clientID string) (err error) {
 	//=================== PANIC RECOVERY ======================

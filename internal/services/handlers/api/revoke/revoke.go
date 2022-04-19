@@ -7,6 +7,7 @@ import (
 	"reflect"
 	"strings"
 
+	contracts_background_tasks_removetokens "echo-starter/internal/contracts/background/tasks/removetokens"
 	contracts_stores_tokenstore "echo-starter/internal/contracts/stores/tokenstore"
 
 	contracts_handler "github.com/fluffy-bunny/grpcdotnetgo/pkg/echo/contracts/handler"
@@ -17,7 +18,8 @@ import (
 
 type (
 	service struct {
-		ReferenceTokenStore contracts_stores_tokenstore.ITokenStore `inject:""`
+		ReferenceTokenStore       contracts_stores_tokenstore.ITokenStore                            `inject:""`
+		RemoveTokensSingletonTask contracts_background_tasks_removetokens.IRemoveTokensSingletonTask `inject:""`
 	}
 )
 
@@ -69,13 +71,29 @@ func (s *service) post(c echo.Context) error {
 			return err
 		}
 	case models.TokenTypeRefreshTokenSubject:
-		if err := s.ReferenceTokenStore.RemoveTokenBySubject(ctx, u.Token); err != nil {
+		_, err := s.RemoveTokensSingletonTask.EnqueTaskTypeRemoveTokenBySubject(&contracts_background_tasks_removetokens.TokenRemoveBySubject{
+			Subject: u.Token,
+		})
+		if err != nil {
 			return err
 		}
+		/*
+		   if err := s.ReferenceTokenStore.RemoveTokenBySubject(ctx, u.Token); err != nil {
+		   			return err
+		   		}
+		*/
 	case models.TokenTypeRefreshTokenClientId:
-		if err := s.ReferenceTokenStore.RemoveTokenByClientID(ctx, u.Token); err != nil {
+		_, err := s.RemoveTokensSingletonTask.EnqueTaskTokenRemoveByClientID(&contracts_background_tasks_removetokens.TokenRemoveByClientID{
+			ClientID: u.Token,
+		})
+		if err != nil {
 			return err
 		}
+		/*
+			if err := s.ReferenceTokenStore.RemoveTokenByClientID(ctx, u.Token); err != nil {
+				return err
+			}
+		*/
 	case models.TokenTypeRefreshTokenClientIdSubject:
 		items := strings.Split(u.Token, ":")
 		if len(items) != 2 {
@@ -84,9 +102,22 @@ func (s *service) post(c echo.Context) error {
 		if core_utils.IsEmptyOrNil(items[0]) || core_utils.IsEmptyOrNil(items[1]) {
 			return echo.NewHTTPError(http.StatusBadRequest, "invalid token")
 		}
-		if err := s.ReferenceTokenStore.RemoveTokenByClientIdAndSubject(ctx, items[0], items[1]); err != nil {
+		_, err := s.RemoveTokensSingletonTask.EnqueTaskTokenRemoveByClientIDAndSubject(&contracts_background_tasks_removetokens.TokenRemoveByClientIDAndSubject{
+			TokenRemoveByClientID: contracts_background_tasks_removetokens.TokenRemoveByClientID{
+				ClientID: items[0],
+			},
+			TokenRemoveBySubject: contracts_background_tasks_removetokens.TokenRemoveBySubject{
+				Subject: items[1],
+			},
+		})
+		if err != nil {
 			return err
 		}
+		/*
+			if err := s.ReferenceTokenStore.RemoveTokenByClientIdAndSubject(ctx, items[0], items[1]); err != nil {
+				return err
+			}
+		*/
 		// ACCESS_TOKEN
 	case models.TokenTypeAccessToken:
 		if err := s.ReferenceTokenStore.RemoveToken(ctx, u.Token); err != nil {
