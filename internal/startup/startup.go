@@ -26,6 +26,7 @@ import (
 
 	"github.com/gorilla/securecookie"
 
+	services_background_taskclient "echo-starter/internal/services/background/taskclient"
 	services_background_taskengine "echo-starter/internal/services/background/taskengine"
 	services_background_tasks_removetokens "echo-starter/internal/services/background/tasks/removetokens"
 
@@ -278,6 +279,9 @@ func (s *Startup) addSecureCookieOptions(builder *di.Builder) {
 func (s *Startup) addBackgroundTasksHandlers(builder *di.Builder) {
 	// Add the engine
 	services_background_taskengine.AddSingletonITaskEngine(builder)
+
+	// Add the client use for enqueing tasks
+	services_background_taskclient.AddSingletonITaskClient(builder)
 
 	// add all the handlers
 	services_background_tasks_removetokens.AddSingletonISingletonTask(builder)

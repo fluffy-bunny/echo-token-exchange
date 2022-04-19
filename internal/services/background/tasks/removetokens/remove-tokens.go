@@ -8,7 +8,6 @@ import (
 
 	contracts_background_tasks "echo-starter/internal/contracts/background/tasks"
 	contracts_background_tasks_removetokens "echo-starter/internal/contracts/background/tasks/removetokens"
-
 	contracts_stores_tokenstore "echo-starter/internal/contracts/stores/tokenstore"
 
 	contracts_logger "github.com/fluffy-bunny/grpcdotnetgo/pkg/contracts/logger"
@@ -24,18 +23,22 @@ type (
 	service struct {
 		Logger     contracts_logger.ILogger                `inject:""`
 		TokenStore contracts_stores_tokenstore.ITokenStore `inject:""`
+		TaskClient contracts_background_tasks.ITaskClient  `inject:""`
 	}
 )
 
 func assertImplementation() {
 	var _ contracts_background_tasks.ISingletonTask = (*service)(nil)
+	var _ contracts_background_tasks_removetokens.IRemoveTokensSingletonTask = (*service)(nil)
+
 }
 
 var reflectType = reflect.TypeOf((*service)(nil))
 
 // AddSingletonISingletonTask registers the *service as a singleton.
 func AddSingletonISingletonTask(builder *di.Builder) {
-	contracts_background_tasks.AddSingletonISingletonTask(builder, reflectType)
+	contracts_background_tasks.AddSingletonISingletonTask(builder, reflectType,
+		contracts_background_tasks_removetokens.ReflectTypeIRemoveTokensSingletonTask)
 }
 func (s *service) GetPatterns() []string {
 	return []string{
@@ -99,7 +102,7 @@ func (s *service) ProcessTask(ctx context.Context, t *asynq.Task) error {
 	}
 
 }
-func (s *service) EnqueTask(payload interface{}) (*asynq.Task, error) {
+func (s *service) EnqueTask(payload interface{}, opts ...asynq.Option) (*asynq.TaskInfo, error) {
 	var name string
 	if removeByClient := payload.(*contracts_background_tasks_removetokens.TokenRemoveByClientID); removeByClient != nil {
 		name = contracts_background_tasks_removetokens.TypeRemoveTokenByClientID
@@ -114,5 +117,15 @@ func (s *service) EnqueTask(payload interface{}) (*asynq.Task, error) {
 	if err != nil {
 		return nil, err
 	}
-	return asynq.NewTask(name, payloadJson), nil
+	task := asynq.NewTask(name, payloadJson)
+	return s.TaskClient.EnqueTask(task, opts...)
+}
+func (s *service) EnqueTaskTokenRemoveByClientID(task *contracts_background_tasks_removetokens.TokenRemoveByClientID, opts ...asynq.Option) (*asynq.TaskInfo, error) {
+	return s.EnqueTask(task, opts...)
+}
+func (s *service) EnqueTaskTypeRemoveTokenBySubject(task *contracts_background_tasks_removetokens.TokenRemoveBySubject, opts ...asynq.Option) (*asynq.TaskInfo, error) {
+	return s.EnqueTask(task, opts...)
+}
+func (s *service) EnqueTaskTokenRemoveByClientIDAndSubject(task *contracts_background_tasks_removetokens.TokenRemoveByClientIDAndSubject, opts ...asynq.Option) (*asynq.TaskInfo, error) {
+	return s.EnqueTask(task, opts...)
 }

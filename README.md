@@ -1,9 +1,19 @@
 # echo token exchange
 
+## Reference Projects that helped build out this app
 
 [auth0-golang-web-app](https://github.com/auth0-samples/auth0-golang-web-app/)  
 [demo-echo-app](https://github.com/gtongy/demo-echo-app)  
 [cookie auth](https://www.sohamkamani.com/golang/session-cookie-authentication/)
+
+## Asynq
+
+[Asynq](https://github.com/hibiken/asynq) is used for long running background task with redis being its durable store.  
+The tasks run are;  
+
+1. Remove all tokens that were created by a given client_id.  Thats all reference_tokens and refresh_tokens
+2. Remove all tokens that were created on behalf of a subject.  Thats all reference_tokens and refresh_tokens.  This use case is when a user changes their password.  
+3. Remove all tokens that were created by a given client_id on behalf of a subject.  
 
 ## TLDR  
 
@@ -13,20 +23,22 @@ So make sure your Auth0 setup delivers a JWT access_token with a refresh_token.
 ## Docker-Compose
 
 ### Secrets
+
 [Create ECDSA Signing Keys](https://github.com/fluffy-bunny/crypto-gen)  
 [Development Signing Keys](cmd/server/static/secrets/signing-keys.json)  
 These keys are loaded at startup and placed into the ***SIGNING_KEYS*** environment variable.
+
 ```go
   signingKeys := os.Getenv("SIGNING_KEYS")
-	if core_utils.IsEmptyOrNil(signingKeys) {
-		data, err := ioutil.ReadFile("./static/secrets/signing-keys.json")
-		if err == nil {
-			log.Error().Msg("DO NOT USE THIS IN PRODUCTION: Using signing keys from file")
-			os.Setenv("SIGNING_KEYS", string(data))
-		}
-	}
+  if core_utils.IsEmptyOrNil(signingKeys) {
+    data, err := ioutil.ReadFile("./static/secrets/signing-keys.json")
+    if err == nil {
+      log.Error().Msg("DO NOT USE THIS IN PRODUCTION: Using signing keys from file")
+      os.Setenv("SIGNING_KEYS", string(data))
+    }
+  }
 ```
- 
+
 ```bash
 docker-compose pull
 docker-compose up
