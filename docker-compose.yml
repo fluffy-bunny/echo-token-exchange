@@ -19,7 +19,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     depends_on:
       - whoami
-      - echostarter
+      - asynqmon
 
  # whoami
  #============================================================================
@@ -62,12 +62,14 @@ services:
       OIDC__CALLBACK_URL: "http://${ECHO_STARTER_DOMAIN}/oidc"
       SECURE_COOKIE_HASH_KEY: "wVsibJSltJAgkniN9tlzy39ZDUzuMTSFwsQek6qTcuY="
       SECURE_COOKIE_ENCRYPTION_KEY: "7fB3PkhfOKsbU/2vE2KQdLqu0jGZ+GLaEL5AQ7maUw4="
-      REDIS_PASSWORD: "${REDIS_PASSWORD}"
       SESSION_ENGINE: "${ECHO_STARTER_SESSION_ENGINE}"
       SESSION_MAX_AGE_SECONDS: "${ECHO_STARTER_SESSION_MAX_AGE_SECONDS}"
       AUTH_COOKIE_EXPIRE_SECONDS: "${ECHO_STARTER_AUTH_COOKIE_EXPIRE_SECONDS}"
       REDIS_URL: "${REDIS_NAME}:${REDIS_PORT}"
       GRAPHQL_ENDPOINT: "${ECHO_STARTER_GRAPHQL_ENDPOINT_GITHUB}"
+      REDIS_OPTIONS_REFERENCE_TOKEN_STORE__ADDR: "${REDIS_NAME}:${REDIS_PORT}"
+      REDIS_OPTIONS_REFERENCE_TOKEN_STORE__USERNAME: "${REDIS_USERNAME}"
+      REDIS_OPTIONS_REFERENCE_TOKEN_STORE__PASSWORD: "${REDIS_PASSWORD}"
 
     entrypoint: ["/app/server"]
 
@@ -87,7 +89,21 @@ services:
         #- REDIS_DISABLE_COMMANDS=FLUSHDB,FLUSHALL
       command: redis-server --loadmodule "/usr/lib/redis/modules/rejson.so" --loadmodule "/usr/lib/redis/modules/redisearch.so" --requirepass "$REDIS_PASSWORD"
 
-  
+  asynqmon:
+    image: hibiken/asynqmon:latest
+    labels:
+      - "traefik.http.routers.asynqmon.rule=Host(`asynqmon.docker.localhost`)"
+      - "traefik.http.services.asynqmon.loadbalancer.server.port=80"
+    container_name: asynqmon
+    ports:
+      - 8980:80
+    command:
+      - '--port=80'
+      - '--redis-addr=redis:${REDIS_PORT}'
+      - '--redis-password=${REDIS_PASSWORD}'
+    restart: always
+    depends_on:
+      - redis
 volumes:
   redis_data:
     driver: local

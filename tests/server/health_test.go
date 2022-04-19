@@ -8,6 +8,9 @@ import (
 
 	"net/http/httptest"
 
+	contracts_background_tasks "echo-starter/internal/contracts/background/tasks"
+
+	di "github.com/fluffy-bunny/sarulabsdi"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/require"
 
@@ -17,6 +20,8 @@ import (
 
 	"echo-starter/tests"
 
+	mocks_background_tasks "echo-starter/internal/mocks/background/tasks"
+
 	"github.com/fluffy-bunny/grpcdotnetgo/pkg/echo/runtime"
 	"github.com/golang/mock/gomock"
 )
@@ -24,6 +29,9 @@ import (
 func TestHealthCheck(t *testing.T) {
 	tests.RunTest(t, func(ctrl *gomock.Controller) {
 
+		taskEngine := mocks_background_tasks.NewMockITaskEngine(ctrl)
+		taskEngine.EXPECT().Start().Return(nil)
+		taskEngine.EXPECT().Stop().Return(nil)
 		folderChanger := NewFolderChanger("../../cmd/server")
 		defer folderChanger.ChangeBack()
 
@@ -32,6 +40,11 @@ func TestHealthCheck(t *testing.T) {
 		startup := startup.NewStartup()
 		var myEcho *echo.Echo
 		hooks := &echo_contracts_startup.Hooks{
+			PrebuildHook: func(builder *di.Builder) error {
+				// register a null task engine
+				contracts_background_tasks.AddSingletonITaskEngineByObj(builder, taskEngine)
+				return nil
+			},
 			PreStartHook: func(echo *echo.Echo) error {
 				myEcho = echo
 				startChan <- true

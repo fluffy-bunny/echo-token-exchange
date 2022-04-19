@@ -3,6 +3,9 @@ module echo-starter
 go 1.18
 
 //replace github.com/fluffy-bunny/grpcdotnetgo => ../grpcdotnetgo
+
+//replace github.com/fluffy-bunny/go-redis-search => ../go-redis-search
+
 //replace github.com/fluffy-bunny/rejonson/v8 => ../rejonson
 
 require (
@@ -13,8 +16,8 @@ require (
 	github.com/cheekybits/genny v1.0.0
 	github.com/containerd/containerd v1.6.1
 	github.com/fatih/structs v1.1.0
-	github.com/fluffy-bunny/go-redis-search v0.0.3
-	github.com/fluffy-bunny/grpcdotnetgo v0.1.248
+	github.com/fluffy-bunny/go-redis-search v0.0.5
+	github.com/fluffy-bunny/grpcdotnetgo v0.1.250
 	github.com/fluffy-bunny/rejonson/v8 v8.0.2
 	github.com/fluffy-bunny/sarulabsdi v0.1.63
 	github.com/go-oauth2/oauth2/v4 v4.4.3
@@ -26,6 +29,7 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/gorilla/securecookie v1.1.1
 	github.com/gorilla/sessions v1.2.1
+	github.com/hibiken/asynq v0.23.0
 	github.com/jinzhu/copier v0.3.5
 	github.com/json-iterator/go v1.1.12
 	github.com/labstack/echo-contrib v0.12.0
@@ -126,9 +130,9 @@ require (
 	golang.org/x/crypto v0.0.0-20220321153916-2c7772ba3064 // indirect
 	golang.org/x/net v0.0.0-20220225172249-27dd8689420f // indirect
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c // indirect
-	golang.org/x/sys v0.0.0-20220319134239-a9b59b0215f8 // indirect
+	golang.org/x/sys v0.0.0-20220412211240-33da011f77ad // indirect
 	golang.org/x/text v0.3.7 // indirect
-	golang.org/x/time v0.0.0-20210723032227-1f47c861a9ac // indirect
+	golang.org/x/time v0.0.0-20220411224347-583f2d630306 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/genproto v0.0.0-20211208223120-3a66f561d7aa // indirect
 	google.golang.org/grpc v1.45.0 // indirect

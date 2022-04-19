@@ -43,8 +43,9 @@
                 "GRAPHQL_ENDPOINT": "https://api.github.com/graphql",
                 "GRAPHQL_ENDPOINT_github": "https://api.github.com/graphql",
                 "GRAPHQL_ENDPOINT_trevorblades": "https://countries.trevorblades.com/",
-
-                "REDIS_PASSWORD": "eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81",
+                "REDIS_OPTIONS_REFERENCE_TOKEN_STORE__ADDR": "localhost:6379",
+                "REDIS_OPTIONS_REFERENCE_TOKEN_STORE__USERNAME": "",
+                "REDIS_OPTIONS_REFERENCE_TOKEN_STORE__PASSWORD": "eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81",
                 "REDIS_URL": "localhost:6379",
                 "CLIENT_STORE_PROVIDER": "inmemory",
 	            "TOKEN_STORE_PROVIDER": "inmemory",
