@@ -361,8 +361,10 @@ github.com/fatih/structs v1.1.0/go.mod h1:9NiDSp5zOcgEDl+j00MP/WkGVPOlPRLejGD8Ga
 github.com/fatih/structtag v1.2.0 h1:/OdNE99OxoI/PqaW/SuSK9uxxT3f/tcSZgon/ssNSx4=
 github.com/fatih/structtag v1.2.0/go.mod h1:mBJUNpUnHmRKrKlQQlmCrh5PuhftFbNv8Ys4/aAZl94=
 github.com/felixge/httpsnoop v1.0.1/go.mod h1:m8KPJKqk1gH5J9DgRY2ASl2lWCfGKXixSwevea8zH2U=
-github.com/fluffy-bunny/go-redis-search v0.0.3 h1:/YP0Ffegr1cyZgvlSYIezLMWB9eLWY+3cwxbXycfrtw=
-github.com/fluffy-bunny/go-redis-search v0.0.3/go.mod h1:nggfnMwCOwx9oBnbk2QITn7+D7R6wi1iPoiox//AOV0=
+github.com/fluffy-bunny/go-redis-search v0.0.5 h1:kI4pFKs0347ajfRbiXCBBF/uxCu1NaRwjaJz+0GNe6E=
+github.com/fluffy-bunny/go-redis-search v0.0.5/go.mod h1:5hH1wNzdBdRBIHan8O22jAiXWHXq707ZbydEonLoX6g=
+github.com/fluffy-bunny/grpcdotnetgo v0.1.250 h1:lwMmXKUlrleRSub94N/CsqCBGjgEzjCOllBbrNW9qNQ=
+github.com/fluffy-bunny/grpcdotnetgo v0.1.250/go.mod h1:PVWeGNqspaoBiT1K8ltRTCxkIZetJSUUELc8hEWorMc=
 github.com/fluffy-bunny/rejonson/v8 v8.0.2 h1:YkOBNHnHRaAGzz2ySMj++KQyNlCGJyVwjHVfah8/HiE=
 github.com/fluffy-bunny/rejonson/v8 v8.0.2/go.mod h1:2LhsdotnAJu349ne3gzCjo10ZKK/RL7QrVfHjXGYmb4=
 github.com/fluffy-bunny/sarulabsdi v0.1.63 h1:mPkC25DBsWn0hE4xNMdVBcsY5TdtMwfR2/nntOOFkFA=
