@@ -70,13 +70,13 @@ import (
 	middleware_session "echo-starter/internal/middleware/session"
 	middleware_stores "echo-starter/internal/middleware/stores"
 
+	contracts_background_tasks "echo-starter/internal/contracts/background/tasks"
 	services_claimsprovider "echo-starter/internal/services/claimsprovider"
 	services_handlers_auth_unauthorized "echo-starter/internal/services/handlers/auth/unauthorized"
 	services_handlers_error "echo-starter/internal/services/handlers/error"
 	services_handlers_home "echo-starter/internal/services/handlers/home"
 
-	contracts_background_tasks "echo-starter/internal/contracts/background/tasks"
-
+	"github.com/fluffy-bunny/go-redis-search/ftsearch"
 	core_contracts "github.com/fluffy-bunny/grpcdotnetgo/pkg/contracts/core"
 	contracts_cookies "github.com/fluffy-bunny/grpcdotnetgo/pkg/echo/contracts/cookies"
 	core_middleware_session "github.com/fluffy-bunny/grpcdotnetgo/pkg/echo/middleware/session"
@@ -119,20 +119,9 @@ func NewStartup() echo_contracts_startup.IStartup {
 		ctrl:   gomock.NewController(nil),
 	}
 	hooks := &echo_contracts_startup.Hooks{
-		PostBuildHook: func(container di.Container) error {
-			if startup.config.ApplicationEnvironment == "Development" {
-				di.Dump(container)
-			}
-			startup.container = container
-			return nil
-		},
-		PreStartHook: func(echo *echo.Echo) error {
-			startup.taskEngine = contracts_background_tasks.GetITaskEngineFromContainer(startup.container)
-			return startup.taskEngine.Start()
-		},
-		PreShutdownHook: func(echo *echo.Echo) error {
-			return startup.taskEngine.Stop()
-		},
+		PostBuildHook:   startup.PostBuildHook,
+		PreStartHook:    startup.PreStartHook,
+		PreShutdownHook: startup.PreShutdownHook,
 	}
 
 	startup.AddHooks(hooks)
@@ -141,7 +130,50 @@ func NewStartup() echo_contracts_startup.IStartup {
 	startup.loadApiResources()
 	return startup
 }
+func (s *Startup) PreStartHook(echo *echo.Echo) error {
+	err := s._createDevelopmentIndexes()
+	if err != nil {
+		return err
+	}
+	s.taskEngine = contracts_background_tasks.GetITaskEngineFromContainer(s.container)
+	return s.taskEngine.Start()
+}
+func (s *Startup) _createDevelopmentIndexes() error {
+	if s.config.ApplicationEnvironment != "Development" {
+		return nil
+	}
+	redisOptions := &redis.Options{
+		Addr:     s.config.RedisOptionsReferenceTokenStore.Addr,
+		Network:  s.config.RedisOptionsReferenceTokenStore.Network,
+		Password: s.config.RedisOptionsReferenceTokenStore.Password,
+		Username: s.config.RedisOptionsReferenceTokenStore.Username,
+	}
+	cli := redis.NewClient(redisOptions)
+	indexName := "echoTokenStoreIdx"
+	var ftSearch *ftsearch.Client
+	ftSearch = ftsearch.NewClient(cli)
+	create := ftsearch.NewCreate().WithIndex(indexName).OnJSON().
+		WithSchema(ftsearch.NewSchema().
+			WithIdentifier("$.metadata.type").AsAttribute("type").AttributeType("TEXT")).
+		WithSchema(ftsearch.NewSchema().
+			WithIdentifier("$.metadata.client_id").AsAttribute("client_id").AttributeType("TEXT")).
+		WithSchema(ftsearch.NewSchema().
+			WithIdentifier("$.metadata.subject").AsAttribute("subject").AttributeType("TEXT"))
 
+	_, err := ftSearch.ReIndex(context.Background(), indexName, create)
+	return err
+
+}
+func (s *Startup) PreShutdownHook(echo *echo.Echo) error {
+	return s.taskEngine.Stop()
+}
+func (s *Startup) PostBuildHook(container di.Container) error {
+	if s.config.ApplicationEnvironment == "Development" {
+		di.Dump(container)
+	}
+	s.container = container
+	return nil
+}
 func (s *Startup) getSessionStore() sessions.Store {
 
 	hashKey, err := base64.StdEncoding.DecodeString(s.config.SecureCookieHashKey)
