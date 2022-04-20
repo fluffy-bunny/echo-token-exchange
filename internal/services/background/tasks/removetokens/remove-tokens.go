@@ -10,6 +10,8 @@ import (
 	contracts_background_tasks_removetokens "echo-starter/internal/contracts/background/tasks/removetokens"
 	contracts_stores_tokenstore "echo-starter/internal/contracts/stores/tokenstore"
 
+	core_hashset "github.com/fluffy-bunny/grpcdotnetgo/pkg/gods/sets/hashset"
+
 	contracts_logger "github.com/fluffy-bunny/grpcdotnetgo/pkg/contracts/logger"
 	di "github.com/fluffy-bunny/sarulabsdi"
 	"github.com/hibiken/asynq"
@@ -40,12 +42,12 @@ func AddSingletonISingletonTask(builder *di.Builder) {
 	contracts_background_tasks.AddSingletonISingletonTask(builder, reflectType,
 		contracts_background_tasks_removetokens.ReflectTypeIRemoveTokensSingletonTask)
 }
-func (s *service) GetPatterns() []string {
-	return []string{
+func (s *service) GetPatterns() *core_hashset.StringSet {
+	return core_hashset.NewStringSet(
 		contracts_background_tasks_removetokens.TypeRemoveTokenByClientID,
 		contracts_background_tasks_removetokens.TypeRemoveTokenBySubject,
-		contracts_background_tasks_removetokens.TypeRemoveTokenByClientIDAndSubject,
-	}
+		contracts_background_tasks_removetokens.TypeRemoveTokenByClientIDAndSubject)
+
 }
 func (s *service) processRemoveTokenByClientID(ctx context.Context, t *asynq.Task) error {
 
