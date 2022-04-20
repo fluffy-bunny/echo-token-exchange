@@ -29,10 +29,6 @@ type (
 		Stop() error
 	}
 
-	ITaskEngine interface {
-		Start() error
-		Stop() error
-	}
 	ISingletonTask interface {
 		GetPatterns() *core_hashset.StringSet
 		ProcessTask(ctx context.Context, t *asynq.Task) error

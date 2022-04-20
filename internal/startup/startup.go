@@ -98,7 +98,7 @@ type Startup struct {
 	ctrl         *gomock.Controller
 	clients      []models.Client
 	apiResources []models.APIResource
-	taskEngine   contracts_background_tasks.ITaskEngine
+	taskEngine   contracts_background_tasks.ITaskEngineFactory
 	container    di.Container
 }
 
