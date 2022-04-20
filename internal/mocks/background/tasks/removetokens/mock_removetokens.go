@@ -9,6 +9,7 @@ import (
 	removetokens "echo-starter/internal/contracts/background/tasks/removetokens"
 	reflect "reflect"
 
+	hashset "github.com/fluffy-bunny/grpcdotnetgo/pkg/gods/sets/hashset"
 	gomock "github.com/golang/mock/gomock"
 	asynq "github.com/hibiken/asynq"
 )
@@ -117,10 +118,10 @@ func (mr *MockIRemoveTokensSingletonTaskMockRecorder) EnqueTaskTypeRemoveTokenBy
 }
 
 // GetPatterns mocks base method.
-func (m *MockIRemoveTokensSingletonTask) GetPatterns() []string {
+func (m *MockIRemoveTokensSingletonTask) GetPatterns() *hashset.StringSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetPatterns")
-	ret0, _ := ret[0].([]string)
+	ret0, _ := ret[0].(*hashset.StringSet)
 	return ret0
 }
 

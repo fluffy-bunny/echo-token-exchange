@@ -7,12 +7,14 @@ import (
 	"reflect"
 	"strings"
 
+	contracts_background_tasks "echo-starter/internal/contracts/background/tasks"
 	contracts_background_tasks_removetokens "echo-starter/internal/contracts/background/tasks/removetokens"
 	contracts_stores_tokenstore "echo-starter/internal/contracts/stores/tokenstore"
 
 	contracts_handler "github.com/fluffy-bunny/grpcdotnetgo/pkg/echo/contracts/handler"
 	core_utils "github.com/fluffy-bunny/grpcdotnetgo/pkg/utils"
 	di "github.com/fluffy-bunny/sarulabsdi"
+	"github.com/hibiken/asynq"
 	"github.com/labstack/echo/v4"
 )
 
@@ -71,9 +73,11 @@ func (s *service) post(c echo.Context) error {
 			return err
 		}
 	case models.TokenTypeRefreshTokenSubject:
-		_, err := s.RemoveTokensSingletonTask.EnqueTaskTypeRemoveTokenBySubject(&contracts_background_tasks_removetokens.TokenRemoveBySubject{
+		task := &contracts_background_tasks_removetokens.TokenRemoveBySubject{
 			Subject: u.Token,
-		})
+		}
+		queue := asynq.Queue(contracts_background_tasks.TaskQueueTokenExchangeCritical)
+		_, err := s.RemoveTokensSingletonTask.EnqueTaskTypeRemoveTokenBySubject(task, queue)
 		if err != nil {
 			return err
 		}
@@ -83,9 +87,11 @@ func (s *service) post(c echo.Context) error {
 		   		}
 		*/
 	case models.TokenTypeRefreshTokenClientId:
-		_, err := s.RemoveTokensSingletonTask.EnqueTaskTokenRemoveByClientID(&contracts_background_tasks_removetokens.TokenRemoveByClientID{
+		task := &contracts_background_tasks_removetokens.TokenRemoveByClientID{
 			ClientID: u.Token,
-		})
+		}
+		queue := asynq.Queue(contracts_background_tasks.TaskQueueTokenExchangeCritical)
+		_, err := s.RemoveTokensSingletonTask.EnqueTaskTokenRemoveByClientID(task, queue)
 		if err != nil {
 			return err
 		}
@@ -102,14 +108,16 @@ func (s *service) post(c echo.Context) error {
 		if core_utils.IsEmptyOrNil(items[0]) || core_utils.IsEmptyOrNil(items[1]) {
 			return echo.NewHTTPError(http.StatusBadRequest, "invalid token")
 		}
-		_, err := s.RemoveTokensSingletonTask.EnqueTaskTokenRemoveByClientIDAndSubject(&contracts_background_tasks_removetokens.TokenRemoveByClientIDAndSubject{
+		queue := asynq.Queue(contracts_background_tasks.TaskQueueTokenExchangeCritical)
+		task := &contracts_background_tasks_removetokens.TokenRemoveByClientIDAndSubject{
 			TokenRemoveByClientID: contracts_background_tasks_removetokens.TokenRemoveByClientID{
 				ClientID: items[0],
 			},
 			TokenRemoveBySubject: contracts_background_tasks_removetokens.TokenRemoveBySubject{
 				Subject: items[1],
 			},
-		})
+		}
+		_, err := s.RemoveTokensSingletonTask.EnqueTaskTokenRemoveByClientIDAndSubject(task, queue)
 		if err != nil {
 			return err
 		}
