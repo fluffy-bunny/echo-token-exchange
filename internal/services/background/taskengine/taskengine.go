@@ -52,9 +52,9 @@ func (s *service) Ctor() {
 			Concurrency: 10,
 			// Optionally specify multiple queues with different priority.
 			Queues: map[string]int{
-				"critical": 6,
-				"default":  3,
-				"low":      1,
+				contracts_background_tasks.TaskQueueTokenExchangeCritical: 6,
+				contracts_background_tasks.TaskQueueTokenExchangeNormal:   3,
+				contracts_background_tasks.TaskQueueTokenExchangeLow:      1,
 			},
 			// See the godoc for other configuration options
 		},
@@ -68,7 +68,7 @@ func (s *service) Start() error {
 	}
 	// add all the handlers
 	for _, handler := range s.Handlers {
-		for _, pattern := range handler.GetPatterns() {
+		for _, pattern := range handler.GetPatterns().Values() {
 			s.mux.Handle(pattern, handler)
 		}
 	}

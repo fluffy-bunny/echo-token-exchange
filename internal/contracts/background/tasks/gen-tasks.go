@@ -836,3 +836,278 @@ func _getImplementedITaskClientNames(implementedTypes ...reflect.Type) string {
 	}
 	return builder.String()
 }
+
+// ReflectTypeITaskEngineFactory used when your service claims to implement ITaskEngineFactory
+var ReflectTypeITaskEngineFactory = di.GetInterfaceReflectType((*ITaskEngineFactory)(nil))
+
+// AddSingletonITaskEngineFactory adds a type that implements ITaskEngineFactory
+func AddSingletonITaskEngineFactory(builder *di.Builder, implType reflect.Type, implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeITaskEngineFactory)
+	_logAddITaskEngineFactory("SINGLETON", implType, _getImplementedITaskEngineFactoryNames(implementedTypes...),
+		_logITaskEngineFactoryExtra{
+			Name:  "DI-BY",
+			Value: "type",
+		})
+	di.AddSingleton(builder, implType, implementedTypes...)
+}
+
+// AddSingletonITaskEngineFactoryWithMetadata adds a type that implements ITaskEngineFactory
+func AddSingletonITaskEngineFactoryWithMetadata(builder *di.Builder, implType reflect.Type, metaData map[string]interface{}, implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeITaskEngineFactory)
+	_logAddITaskEngineFactory("SINGLETON", implType, _getImplementedITaskEngineFactoryNames(implementedTypes...),
+		_logITaskEngineFactoryExtra{
+			Name:  "DI-BY",
+			Value: "type",
+		},
+		_logITaskEngineFactoryExtra{
+			Name:  "DI-M",
+			Value: metaData,
+		})
+	di.AddSingletonWithMetadata(builder, implType, metaData, implementedTypes...)
+}
+
+// AddSingletonITaskEngineFactoryByObj adds a prebuilt obj
+func AddSingletonITaskEngineFactoryByObj(builder *di.Builder, obj interface{}, implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeITaskEngineFactory)
+	_logAddITaskEngineFactory("SINGLETON", reflect.TypeOf(obj), _getImplementedITaskEngineFactoryNames(implementedTypes...),
+		_logITaskEngineFactoryExtra{
+			Name:  "DI-BY",
+			Value: "obj",
+		})
+	di.AddSingletonWithImplementedTypesByObj(builder, obj, implementedTypes...)
+}
+
+// AddSingletonITaskEngineFactoryByObjWithMetadata adds a prebuilt obj
+func AddSingletonITaskEngineFactoryByObjWithMetadata(builder *di.Builder, obj interface{}, metaData map[string]interface{}, implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeITaskEngineFactory)
+	_logAddITaskEngineFactory("SINGLETON", reflect.TypeOf(obj), _getImplementedITaskEngineFactoryNames(implementedTypes...),
+		_logITaskEngineFactoryExtra{
+			Name:  "DI-BY",
+			Value: "obj",
+		},
+		_logITaskEngineFactoryExtra{
+			Name:  "DI-M",
+			Value: metaData,
+		})
+
+	di.AddSingletonWithImplementedTypesByObjWithMetadata(builder, obj, metaData, implementedTypes...)
+}
+
+// AddSingletonITaskEngineFactoryByFunc adds a type by a custom func
+func AddSingletonITaskEngineFactoryByFunc(builder *di.Builder, implType reflect.Type, build func(ctn di.Container) (interface{}, error), implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeITaskEngineFactory)
+	_logAddITaskEngineFactory("SINGLETON", implType, _getImplementedITaskEngineFactoryNames(implementedTypes...),
+		_logITaskEngineFactoryExtra{
+			Name:  "DI-BY",
+			Value: "func",
+		})
+	di.AddSingletonWithImplementedTypesByFunc(builder, implType, build, implementedTypes...)
+}
+
+// AddSingletonITaskEngineFactoryByFuncWithMetadata adds a type by a custom func
+func AddSingletonITaskEngineFactoryByFuncWithMetadata(builder *di.Builder, implType reflect.Type, build func(ctn di.Container) (interface{}, error), metaData map[string]interface{}, implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeITaskEngineFactory)
+	_logAddITaskEngineFactory("SINGLETON", implType, _getImplementedITaskEngineFactoryNames(implementedTypes...),
+		_logITaskEngineFactoryExtra{
+			Name:  "DI-BY",
+			Value: "func",
+		},
+		_logITaskEngineFactoryExtra{
+			Name:  "DI-M",
+			Value: metaData,
+		})
+
+	di.AddSingletonWithImplementedTypesByFuncWithMetadata(builder, implType, build, metaData, implementedTypes...)
+}
+
+// AddTransientITaskEngineFactory adds a type that implements ITaskEngineFactory
+func AddTransientITaskEngineFactory(builder *di.Builder, implType reflect.Type, implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeITaskEngineFactory)
+	_logAddITaskEngineFactory("TRANSIENT", implType, _getImplementedITaskEngineFactoryNames(implementedTypes...),
+		_logITaskEngineFactoryExtra{
+			Name:  "DI-BY",
+			Value: "type",
+		})
+
+	di.AddTransientWithImplementedTypes(builder, implType, implementedTypes...)
+}
+
+// AddTransientITaskEngineFactoryWithMetadata adds a type that implements ITaskEngineFactory
+func AddTransientITaskEngineFactoryWithMetadata(builder *di.Builder, implType reflect.Type, metaData map[string]interface{}, implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeITaskEngineFactory)
+	_logAddITaskEngineFactory("TRANSIENT", implType, _getImplementedITaskEngineFactoryNames(implementedTypes...),
+		_logITaskEngineFactoryExtra{
+			Name:  "DI-BY",
+			Value: "type",
+		},
+		_logITaskEngineFactoryExtra{
+			Name:  "DI-M",
+			Value: metaData,
+		})
+
+	di.AddTransientWithImplementedTypesWithMetadata(builder, implType, metaData, implementedTypes...)
+}
+
+// AddTransientITaskEngineFactoryByFunc adds a type by a custom func
+func AddTransientITaskEngineFactoryByFunc(builder *di.Builder, implType reflect.Type, build func(ctn di.Container) (interface{}, error), implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeITaskEngineFactory)
+	_logAddITaskEngineFactory("TRANSIENT", implType, _getImplementedITaskEngineFactoryNames(implementedTypes...),
+		_logITaskEngineFactoryExtra{
+			Name:  "DI-BY",
+			Value: "func",
+		})
+
+	di.AddTransientWithImplementedTypesByFunc(builder, implType, build, implementedTypes...)
+}
+
+// AddTransientITaskEngineFactoryByFuncWithMetadata adds a type by a custom func
+func AddTransientITaskEngineFactoryByFuncWithMetadata(builder *di.Builder, implType reflect.Type, build func(ctn di.Container) (interface{}, error), metaData map[string]interface{}, implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeITaskEngineFactory)
+	_logAddITaskEngineFactory("TRANSIENT", implType, _getImplementedITaskEngineFactoryNames(implementedTypes...),
+		_logITaskEngineFactoryExtra{
+			Name:  "DI-BY",
+			Value: "func",
+		},
+		_logITaskEngineFactoryExtra{
+			Name:  "DI-M",
+			Value: metaData,
+		})
+
+	di.AddTransientWithImplementedTypesByFuncWithMetadata(builder, implType, build, metaData, implementedTypes...)
+}
+
+// AddScopedITaskEngineFactory adds a type that implements ITaskEngineFactory
+func AddScopedITaskEngineFactory(builder *di.Builder, implType reflect.Type, implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeITaskEngineFactory)
+	_logAddITaskEngineFactory("SCOPED", implType, _getImplementedITaskEngineFactoryNames(implementedTypes...),
+		_logITaskEngineFactoryExtra{
+			Name:  "DI-BY",
+			Value: "type",
+		})
+	di.AddScopedWithImplementedTypes(builder, implType, implementedTypes...)
+}
+
+// AddScopedITaskEngineFactoryWithMetadata adds a type that implements ITaskEngineFactory
+func AddScopedITaskEngineFactoryWithMetadata(builder *di.Builder, implType reflect.Type, metaData map[string]interface{}, implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeITaskEngineFactory)
+	_logAddITaskEngineFactory("SCOPED", implType, _getImplementedITaskEngineFactoryNames(implementedTypes...),
+		_logITaskEngineFactoryExtra{
+			Name:  "DI-BY",
+			Value: "type",
+		},
+		_logITaskEngineFactoryExtra{
+			Name:  "DI-M",
+			Value: metaData,
+		})
+	di.AddScopedWithImplementedTypesWithMetadata(builder, implType, metaData, implementedTypes...)
+}
+
+// AddScopedITaskEngineFactoryByFunc adds a type by a custom func
+func AddScopedITaskEngineFactoryByFunc(builder *di.Builder, implType reflect.Type, build func(ctn di.Container) (interface{}, error), implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeITaskEngineFactory)
+	_logAddITaskEngineFactory("SCOPED", implType, _getImplementedITaskEngineFactoryNames(implementedTypes...),
+		_logITaskEngineFactoryExtra{
+			Name:  "DI-BY",
+			Value: "func",
+		})
+	di.AddScopedWithImplementedTypesByFunc(builder, implType, build, implementedTypes...)
+}
+
+// AddScopedITaskEngineFactoryByFuncWithMetadata adds a type by a custom func
+func AddScopedITaskEngineFactoryByFuncWithMetadata(builder *di.Builder, implType reflect.Type, build func(ctn di.Container) (interface{}, error), metaData map[string]interface{}, implementedTypes ...reflect.Type) {
+	implementedTypes = append(implementedTypes, ReflectTypeITaskEngineFactory)
+	_logAddITaskEngineFactory("SCOPED", implType, _getImplementedITaskEngineFactoryNames(implementedTypes...),
+		_logITaskEngineFactoryExtra{
+			Name:  "DI-BY",
+			Value: "func",
+		},
+		_logITaskEngineFactoryExtra{
+			Name:  "DI-M",
+			Value: metaData,
+		})
+
+	di.AddScopedWithImplementedTypesByFuncWithMetadata(builder, implType, build, metaData, implementedTypes...)
+}
+
+// RemoveAllITaskEngineFactory removes all ITaskEngineFactory from the DI
+func RemoveAllITaskEngineFactory(builder *di.Builder) {
+	builder.RemoveAllByType(ReflectTypeITaskEngineFactory)
+}
+
+// GetITaskEngineFactoryFromContainer alternative to SafeGetITaskEngineFactoryFromContainer but panics of object is not present
+func GetITaskEngineFactoryFromContainer(ctn di.Container) ITaskEngineFactory {
+	return ctn.GetByType(ReflectTypeITaskEngineFactory).(ITaskEngineFactory)
+}
+
+// GetManyITaskEngineFactoryFromContainer alternative to SafeGetManyITaskEngineFactoryFromContainer but panics of object is not present
+func GetManyITaskEngineFactoryFromContainer(ctn di.Container) []ITaskEngineFactory {
+	objs := ctn.GetManyByType(ReflectTypeITaskEngineFactory)
+	var results []ITaskEngineFactory
+	for _, obj := range objs {
+		results = append(results, obj.(ITaskEngineFactory))
+	}
+	return results
+}
+
+// SafeGetITaskEngineFactoryFromContainer trys to get the object by type, will not panic, returns nil and error
+func SafeGetITaskEngineFactoryFromContainer(ctn di.Container) (ITaskEngineFactory, error) {
+	obj, err := ctn.SafeGetByType(ReflectTypeITaskEngineFactory)
+	if err != nil {
+		return nil, err
+	}
+	return obj.(ITaskEngineFactory), nil
+}
+
+// GetITaskEngineFactoryDefinition returns that last definition registered that this container can provide
+func GetITaskEngineFactoryDefinition(ctn di.Container) *di.Def {
+	def := ctn.GetDefinitionByType(ReflectTypeITaskEngineFactory)
+	return def
+}
+
+// GetITaskEngineFactoryDefinitions returns all definitions that this container can provide
+func GetITaskEngineFactoryDefinitions(ctn di.Container) []*di.Def {
+	defs := ctn.GetDefinitionsByType(ReflectTypeITaskEngineFactory)
+	return defs
+}
+
+// SafeGetManyITaskEngineFactoryFromContainer trys to get the object by type, will not panic, returns nil and error
+func SafeGetManyITaskEngineFactoryFromContainer(ctn di.Container) ([]ITaskEngineFactory, error) {
+	objs, err := ctn.SafeGetManyByType(ReflectTypeITaskEngineFactory)
+	if err != nil {
+		return nil, err
+	}
+	var results []ITaskEngineFactory
+	for _, obj := range objs {
+		results = append(results, obj.(ITaskEngineFactory))
+	}
+	return results, nil
+}
+
+type _logITaskEngineFactoryExtra struct {
+	Name  string
+	Value interface{}
+}
+
+func _logAddITaskEngineFactory(scopeType string, implType reflect.Type, interfaces string, extra ..._logITaskEngineFactoryExtra) {
+	infoEvent := log.Info().
+		Str("DI", scopeType).
+		Str("DI-I", interfaces).
+		Str("DI-B", implType.Elem().String())
+
+	for _, extra := range extra {
+		infoEvent = infoEvent.Interface(extra.Name, extra.Value)
+	}
+
+	infoEvent.Send()
+
+}
+func _getImplementedITaskEngineFactoryNames(implementedTypes ...reflect.Type) string {
+	builder := strings.Builder{}
+	for idx, implementedType := range implementedTypes {
+		builder.WriteString(implementedType.Name())
+		if idx < len(implementedTypes)-1 {
+			builder.WriteString(", ")
+		}
+	}
+	return builder.String()
+}
