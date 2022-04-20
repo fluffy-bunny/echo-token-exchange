@@ -1,8 +1,8 @@
 package tasks
 
-//go:generate genny -pkg $GOPACKAGE -in=../../../../genny/sarulabsdi/interface-types.go -out=gen-$GOFILE gen "InterfaceType=ISingletonTask,ITaskEngine,ITaskClient,ITaskEngineFactory"
+//go:generate genny -pkg $GOPACKAGE -in=../../../../genny/sarulabsdi/interface-types.go -out=gen-$GOFILE gen "InterfaceType=ISingletonTask,ITaskClient,ITaskEngineFactory"
 
-//go:generate mockgen -package=$GOPACKAGE -destination=../../../mocks/background/$GOPACKAGE/mock_$GOFILE   echo-starter/internal/contracts/background/$GOPACKAGE ISingletonTask,ITaskEngine,ITaskClient,ITaskEngineFactory
+//go:generate mockgen -package=$GOPACKAGE -destination=../../../mocks/background/$GOPACKAGE/mock_$GOFILE   echo-starter/internal/contracts/background/$GOPACKAGE ISingletonTask,ITaskClient,ITaskEngineFactory
 
 import (
 	"context"

@@ -32,9 +32,6 @@ type (
 		Logger              contracts_logger.ILogger                    `inject:""`
 		Config              *contracts_config.Config                    `inject:""`
 		Handlers            []contracts_background_tasks.ISingletonTask `inject:""`
-		srv                 *asynq.Server
-		mux                 *asynq.ServeMux
-		future              async.Future
 		taskEngineConfigs   []contracts_background_tasks.TaskEngineConfig
 		serverMuxContainers []*serverMuxContainer
 	}
@@ -46,9 +43,9 @@ func assertImplementation() {
 
 var reflectType = reflect.TypeOf((*service)(nil))
 
-// AddSingletonITaskEngine registers the *service as a singleton.
-func AddSingletonITaskEngine(builder *di.Builder) {
-	contracts_background_tasks.AddSingletonITaskEngine(builder, reflectType)
+// AddSingletonITaskEngineFactory registers the *service as a singleton.
+func AddSingletonITaskEngineFactory(builder *di.Builder) {
+	contracts_background_tasks.AddSingletonITaskEngineFactory(builder, reflectType)
 }
 func (s *service) Ctor() {
 	s.taskEngineConfigs = append(s.taskEngineConfigs, contracts_background_tasks.TaskEngineConfig{
@@ -91,32 +88,15 @@ func (s *service) Ctor() {
 		}
 	}
 
-	s.srv = asynq.NewServer(
-		asynq.RedisClientOpt{Addr: s.Config.RedisOptionsReferenceTokenStore.Addr,
-			Network:  s.Config.RedisOptionsReferenceTokenStore.Network,
-			Password: s.Config.RedisOptionsReferenceTokenStore.Password,
-			Username: s.Config.RedisOptionsReferenceTokenStore.Username},
-		asynq.Config{
-			// Specify how many concurrent workers to use
-			Concurrency: 10,
-			// Optionally specify multiple queues with different priority.
-			Queues: map[string]int{
-				contracts_background_tasks.TaskQueueTokenExchangeCritical: 6,
-				contracts_background_tasks.TaskQueueTokenExchangeNormal:   3,
-				contracts_background_tasks.TaskQueueTokenExchangeLow:      1,
-			},
-			// See the godoc for other configuration options
-		},
-	)
-	s.mux = asynq.NewServeMux()
 }
 
 func (s *service) Start() error {
 
-	if s.future != nil {
-		panic("task engine already started")
+	for _, container := range s.serverMuxContainers {
+		if container.future != nil {
+			panic("task engine already started")
+		}
 	}
-
 	for _, container := range s.serverMuxContainers {
 		container.future = grpcdotnetgoasync.ExecuteWithPromiseAsync(func(promise async.Promise) {
 			var err error

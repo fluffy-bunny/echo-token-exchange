@@ -29,7 +29,7 @@ import (
 func TestHealthCheck(t *testing.T) {
 	tests.RunTest(t, func(ctrl *gomock.Controller) {
 
-		taskEngine := mocks_background_tasks.NewMockITaskEngine(ctrl)
+		taskEngine := mocks_background_tasks.NewMockITaskEngineFactory(ctrl)
 		taskEngine.EXPECT().Start().Return(nil)
 		taskEngine.EXPECT().Stop().Return(nil)
 		folderChanger := NewFolderChanger("../../cmd/server")
@@ -42,7 +42,7 @@ func TestHealthCheck(t *testing.T) {
 		hooks := &echo_contracts_startup.Hooks{
 			PrebuildHook: func(builder *di.Builder) error {
 				// register a null task engine
-				contracts_background_tasks.AddSingletonITaskEngineByObj(builder, taskEngine)
+				contracts_background_tasks.AddSingletonITaskEngineFactoryByObj(builder, taskEngine)
 				return nil
 			},
 			PreStartHook: func(echo *echo.Echo) error {
