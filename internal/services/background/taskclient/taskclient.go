@@ -12,10 +12,6 @@ import (
 	"github.com/hibiken/asynq"
 )
 
-const (
-	TypeRemoveTokenByClientID = "token:remove-by-client-id"
-)
-
 type (
 	service struct {
 		Logger contracts_logger.ILogger `inject:""`
@@ -38,7 +34,8 @@ func (s *service) Close() {
 	s.client.Close()
 }
 func (s *service) Ctor() {
-	s.client = asynq.NewClient(asynq.RedisClientOpt{Addr: s.Config.RedisOptionsReferenceTokenStore.Addr,
+	s.client = asynq.NewClient(asynq.RedisClientOpt{
+		Addr:     s.Config.RedisOptionsReferenceTokenStore.Addr,
 		Network:  s.Config.RedisOptionsReferenceTokenStore.Network,
 		Password: s.Config.RedisOptionsReferenceTokenStore.Password,
 		Username: s.Config.RedisOptionsReferenceTokenStore.Username})

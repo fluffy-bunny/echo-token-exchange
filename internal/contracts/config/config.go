@@ -79,6 +79,7 @@ type (
 		TokenStoreProvider              string             `json:"tokenStoreProvider" mapstructure:"TOKEN_STORE_PROVIDER"`
 		AllowedGrantTypes               []oauth2.GrantType `json:"allowedGrantTypes" mapstructure:"ALLOWED_GRANT_TYPES"`
 		TokenType                       string             `json:"tokenType" mapstructure:"TOKEN_TYPE"`
+		RedisUseMiniRedis               bool               `json:"redisUseMiniRedis" mapstructure:"REDIS_USE_MINIREDIS"`
 		RedisOptionsReferenceTokenStore RedisOptions       `json:"redisOptionsReferenceTokenStore" mapstructure:"REDIS_OPTIONS_REFERENCE_TOKEN_STORE"`
 		RedisOptionsRefreshTokenStore   RedisOptions       `json:"redisOptionsRefreshTokenStore" mapstructure:"REDIS_OPTIONS_REFRESH_TOKEN_STORE"`
 	}
@@ -122,6 +123,7 @@ var (
 	"SIGNING_KEYS": "",
 	"ALLOWED_GRANT_TYPES": "client_credentials,refresh_token,urn:ietf:params:oauth:grant-type:token-exchange",
 	"TOKEN_TYPE": "Bearer",
+	"REDIS_USE_MINIREDIS": false,
 	"REDIS_OPTIONS_REFERENCE_TOKEN_STORE": {
 		"NETWORK": "tcp",
 		"ADDR": "localhost:6379",

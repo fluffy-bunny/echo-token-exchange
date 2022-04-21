@@ -5,24 +5,21 @@ import (
 	echostarter_auth "echo-starter/internal/auth"
 	contracts_config "echo-starter/internal/contracts/config"
 	"echo-starter/internal/models"
-
+	services_handlers_about "echo-starter/internal/services/handlers/about"
+	app_session "echo-starter/internal/session"
 	"encoding/base64"
 	"fmt"
 	"io/ioutil"
+	"net/http"
 	"os"
 	"strconv"
 
+	"github.com/alicebob/miniredis/v2"
+	"github.com/fluffy-bunny/grpcdotnetgo/pkg/echo/contracts/startup"
+	echo_contracts_startup "github.com/fluffy-bunny/grpcdotnetgo/pkg/echo/contracts/startup"
 	core_utils "github.com/fluffy-bunny/grpcdotnetgo/pkg/utils"
 	"github.com/quasoft/memstore"
 	"github.com/rs/zerolog/log"
-
-	services_handlers_about "echo-starter/internal/services/handlers/about"
-	app_session "echo-starter/internal/session"
-
-	"net/http"
-
-	"github.com/fluffy-bunny/grpcdotnetgo/pkg/echo/contracts/startup"
-	echo_contracts_startup "github.com/fluffy-bunny/grpcdotnetgo/pkg/echo/contracts/startup"
 
 	"github.com/gorilla/securecookie"
 
@@ -94,12 +91,13 @@ import (
 
 type Startup struct {
 	echo_contracts_startup.CommonStartup
-	config       *contracts_config.Config
-	ctrl         *gomock.Controller
-	clients      []models.Client
-	apiResources []models.APIResource
-	taskEngine   contracts_background_tasks.ITaskEngineFactory
-	container    di.Container
+	config            *contracts_config.Config
+	ctrl              *gomock.Controller
+	clients           []models.Client
+	apiResources      []models.APIResource
+	taskEngine        contracts_background_tasks.ITaskEngineFactory
+	container         di.Container
+	miniRedisInstance *miniredis.Miniredis
 }
 
 func assertImplementation() {
@@ -133,9 +131,16 @@ func NewStartup() echo_contracts_startup.IStartup {
 	return startup
 }
 func (s *Startup) PreStartHook(echo *echo.Echo) error {
-	err := s._createDevelopmentIndexes()
-	if err != nil {
-		return err
+	if s.config.RedisUseMiniRedis {
+		s.miniRedisInstance = miniredis.NewMiniRedis()
+		s.miniRedisInstance.RequireAuth(s.config.RedisOptionsReferenceTokenStore.Password)
+
+		err := s.miniRedisInstance.Start()
+		if err != nil {
+			panic(err)
+		}
+		s.config.RedisOptionsReferenceTokenStore.Addr = s.miniRedisInstance.Addr()
+
 	}
 	s.taskEngine = contracts_background_tasks.GetITaskEngineFactoryFromContainer(s.container)
 	return s.taskEngine.Start()

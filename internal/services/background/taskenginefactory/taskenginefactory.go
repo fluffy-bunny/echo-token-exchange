@@ -8,17 +8,12 @@ import (
 	contracts_background_tasks_removetokens "echo-starter/internal/contracts/background/tasks/removetokens"
 	contracts_config "echo-starter/internal/contracts/config"
 
-	core_hashset "github.com/fluffy-bunny/grpcdotnetgo/pkg/gods/sets/hashset"
-
 	grpcdotnetgoasync "github.com/fluffy-bunny/grpcdotnetgo/pkg/async"
 	contracts_logger "github.com/fluffy-bunny/grpcdotnetgo/pkg/contracts/logger"
+	core_hashset "github.com/fluffy-bunny/grpcdotnetgo/pkg/gods/sets/hashset"
 	di "github.com/fluffy-bunny/sarulabsdi"
 	"github.com/hibiken/asynq"
 	"github.com/reugn/async"
-)
-
-const (
-	TypeRemoveTokenByClientID = "token:remove-by-client-id"
 )
 
 type (
@@ -48,8 +43,10 @@ func AddSingletonITaskEngineFactory(builder *di.Builder) {
 	contracts_background_tasks.AddSingletonITaskEngineFactory(builder, reflectType)
 }
 func (s *service) Ctor() {
+
 	s.taskEngineConfigs = append(s.taskEngineConfigs, contracts_background_tasks.TaskEngineConfig{
-		RedisClientOpt: asynq.RedisClientOpt{Addr: s.Config.RedisOptionsReferenceTokenStore.Addr,
+		RedisClientOpt: asynq.RedisClientOpt{
+			Addr:     s.Config.RedisOptionsReferenceTokenStore.Addr,
 			Network:  s.Config.RedisOptionsReferenceTokenStore.Network,
 			Password: s.Config.RedisOptionsReferenceTokenStore.Password,
 			Username: s.Config.RedisOptionsReferenceTokenStore.Username,
