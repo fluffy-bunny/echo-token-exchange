@@ -172,6 +172,9 @@ func (s *Startup) _createDevelopmentIndexes() error {
 
 }
 func (s *Startup) PreShutdownHook(echo *echo.Echo) error {
+	if s.config.RedisUseMiniRedis {
+		s.miniRedisInstance.Close()
+	}
 	return s.taskEngine.Stop()
 }
 func (s *Startup) PostBuildHook(container di.Container) error {

@@ -7,6 +7,7 @@ go 1.18
 //replace github.com/fluffy-bunny/go-redis-search => ../go-redis-search
 
 //replace github.com/fluffy-bunny/rejonson/v8 => ../rejonson
+replace github.com/hibiken/asynq => github.com/fluffy-bunny/asynq v0.23.2
 
 require (
 	github.com/ahmetb/go-linq v3.0.0+incompatible
@@ -16,6 +17,7 @@ require (
 	github.com/catmullet/go-workers v1.4.1
 	github.com/cheekybits/genny v1.0.0
 	github.com/containerd/containerd v1.6.1
+	github.com/coreos/go-oidc/v3 v3.1.0
 	github.com/fatih/structs v1.1.0
 	github.com/fluffy-bunny/go-redis-search v0.0.5
 	github.com/fluffy-bunny/grpcdotnetgo v0.1.250
@@ -48,6 +50,7 @@ require (
 	github.com/tufin/asciitree v0.0.0-20210127111056-bf70173ef677
 	github.com/valyala/fasthttp v1.35.0
 	github.com/xeipuuv/gojsonschema v1.2.0
+	golang.org/x/net v0.0.0-20220225172249-27dd8689420f
 	golang.org/x/oauth2 v0.0.0-20211104180415-d3ed0bb246c8
 	gopkg.in/square/go-jose.v2 v2.6.0
 )
@@ -64,7 +67,6 @@ require (
 	github.com/containerd/fifo v1.0.0 // indirect
 	github.com/containerd/ttrpc v1.1.0 // indirect
 	github.com/containerd/typeurl v1.0.2 // indirect
-	github.com/coreos/go-oidc/v3 v3.1.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
@@ -131,7 +133,6 @@ require (
 	github.com/ziflex/lecho v1.2.0 // indirect
 	go.opencensus.io v0.23.0 // indirect
 	golang.org/x/crypto v0.0.0-20220321153916-2c7772ba3064 // indirect
-	golang.org/x/net v0.0.0-20220225172249-27dd8689420f // indirect
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c // indirect
 	golang.org/x/sys v0.0.0-20220412211240-33da011f77ad // indirect
 	golang.org/x/text v0.3.7 // indirect
