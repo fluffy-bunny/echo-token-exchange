@@ -31,6 +31,8 @@ func BuildGrpcEntrypointPermissionsClaimsMap() map[string]*middleware_oidc.Entry
 	entryPointClaimsBuilder.WithGrpcEntrypointPermissionsClaimsMapOpen(wellknown.UnauthorizedPath)
 	entryPointClaimsBuilder.WithGrpcEntrypointPermissionsClaimsMapOpen("/static*")
 
+	entryPointClaimsBuilder.WithGrpcEntrypointPermissionsClaimsMapOpen(wellknown.WebhookEchoPath)
+
 	cMap := entryPointClaimsBuilder.GrpcEntrypointClaimsMap
 	return cMap
 }

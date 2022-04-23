@@ -1,8 +1,9 @@
 package wellknown
 
 const (
-	HomePath    = "/"
-	AboutPath   = "/about"
-	HealthzPath = "/healthz"
-	ReadyPath   = "/ready"
+	HomePath        = "/"
+	AboutPath       = "/about"
+	HealthzPath     = "/healthz"
+	ReadyPath       = "/ready"
+	WebhookEchoPath = "/webhookecho"
 )

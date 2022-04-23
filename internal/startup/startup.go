@@ -60,6 +60,8 @@ import (
 	services_handlers_api_revoke "echo-starter/internal/services/handlers/api/revoke"
 	services_handlers_api_token "echo-starter/internal/services/handlers/api/token"
 
+	services_handlers_api_webhookecho "echo-starter/internal/services/handlers/api/webhookecho"
+
 	core_contracts_session "github.com/fluffy-bunny/grpcdotnetgo/pkg/echo/contracts/session"
 	core_middleware_claimsprincipal "github.com/fluffy-bunny/grpcdotnetgo/pkg/echo/middleware/claimsprincipal"
 
@@ -339,6 +341,7 @@ func (s *Startup) addAppHandlers(builder *di.Builder) {
 	services_handlers_api_revoke.AddScopedIHandler(builder)
 	services_handlers_api_introspect.AddScopedIHandler(builder)
 
+	services_handlers_api_webhookecho.AddScopedIHandler(builder)
 }
 
 func (s *Startup) ConfigureServices(builder *di.Builder) error {
