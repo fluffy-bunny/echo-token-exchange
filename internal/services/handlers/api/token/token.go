@@ -84,7 +84,7 @@ func (s *service) GetMiddleware() []echo.MiddlewareFunc {
 
 func (s *service) Do(c echo.Context) error {
 	rootPath := utils.GetMyRootPath(c)
-	s.issuer = rootPath
+	s.issuer = rootPath + "/"
 
 	return s.processRequest(c)
 }

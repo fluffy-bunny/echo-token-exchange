@@ -44,7 +44,7 @@ func (s *service) Do(c echo.Context) error {
 func (s *service) get(c echo.Context) error {
 	rootPath := utils.GetMyRootPath(c)
 	discovery := models.DiscoveryDocument{
-		Issuer:                rootPath,
+		Issuer:                rootPath + "/",
 		TokenEndpoint:         rootPath + wellknown.OAuth2TokenPath,
 		JwksURI:               rootPath + wellknown.WellKnownJWKS,
 		RevocationEndpoint:    rootPath + wellknown.OAuth2RevokePath,

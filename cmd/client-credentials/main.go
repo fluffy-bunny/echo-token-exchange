@@ -16,7 +16,7 @@ type SpecialClient struct {
 }
 
 const (
-	issuer = "http://localhost:1323"
+	issuer = "http://localhost:1323/"
 )
 
 var (
