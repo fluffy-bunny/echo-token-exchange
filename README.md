@@ -119,3 +119,14 @@ And if ```AUTH_STORE=cookie``` the SESSION_ENGINE can be any supported one.
 AUTH_STORE=cookie
 SESSION_ENGINE=cookie|inmemory|redis
 ```  
+
+## Heroku
+
+```bash
+heroku login
+heroku container:login
+docker pull ghstahl/echo-token-exchange:latest
+docker tag ghstahl/echo-token-exchange:latest registry.heroku.com/echo-token-exchange/web
+docker push registry.heroku.com/echo-token-exchange/web 
+heroku container:release web --app=echo-token-exchange  
+```
