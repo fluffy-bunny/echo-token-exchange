@@ -1,6 +1,7 @@
 package discoveryjwks
 
 import (
+	"echo-starter/internal/models"
 	"echo-starter/internal/wellknown"
 	"fmt"
 	"net/http"
@@ -47,8 +48,11 @@ func getMyRootPath(c echo.Context) string {
 }
 
 func (s *service) get(c echo.Context) error {
+	type JWKS struct {
+		Keys []*models.PublicJwk `json:"keys"`
+	}
 
 	keys, _ := s.KeyMaterial.GetPublicWebKeys()
-	return c.JSON(http.StatusOK, keys)
+	return c.JSONPretty(http.StatusOK, &JWKS{Keys: keys}, "  ")
 
 }

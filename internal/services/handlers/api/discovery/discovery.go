@@ -55,6 +55,6 @@ func (s *service) get(c echo.Context) error {
 			wellknown.OAuth2GrantType_TokenExchange,
 		},
 	}
-	return c.JSON(http.StatusOK, discovery)
+	return c.JSONPretty(http.StatusOK, discovery, "  ")
 
 }
