@@ -35,10 +35,10 @@ func (s *service) Close() {
 }
 func (s *service) Ctor() {
 	s.client = asynq.NewClient(asynq.RedisClientOpt{
-		Addr:     s.Config.RedisOptionsReferenceTokenStore.Addr,
-		Network:  s.Config.RedisOptionsReferenceTokenStore.Network,
-		Password: s.Config.RedisOptionsReferenceTokenStore.Password,
-		Username: s.Config.RedisOptionsReferenceTokenStore.Username})
+		Addr:     s.Config.RedisOptions.Addr,
+		Network:  s.Config.RedisOptions.Network,
+		Password: s.Config.RedisOptions.Password,
+		Username: s.Config.RedisOptions.Username})
 
 }
 

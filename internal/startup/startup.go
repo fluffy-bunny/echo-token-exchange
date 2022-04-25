@@ -133,13 +133,13 @@ func NewStartup() echo_contracts_startup.IStartup {
 func (s *Startup) PreStartHook(echo *echo.Echo) error {
 	if s.config.RedisUseMiniRedis {
 		s.miniRedisInstance = miniredis.NewMiniRedis()
-		s.miniRedisInstance.RequireAuth(s.config.RedisOptionsReferenceTokenStore.Password)
+		s.miniRedisInstance.RequireAuth(s.config.RedisOptions.Password)
 
 		err := s.miniRedisInstance.Start()
 		if err != nil {
 			panic(err)
 		}
-		s.config.RedisOptionsReferenceTokenStore.Addr = s.miniRedisInstance.Addr()
+		s.config.RedisOptions.Addr = s.miniRedisInstance.Addr()
 
 	}
 	s.taskEngine = contracts_background_tasks.GetITaskEngineFactoryFromContainer(s.container)
@@ -150,10 +150,10 @@ func (s *Startup) _createDevelopmentIndexes() error {
 		return nil
 	}
 	redisOptions := &redis.Options{
-		Addr:     s.config.RedisOptionsReferenceTokenStore.Addr,
-		Network:  s.config.RedisOptionsReferenceTokenStore.Network,
-		Password: s.config.RedisOptionsReferenceTokenStore.Password,
-		Username: s.config.RedisOptionsReferenceTokenStore.Username,
+		Addr:     s.config.RedisOptions.Addr,
+		Network:  s.config.RedisOptions.Network,
+		Password: s.config.RedisOptions.Password,
+		Username: s.config.RedisOptions.Username,
 	}
 	cli := redis.NewClient(redisOptions)
 	indexName := "echoTokenStoreIdx"

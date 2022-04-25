@@ -46,10 +46,10 @@ func (s *service) Ctor() {
 
 	s.taskEngineConfigs = append(s.taskEngineConfigs, contracts_background_tasks.TaskEngineConfig{
 		RedisClientOpt: asynq.RedisClientOpt{
-			Addr:     s.Config.RedisOptionsReferenceTokenStore.Addr,
-			Network:  s.Config.RedisOptionsReferenceTokenStore.Network,
-			Password: s.Config.RedisOptionsReferenceTokenStore.Password,
-			Username: s.Config.RedisOptionsReferenceTokenStore.Username,
+			Addr:     s.Config.RedisOptions.Addr,
+			Network:  s.Config.RedisOptions.Network,
+			Password: s.Config.RedisOptions.Password,
+			Username: s.Config.RedisOptions.Username,
 		},
 		Config: asynq.Config{
 			// Specify how many concurrent workers to use

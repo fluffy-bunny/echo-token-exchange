@@ -52,14 +52,14 @@ func (s *service) Ctor() {
 	s.lock = &sync.RWMutex{}
 
 	redisOptions := &redis.Options{
-		Addr:     s.Config.RedisOptionsReferenceTokenStore.Addr,
-		Network:  s.Config.RedisOptionsReferenceTokenStore.Network,
-		Password: s.Config.RedisOptionsReferenceTokenStore.Password,
-		Username: s.Config.RedisOptionsReferenceTokenStore.Username,
+		Addr:     s.Config.RedisOptions.Addr,
+		Network:  s.Config.RedisOptions.Network,
+		Password: s.Config.RedisOptions.Password,
+		Username: s.Config.RedisOptions.Username,
 	}
 	s.cli = redis.NewClient(redisOptions)
-	if len(s.Config.RedisOptionsReferenceTokenStore.Namespace) > 0 {
-		s.ns = s.Config.RedisOptionsReferenceTokenStore.Namespace[0]
+	if len(s.Config.RedisOptions.Namespace) > 0 {
+		s.ns = s.Config.RedisOptions.Namespace[0]
 	}
 
 	s.rejonsonClient = rejonson.ExtendClient(s.cli)

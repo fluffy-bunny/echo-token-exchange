@@ -27,7 +27,7 @@ func TestStore(t *testing.T) {
 	tests.RunTest(t, func(ctrl *gomock.Controller) {
 		builder, _ := di.NewBuilder(di.App, di.Request, "transient")
 		config := &contracts_config.Config{
-			RedisOptionsReferenceTokenStore: contracts_config.RedisOptions{
+			RedisOptions: contracts_config.RedisOptions{
 				Addr:     "localhost:6379",
 				Network:  "tcp",
 				Password: "eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81",
@@ -38,10 +38,10 @@ func TestStore(t *testing.T) {
 		AddSingletonITokenStore(builder)
 		ctn := builder.Build()
 		redisOptions := &redis.Options{
-			Addr:     config.RedisOptionsReferenceTokenStore.Addr,
-			Network:  config.RedisOptionsReferenceTokenStore.Network,
-			Password: config.RedisOptionsReferenceTokenStore.Password,
-			Username: config.RedisOptionsReferenceTokenStore.Username,
+			Addr:     config.RedisOptions.Addr,
+			Network:  config.RedisOptions.Network,
+			Password: config.RedisOptions.Password,
+			Username: config.RedisOptions.Username,
 		}
 		cli := redis.NewClient(redisOptions)
 		indexName := "echoTokenStoreIdx"
