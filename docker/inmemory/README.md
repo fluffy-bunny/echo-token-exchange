@@ -28,3 +28,27 @@ curl --location --request POST 'http://echo-tx.docker.localhost/token' \
     "token_type": "Bearer"
 }
 ```
+### JWT.IO
+
+```json
+{
+  "aud": [
+    "b2b-client",
+    "users",
+    "invoices"
+  ],
+  "client_id": "b2b-client",
+  "exp": 1650925473,
+  "iat": 1650921873,
+  "iss": "http://echo-tx.docker.localhost/",
+  "jti": "c9jh34b2fej8k8t54p9g",
+  "scope": [
+    "a",
+    "b",
+    "c",
+    "users.read",
+    "invoices"
+  ]
+}
+```
+
