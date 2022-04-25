@@ -20,7 +20,7 @@ require (
 	github.com/coreos/go-oidc/v3 v3.1.0
 	github.com/fatih/structs v1.1.0
 	github.com/fluffy-bunny/go-redis-search v0.0.5
-	github.com/fluffy-bunny/grpcdotnetgo v0.1.250
+	github.com/fluffy-bunny/grpcdotnetgo v0.1.252
 	github.com/fluffy-bunny/rejonson/v8 v8.0.2
 	github.com/fluffy-bunny/sarulabsdi v0.1.63
 	github.com/go-oauth2/oauth2/v4 v4.4.3

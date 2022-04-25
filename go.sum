@@ -369,8 +369,8 @@ github.com/fluffy-bunny/asynq v0.23.2 h1:UDmNaWQQO660cx986MfNj+gRfOlw5LEroPUmI6d
 github.com/fluffy-bunny/asynq v0.23.2/go.mod h1:K70jPVx+CAmmQrXot7Dru0D52EO7ob4BIun3ri5z1Qw=
 github.com/fluffy-bunny/go-redis-search v0.0.5 h1:kI4pFKs0347ajfRbiXCBBF/uxCu1NaRwjaJz+0GNe6E=
 github.com/fluffy-bunny/go-redis-search v0.0.5/go.mod h1:5hH1wNzdBdRBIHan8O22jAiXWHXq707ZbydEonLoX6g=
-github.com/fluffy-bunny/grpcdotnetgo v0.1.250 h1:lwMmXKUlrleRSub94N/CsqCBGjgEzjCOllBbrNW9qNQ=
-github.com/fluffy-bunny/grpcdotnetgo v0.1.250/go.mod h1:PVWeGNqspaoBiT1K8ltRTCxkIZetJSUUELc8hEWorMc=
+github.com/fluffy-bunny/grpcdotnetgo v0.1.252 h1:qO8Fz35L2ayT6C/tfeN4g2P2rFMiHsIJ+lkQGvvzn1A=
+github.com/fluffy-bunny/grpcdotnetgo v0.1.252/go.mod h1:PVWeGNqspaoBiT1K8ltRTCxkIZetJSUUELc8hEWorMc=
 github.com/fluffy-bunny/rejonson/v8 v8.0.2 h1:YkOBNHnHRaAGzz2ySMj++KQyNlCGJyVwjHVfah8/HiE=
 github.com/fluffy-bunny/rejonson/v8 v8.0.2/go.mod h1:2LhsdotnAJu349ne3gzCjo10ZKK/RL7QrVfHjXGYmb4=
 github.com/fluffy-bunny/sarulabsdi v0.1.63 h1:mPkC25DBsWn0hE4xNMdVBcsY5TdtMwfR2/nntOOFkFA=
