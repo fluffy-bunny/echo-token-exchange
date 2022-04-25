@@ -84,7 +84,7 @@ var (
 	"SIGNING_KEYS": "",
 	"ALLOWED_GRANT_TYPES": "client_credentials,refresh_token,urn:ietf:params:oauth:grant-type:token-exchange",
 	"TOKEN_TYPE": "Bearer",
-	"REDIS_USE_MINIREDIS": false,
+	"REDIS_USE_MINIREDIS": true,
 	"REDIS_OPTIONS": {
 		"NETWORK": "tcp",
 		"ADDR": "localhost:6379",
