@@ -1,0 +1,55 @@
+version: "3.9"
+
+services:
+
+ # echostarter
+ #============================================================================
+  token_exchange:
+    image: "${ECHO_STARTER_IMAGE_NAME}:${ECHO_STARTER_VERSION}"
+    labels:
+      # Enable this container to be mapped by traefik
+      # For more information, see: https://docs.traefik.io/providers/docker/#exposedbydefault
+      - "traefik.enable=true"
+      # Define the network that should be used
+      - "traefik.docker.network=proxy"
+      - traefik.tcp.routers.token_exchange.service=token_exchange
+      # URL to reach this container
+      - "traefik.http.routers.token_exchange.rule=Host(`${ECHO_STARTER_DOMAIN}`)"
+      # Activation of TLS
+      - "traefik.http.routers.token_exchange.tls=false"
+      # If port is different than 80, use the following service:
+      # - "traefik.http.services.token_exchange.loadbalancer.server.port=80"
+      # - "traefik.http.services.<service_name>.loadbalancer.server.port=<port>"      
+    ports:
+      - ${ECHO_STARTER_PORT}:80
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "${CONTAINER_LOG_SIZE}"
+        max-file: "${CONTAINER_LOG_COUNT}"
+ 
+    environment:
+      APPLICATION_ENVIRONMENT: "${APPLICATION_ENVIRONMENT}"
+      PORT: "80"
+      AUTH_STORE: "${ECHO_STARTER_AUTH_STORE}"
+      LOG_LEVEL: "${ECHO_STARTER_LOG_LEVEL}"
+      PRETTY_LOG: "${ECHO_STARTER_PRETTY_LOG}"
+      SECURE_COOKIE_HASH_KEY: "wVsibJSltJAgkniN9tlzy39ZDUzuMTSFwsQek6qTcuY="
+      SECURE_COOKIE_ENCRYPTION_KEY: "7fB3PkhfOKsbU/2vE2KQdLqu0jGZ+GLaEL5AQ7maUw4="
+      SESSION_ENGINE: "${ECHO_STARTER_SESSION_ENGINE}"
+      SESSION_MAX_AGE_SECONDS: "${ECHO_STARTER_SESSION_MAX_AGE_SECONDS}"
+      AUTH_COOKIE_EXPIRE_SECONDS: "${ECHO_STARTER_AUTH_COOKIE_EXPIRE_SECONDS}"
+      REDIS_URL: "${REDIS_DOMAIN}:${REDIS_PORT}"
+      REDIS_OPTIONS__ADDR: "${REDIS_DOMAIN}:${REDIS_PORT}"
+      REDIS_OPTIONS__USERNAME: "${REDIS_USERNAME}"
+      REDIS_OPTIONS__PASSWORD: "${REDIS_PASSWORD}"
+      REDIS_OPTIONS__NAMESPACE: "${REDIS_NAMESPACE}"
+      TOKEN_STORE_PROVIDER: "${TOKEN_STORE_PROVIDER}"
+      REDIS_USE_MINIREDIS: "${REDIS_USE_MINIREDIS}"
+    networks:
+      - proxy
+    entrypoint: ["/app/server"]
+
+networks:
+  proxy:
+    external: true
