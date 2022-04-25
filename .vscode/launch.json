@@ -31,13 +31,14 @@
                 "_SECURE_COOKIE_ENCRYPTION_KEY": "wVsibJSltJAgkniN9tlzy39ZDUzuMTSFwsQek6qTcuY=",
                 "SECURE_COOKIE_HASH_KEY": "R9KecnJ7lG2P9hd5NFap5NKye7p266wBBNAL/zlBV4Y=",
                 "SECURE_COOKIE_ENCRYPTION_KEY": "R9KecnJ7lG2P9hd5NFap5NKye7p266wBBNAL/zlBV4Y=",
-                "REDIS_USE_MINIREDIS": "true",
+                "REDIS_USE_MINIREDIS": "false",
                 "REDIS_OPTIONS__ADDR": "localhost:6379",
                 "REDIS_OPTIONS__USERNAME": "",
                 "REDIS_OPTIONS__PASSWORD": "eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81",
+                "REDIS_OPTIONS__NAMESPACE": "echotx",
                 "REDIS_URL": "localhost:6379",
                 "CLIENT_STORE_PROVIDER": "inmemory",
-	            "TOKEN_STORE_PROVIDER": "inmemory",
+	            "TOKEN_STORE_PROVIDER": "redis",
 
             },
             "args": [  ]

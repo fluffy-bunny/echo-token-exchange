@@ -1,7 +1,6 @@
 package unauthorized
 
 import (
-	"echo-starter/internal/templates"
 	"echo-starter/internal/wellknown"
 	"net/http"
 	"reflect"
@@ -41,7 +40,5 @@ func (s *service) GetMiddleware() []echo.MiddlewareFunc {
 	return []echo.MiddlewareFunc{}
 }
 func (s *service) Do(c echo.Context) error {
-	return templates.Render(c, s.ClaimsPrincipal, http.StatusOK, "views/auth/unauthorized/index", map[string]interface{}{
-		"claims": s.ClaimsPrincipal.GetClaims(),
-	})
+	return c.JSON(http.StatusUnauthorized, "unauthorized")
 }

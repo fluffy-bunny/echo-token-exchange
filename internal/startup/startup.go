@@ -46,6 +46,7 @@ import (
 	services_stores_jwttoken "echo-starter/internal/services/stores/jwttoken"
 	services_stores_keymaterial "echo-starter/internal/services/stores/keymaterial"
 	services_stores_tokenstore_inmemory "echo-starter/internal/services/stores/tokenstore/inmemory"
+	services_stores_tokenstore_rejson "echo-starter/internal/services/stores/tokenstore/rejson"
 
 	services_tokenhandlers "echo-starter/internal/services/tokenhandlers"
 	services_tokenhandlers_ClientCredentialsTokenHandler "echo-starter/internal/services/tokenhandlers/ClientCredentialsTokenHandler"
@@ -66,7 +67,6 @@ import (
 	middleware_oauth2client "echo-starter/internal/middleware/oauth2client"
 
 	middleware_claimsprincipal "echo-starter/internal/middleware/claimsprincipal"
-	middleware_session "echo-starter/internal/middleware/session"
 	middleware_stores "echo-starter/internal/middleware/stores"
 
 	contracts_background_tasks "echo-starter/internal/contracts/background/tasks"
@@ -311,6 +311,7 @@ func (s *Startup) addAppHandlers(builder *di.Builder) {
 	case "inmemory":
 		services_stores_tokenstore_inmemory.AddSingletonITokenStore(builder)
 	case "redis":
+		services_stores_tokenstore_rejson.AddSingletonITokenStore(builder)
 	default:
 		panic("token store provider not supported")
 	}
@@ -382,7 +383,6 @@ func (s *Startup) Configure(e *echo.Echo, root di.Container) error {
 	e.Use(middleware_stores.EnsureClearExpiredStorageItems(s.GetContainer()))
 	// DevelopmentMiddlewareUsingClaimsMap adds all the needed claims so that FinalAuthVerificationMiddlewareUsingClaimsMap succeeds
 	//e.Use(middleware_claimsprincipal.DevelopmentMiddlewareUsingClaimsMap(echostarter_auth.BuildGrpcEntrypointPermissionsClaimsMap(), true))
-	e.Use(middleware_session.EnsureAuthTokenRefresh(s.GetContainer()))
 	e.Use(middleware_oauth2client.AuthenticateOAuth2Client(s.GetContainer()))
 	e.Use(middleware_claimsprincipal.AuthenticatedSessionToClaimsPrincipalMiddleware(root))
 	e.Use(core_middleware_claimsprincipal.FinalAuthVerificationMiddlewareUsingClaimsMap(echostarter_auth.BuildGrpcEntrypointPermissionsClaimsMap(), true))
