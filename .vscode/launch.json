@@ -23,7 +23,7 @@
                 "AUTH_STORE": "cookie", // cookie|session
                 "PRETTY_LOG": "true",
                 "LOG_LEVEL": "info",
-                "PORT": "1323",
+                "PORT": "1523",
                 "SESSION_ENGINE": "cookie",// cookie|inmemory|redis
                 "SESSION_MAX_AGE_SECONDS":    "1800",
                 "AUTH_COOKIE_EXPIRE_SECONDS": "1800",
