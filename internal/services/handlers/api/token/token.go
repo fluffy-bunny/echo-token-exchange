@@ -309,13 +309,17 @@ func (s *service) GenerateAccessToken(ctx context.Context,
 		}
 		var expiration = now.Add(time.Second * time.Duration(client.RefreshTokenExpiration))
 		rtInfo := &models.RefreshTokenInfo{
-			ClientID:           client.ClientID,
-			Subject:            subject,
-			Scope:              scope,
-			GrantType:          validatedResult.GrantType,
-			Expiration:         expiration,
-			AbsoluteExpiration: absoluteExpiration,
-			Params:             validatedResult.Params,
+			ClientID:                     client.ClientID,
+			Subject:                      subject,
+			Scope:                        scope,
+			GrantType:                    validatedResult.GrantType,
+			Expiration:                   expiration,
+			AbsoluteExpiration:           absoluteExpiration,
+			Params:                       validatedResult.Params,
+			RefreshTokenGraceEnabled:     client.RefreshTokenGraceEnabled,
+			RefreshTokenGraceTTL:         client.RefreshTokenGraceTTL,
+			RefreshTokenGraceMaxAttempts: client.RefreshTokenGraceMaxAttempts,
+			RefreshTokenGraceAttempts:    0,
 		}
 
 		data := structs.Map(rtInfo)

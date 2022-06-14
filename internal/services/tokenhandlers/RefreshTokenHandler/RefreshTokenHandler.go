@@ -8,13 +8,15 @@ import (
 	"echo-starter/internal/models"
 	"echo-starter/internal/utils"
 	"echo-starter/internal/wellknown"
+	"encoding/json"
 	"net/http"
 	"reflect"
+	"time"
 
+	"github.com/fatih/structs"
 	core_utils "github.com/fluffy-bunny/grpcdotnetgo/pkg/utils"
 	di "github.com/fluffy-bunny/sarulabsdi"
 	"github.com/go-oauth2/oauth2/v4/errors"
-	"github.com/mitchellh/mapstructure"
 )
 
 type (
@@ -57,6 +59,7 @@ func (s *service) ValidationTokenRequest(r *http.Request) (result *contracts_tok
 	return validated, nil
 }
 func (s *service) ProcessTokenRequest(ctx context.Context, result *contracts_tokenhandlers.ValidatedTokenRequestResult) (models.IClaims, error) {
+	now := time.Now()
 	handle, _ := result.Params[models.TokenTypeRefreshToken]
 	rt, err := s.ReferenceTokenStore.GetToken(ctx, handle)
 	if err != nil {
@@ -74,10 +77,17 @@ func (s *service) ProcessTokenRequest(ctx context.Context, result *contracts_tok
 	// if no scope is passed then we use the scope from the last run
 	scope, ok := result.Params["scope"]
 	rtInfo := &models.RefreshTokenInfo{}
-	err = mapstructure.Decode(rt.Data, rtInfo)
+	rtData, _ := json.Marshal(rt.Data)
+	err = json.Unmarshal(rtData, &rtInfo)
 	if err != nil {
 		return nil, err
 	}
+	/*
+		err = mapstructure.Decode(rt.Data, rtInfo)
+		if err != nil {
+			return nil, err
+		}
+	*/
 	result.Params = rtInfo.Params
 	if ok {
 		// override the sone passed into the refresh_token request
@@ -111,10 +121,33 @@ func (s *service) ProcessTokenRequest(ctx context.Context, result *contracts_tok
 	if err != nil {
 		return nil, err
 	}
-	if client.RefreshTokenUsage == models.OneTimeOnly {
-		// revoke the old token
-		s.ReferenceTokenStore.RemoveToken(ctx, refreshHandle)
+	for {
+		if client.RefreshTokenUsage == models.OneTimeOnly && client.RefreshTokenGraceEnabled == false {
+			// revoke the old token
+			s.ReferenceTokenStore.RemoveToken(ctx, refreshHandle)
+			break
+		}
+		if client.RefreshTokenGraceEnabled == true {
+			rtInfo.RefreshTokenGraceAttempts += 1
+			if rtInfo.RefreshTokenGraceAttempts >= rtInfo.RefreshTokenGraceMaxAttempts {
+				s.ReferenceTokenStore.RemoveToken(ctx, refreshHandle)
+				break
+			}
+			expiration := rt.Metadata.IssedAt.Add(rtInfo.RefreshTokenGraceTTL)
+			if now.After(expiration) {
+				s.ReferenceTokenStore.RemoveToken(ctx, refreshHandle)
+				break
+			}
+
+			data := structs.Map(rtInfo)
+
+			rt.Data = data
+			s.ReferenceTokenStore.UpdateToken(ctx, refreshHandle, rt)
+			break
+		}
+		break
 	}
+
 	result.RefreshTokenHandle = handle
 	return claims, nil
 }

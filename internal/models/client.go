@@ -1,6 +1,8 @@
 package models
 
 import (
+	"time"
+
 	contracts_claimsprincipal "github.com/fluffy-bunny/grpcdotnetgo/pkg/contracts/claimsprincipal"
 	core_hashset "github.com/fluffy-bunny/grpcdotnetgo/pkg/gods/sets/hashset"
 )
@@ -51,6 +53,9 @@ type Client struct {
 	UpdateAccessTokenClaimsOnRefresh bool                              `json:"update_access_token_claims_on_refresh"`
 	RefreshTokenUsage                TokenUsage                        `json:"refresh_token_usage"`
 	RefreshTokenExpiration           TokenExpiration                   `json:"refresh_token_expiration"`
+	RefreshTokenGraceEnabled         bool                              `json:"refresh_token_grace_enabled"`
+	RefreshTokenGraceTTL             time.Duration                     `json:"refresh_token_grace_ttl"`
+	RefreshTokenGraceMaxAttempts     int                               `json:"refresh_token_grace_max_attempts"`
 	AccessTokenType                  AccessTokenType                   `json:"access_token_type"`
 	IncludeJwtId                     bool                              `json:"include_jwt_id"`
 	Claims                           []contracts_claimsprincipal.Claim `json:"claims"`
