@@ -380,6 +380,9 @@ func (s *Startup) Configure(e *echo.Echo, root di.Container) error {
 			return id.String()
 		},
 	}))
+	e.Use(middleware.CSRFWithConfig(middleware.CSRFConfig{
+		TokenLookup: "header:X-XSRF-TOKEN",
+	}))
 	e.Use(middleware_stores.EnsureClearExpiredStorageItems(s.GetContainer()))
 	// DevelopmentMiddlewareUsingClaimsMap adds all the needed claims so that FinalAuthVerificationMiddlewareUsingClaimsMap succeeds
 	//e.Use(middleware_claimsprincipal.DevelopmentMiddlewareUsingClaimsMap(echostarter_auth.BuildGrpcEntrypointPermissionsClaimsMap(), true))

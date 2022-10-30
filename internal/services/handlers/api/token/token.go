@@ -188,6 +188,8 @@ func (s *service) GetAccessToken(ctx context.Context,
 	error) {
 
 	switch validatedResult.GrantType {
+	case wellknown.OAuth2GrantType_TokenExchange:
+		return s.GenerateAccessToken(ctx, validatedResult, subject, claims)
 	case wellknown.OAuth2GrantType_ClientCredentials:
 		return s.GenerateAccessToken(ctx, validatedResult, subject, claims)
 	case wellknown.OAuth2GrantType_RefreshToken:
@@ -320,6 +322,7 @@ func (s *service) GenerateAccessToken(ctx context.Context,
 			RefreshTokenGraceTTL:         client.RefreshTokenGraceTTL,
 			RefreshTokenGraceMaxAttempts: client.RefreshTokenGraceMaxAttempts,
 			RefreshTokenGraceAttempts:    0,
+			Claims:                       claims.Claims(),
 		}
 
 		data := structs.Map(rtInfo)
