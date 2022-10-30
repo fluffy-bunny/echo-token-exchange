@@ -39,7 +39,11 @@
                 "REDIS_URL": "localhost:6379",
                 "CLIENT_STORE_PROVIDER": "inmemory",
 	            "TOKEN_STORE_PROVIDER": "inmemory",
-                "OAUTH2_SELF_JWKS_URL":"http://localhost:1523/.well-known/jwks"
+                "OAUTH2_SELF_JWKS_URL":"http://localhost:1523/.well-known/jwks",
+                "OAUTH2_JWKS_URL": "https://auth-dev.mapped.com/.well-known/jwks.json",
+                "OAUTH2_ISSUER": "https://auth-dev.mapped.com/",
+                "JWT_VALIDATOR_VALIDATE_SIGNATURE": "true",
+                "JWT_VALIDATOR_ACCEPTABLE_CLOCK_SKEW_MINUTES":"5000000"
 
             },
             "args": [  ]
