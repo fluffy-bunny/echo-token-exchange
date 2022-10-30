@@ -4,7 +4,12 @@ package TokenExchangeTokenHandler
 import (
 	"context"
 	contracts_claimsprovider "echo-starter/internal/contracts/claimsprovider"
+	contracts_jwtvalidator "echo-starter/internal/contracts/jwtvalidator"
 	contracts_tokenhandlers "echo-starter/internal/contracts/tokenhandlers"
+	"errors"
+
+	oauth2_errors "github.com/go-oauth2/oauth2/v4/errors"
+
 	"echo-starter/internal/models"
 	"echo-starter/internal/utils"
 	"net/http"
@@ -17,6 +22,7 @@ import (
 type (
 	service struct {
 		ClaimsProvider contracts_claimsprovider.IClaimsProvider `inject:""`
+		JWTValidator   contracts_jwtvalidator.IJWTValidator     `inject:""`
 	}
 	validated struct {
 		scopes             []string
@@ -31,7 +37,10 @@ type (
 )
 
 func assertImplementation() {
-	var _ contracts_tokenhandlers.IClientCredentialsTokenHandler = (*service)(nil)
+	var _ contracts_tokenhandlers.ITokenExchangeTokenHandler = (*service)(nil)
+}
+func init() {
+	assertImplementation()
 }
 
 var reflectType = reflect.TypeOf((*service)(nil))
@@ -44,6 +53,7 @@ func AddScopedITokenExchangeTokenHandler(builder *di.Builder) {
 func (s *service) ValidationTokenRequest(r *http.Request) (result *contracts_tokenhandlers.ValidatedTokenRequestResult, err error) {
 	validated := &contracts_tokenhandlers.ValidatedTokenRequestResult{
 		GrantType: r.FormValue("grant_type"),
+		Params:    make(map[string]string),
 	}
 	var safeAddParam = func(key string) {
 		val := utils.TrimLeftAndRight(r.FormValue(key))
@@ -60,11 +70,26 @@ func (s *service) ValidationTokenRequest(r *http.Request) (result *contracts_tok
 	safeAddParam("audience")
 	safeAddParam("resource")
 
+	if _, ok := validated.Params["subject_token"]; !ok {
+
+		return nil, errors.New("subject_token is required")
+	}
+
 	return validated, nil
 }
-func (s *service) ProcessTokenRequest(ctx context.Context, result *contracts_tokenhandlers.ValidatedTokenRequestResult) (models.IClaims, error) {
+func (s *service) ProcessTokenRequest(ctx context.Context,
+	result *contracts_tokenhandlers.ValidatedTokenRequestResult) (models.IClaims, error) {
 	claims := make(models.Claims)
-	//validated := data.(*validated)
 
+	token, err := s.JWTValidator.ValidateJWTRaw(ctx, result.Params["subject_token"])
+	if err != nil {
+		return nil, oauth2_errors.ErrInvalidRequest
+	}
+	claims["sub"] = token.Subject()
+	for k, v := range token.PrivateClaims() {
+		claims[k] = v
+	}
+	//validated := data.(*validated)
+	result.RefreshTokenHandle = "hi"
 	return &claims, nil
 }

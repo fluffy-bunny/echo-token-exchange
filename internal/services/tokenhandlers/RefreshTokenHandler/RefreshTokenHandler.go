@@ -16,7 +16,7 @@ import (
 	"github.com/fatih/structs"
 	core_utils "github.com/fluffy-bunny/grpcdotnetgo/pkg/utils"
 	di "github.com/fluffy-bunny/sarulabsdi"
-	"github.com/go-oauth2/oauth2/v4/errors"
+	oauth2_errors "github.com/go-oauth2/oauth2/v4/errors"
 )
 
 type (
@@ -63,16 +63,16 @@ func (s *service) ProcessTokenRequest(ctx context.Context, result *contracts_tok
 	handle, _ := result.Params[models.TokenTypeRefreshToken]
 	rt, err := s.ReferenceTokenStore.GetToken(ctx, handle)
 	if err != nil {
-		return nil, errors.ErrInvalidRequest
+		return nil, oauth2_errors.ErrInvalidRequest
 	}
 	if rt == nil {
-		return nil, errors.ErrInvalidRequest
+		return nil, oauth2_errors.ErrInvalidRequest
 	}
 	if rt.Metadata.Type != models.TokenTypeRefreshToken {
-		return nil, errors.ErrInvalidRequest
+		return nil, oauth2_errors.ErrInvalidRequest
 	}
 	if rt.Metadata.ClientID != result.ClientID {
-		return nil, errors.New("client_id mismatch")
+		return nil, oauth2_errors.New("client_id mismatch")
 	}
 	// if no scope is passed then we use the scope from the last run
 	scope, ok := result.Params["scope"]
@@ -115,7 +115,7 @@ func (s *service) ProcessTokenRequest(ctx context.Context, result *contracts_tok
 		claims, err = s.TokenExchangeTokenHandler.ProcessTokenRequest(ctx, newValidatedResult)
 
 	default:
-		return nil, errors.ErrUnsupportedGrantType
+		return nil, oauth2_errors.ErrUnsupportedGrantType
 	}
 	result.GrantType = rtInfo.GrantType
 	if err != nil {

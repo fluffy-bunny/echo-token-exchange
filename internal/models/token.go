@@ -30,6 +30,7 @@ type (
 		RefreshTokenGraceTTL         time.Duration     `json:"refreshTokenGraceTTL" mapstructure:"refresh_token_grace_ttl"`
 		RefreshTokenGraceMaxAttempts int               `json:"refreshTokenGraceMaxAttempts" mapstructure:"refresh_token_grace_max_attempts"`
 		RefreshTokenGraceAttempts    int               `json:"refreshTokenGraceAttempts" mapstructure:"refresh_token_grace_attempts"`
+		Claims                       Claims            `json:"claims" mapstructure:"claims"`
 	}
 )
 

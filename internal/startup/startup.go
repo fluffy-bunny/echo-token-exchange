@@ -61,6 +61,8 @@ import (
 	services_handlers_api_revoke "echo-starter/internal/services/handlers/api/revoke"
 	services_handlers_api_token "echo-starter/internal/services/handlers/api/token"
 
+	"github.com/fluffy-bunny/grpcdotnetgo/pkg/auth/oauth2"
+
 	core_contracts_session "github.com/fluffy-bunny/grpcdotnetgo/pkg/echo/contracts/session"
 	core_middleware_claimsprincipal "github.com/fluffy-bunny/grpcdotnetgo/pkg/echo/middleware/claimsprincipal"
 
@@ -71,6 +73,8 @@ import (
 
 	contracts_background_tasks "echo-starter/internal/contracts/background/tasks"
 	services_claimsprovider "echo-starter/internal/services/claimsprovider"
+	services_jwtvalidator "echo-starter/internal/services/jwtvalidator"
+
 	services_handlers_auth_unauthorized "echo-starter/internal/services/handlers/auth/unauthorized"
 	services_handlers_error "echo-starter/internal/services/handlers/error"
 	services_handlers_home "echo-starter/internal/services/handlers/home"
@@ -98,6 +102,7 @@ type Startup struct {
 	taskEngine        contracts_background_tasks.ITaskEngineFactory
 	container         di.Container
 	miniRedisInstance *miniredis.Miniredis
+	OAuth2Context     *oauth2.OAuth2Context
 }
 
 func assertImplementation() {
@@ -339,7 +344,6 @@ func (s *Startup) addAppHandlers(builder *di.Builder) {
 	services_handlers_api_token.AddScopedIHandler(builder)
 	services_handlers_api_revoke.AddScopedIHandler(builder)
 	services_handlers_api_introspect.AddScopedIHandler(builder)
-
 }
 
 func (s *Startup) ConfigureServices(builder *di.Builder) error {
@@ -369,7 +373,7 @@ func (s *Startup) ConfigureServices(builder *di.Builder) error {
 	s.addAppHandlers(builder)
 
 	s.addBackgroundTasksHandlers(builder)
-
+	services_jwtvalidator.AddSingletonIJWTValidator(builder)
 	services_claimsprovider.AddSingletonIClaimsProvider(builder)
 	return nil
 }

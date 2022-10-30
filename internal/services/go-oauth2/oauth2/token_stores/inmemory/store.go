@@ -12,7 +12,9 @@ import (
 func assertImplementation() {
 	var _ contracts_go_oauth2_oauth2.ITokenStore = (*store.TokenStore)(nil)
 }
-
+func init() {
+	assertImplementation()
+}
 func AddSingletonITokenStore(builder *di.Builder) {
 	reflectType := reflect.TypeOf((*store.TokenStore)(nil))
 	contracts_go_oauth2_oauth2.AddSingletonITokenStoreByFunc(builder, reflectType, func(ctn di.Container) (interface{}, error) {

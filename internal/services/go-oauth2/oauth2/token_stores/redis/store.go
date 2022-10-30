@@ -1,4 +1,4 @@
-package inmemory
+package redis
 
 import (
 	contracts_config "echo-starter/internal/contracts/config"

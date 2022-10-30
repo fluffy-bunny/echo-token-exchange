@@ -51,12 +51,16 @@ type (
 
 		SigningKeys string `json:"signingKeys" mapstructure:"SIGNING_KEYS" redact:"true"`
 
-		ClientStoreProvider string             `json:"clientStoreProvider" mapstructure:"CLIENT_STORE_PROVIDER"`
-		TokenStoreProvider  string             `json:"tokenStoreProvider" mapstructure:"TOKEN_STORE_PROVIDER"`
-		AllowedGrantTypes   []oauth2.GrantType `json:"allowedGrantTypes" mapstructure:"ALLOWED_GRANT_TYPES"`
-		TokenType           string             `json:"tokenType" mapstructure:"TOKEN_TYPE"`
-		RedisUseMiniRedis   bool               `json:"redisUseMiniRedis" mapstructure:"REDIS_USE_MINIREDIS"`
-		RedisOptions        RedisOptions       `json:"redisOptions" mapstructure:"REDIS_OPTIONS"`
+		ClientStoreProvider                    string             `json:"clientStoreProvider" mapstructure:"CLIENT_STORE_PROVIDER"`
+		TokenStoreProvider                     string             `json:"tokenStoreProvider" mapstructure:"TOKEN_STORE_PROVIDER"`
+		AllowedGrantTypes                      []oauth2.GrantType `json:"allowedGrantTypes" mapstructure:"ALLOWED_GRANT_TYPES"`
+		TokenType                              string             `json:"tokenType" mapstructure:"TOKEN_TYPE"`
+		RedisUseMiniRedis                      bool               `json:"redisUseMiniRedis" mapstructure:"REDIS_USE_MINIREDIS"`
+		RedisOptions                           RedisOptions       `json:"redisOptions" mapstructure:"REDIS_OPTIONS"`
+		OAuth2JWKSUrl                          string             `json:"oauth2JWKSUrl" mapstructure:"OAUTH2_JWKS_URL"`
+		OAuth2Issuer                           string             `json:"oauth2Issuer" mapstructure:"OAUTH2_ISSUER"`
+		JWTValidatorValidateSignature          bool               `json:"jwtValidatorValidateSignature" mapstructure:"JWT_VALIDATOR_VALIDATE_SIGNATURE"`
+		JWTValidatorAcceptableClockSkewMinutes int                `json:"jwtValidatorAcceptableClockSkewMinutes" mapstructure:"JWT_VALIDATOR_ACCEPTABLE_CLOCK_SKEW_MINUTES"`
 	}
 )
 
@@ -91,7 +95,11 @@ var (
 		"NAMESPACE": "a,b,c",
 		"USERNAME": "",
 		"PASSWORD": ""
-	} 
+	},
+	"OAUTH2_JWKS_URL": "",
+	"OAUTH2_ISSUER": "",
+	"JWT_VALIDATOR_VALIDATE_SIGNATURE": true,
+	"JWT_VALIDATOR_ACCEPTABLE_CLOCK_SKEW_MINUTES": 5
 
 }
 `)
