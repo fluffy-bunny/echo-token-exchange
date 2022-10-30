@@ -57,6 +57,7 @@ type (
 		TokenType                              string             `json:"tokenType" mapstructure:"TOKEN_TYPE"`
 		RedisUseMiniRedis                      bool               `json:"redisUseMiniRedis" mapstructure:"REDIS_USE_MINIREDIS"`
 		RedisOptions                           RedisOptions       `json:"redisOptions" mapstructure:"REDIS_OPTIONS"`
+		OAuth2SelfJWKSUrl                      string             `json:"oauth2SelfJWKSUrl" mapstructure:"OAUTH2_SELF_JWKS_URL"`
 		OAuth2JWKSUrl                          string             `json:"oauth2JWKSUrl" mapstructure:"OAUTH2_JWKS_URL"`
 		OAuth2Issuer                           string             `json:"oauth2Issuer" mapstructure:"OAUTH2_ISSUER"`
 		JWTValidatorValidateSignature          bool               `json:"jwtValidatorValidateSignature" mapstructure:"JWT_VALIDATOR_VALIDATE_SIGNATURE"`
@@ -96,6 +97,7 @@ var (
 		"USERNAME": "",
 		"PASSWORD": ""
 	},
+	"OAUTH2_SELF_JWKS_URL": "",
 	"OAUTH2_JWKS_URL": "",
 	"OAUTH2_ISSUER": "",
 	"JWT_VALIDATOR_VALIDATE_SIGNATURE": true,
