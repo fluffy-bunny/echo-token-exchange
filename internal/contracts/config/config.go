@@ -51,6 +51,12 @@ type (
 
 		SigningKeys string `json:"signingKeys" mapstructure:"SIGNING_KEYS" redact:"true"`
 
+		OAuth2SelfJWKSUrl                      string `json:"oauth2SelfJWKSUrl" mapstructure:"OAUTH2_SELF_JWKS_URL"`
+		OAuth2JWKSUrl                          string `json:"oauth2JWKSUrl" mapstructure:"OAUTH2_JWKS_URL"`
+		OAuth2Issuer                           string `json:"oauth2Issuer" mapstructure:"OAUTH2_ISSUER"`
+		JWTValidatorValidateSignature          bool   `json:"jwtValidatorValidateSignature" mapstructure:"JWT_VALIDATOR_VALIDATE_SIGNATURE"`
+		JWTValidatorAcceptableClockSkewMinutes int    `json:"jwtValidatorAcceptableClockSkewMinutes" mapstructure:"JWT_VALIDATOR_ACCEPTABLE_CLOCK_SKEW_MINUTES"`
+
 		ClientStoreProvider string             `json:"clientStoreProvider" mapstructure:"CLIENT_STORE_PROVIDER"`
 		TokenStoreProvider  string             `json:"tokenStoreProvider" mapstructure:"TOKEN_STORE_PROVIDER"`
 		AllowedGrantTypes   []oauth2.GrantType `json:"allowedGrantTypes" mapstructure:"ALLOWED_GRANT_TYPES"`
@@ -91,8 +97,12 @@ var (
 		"NAMESPACE": "a,b,c",
 		"USERNAME": "",
 		"PASSWORD": ""
-	} 
-
+	},
+	"OAUTH2_SELF_JWKS_URL": "",
+	"OAUTH2_JWKS_URL": "",
+	"OAUTH2_ISSUER": "",
+	"JWT_VALIDATOR_VALIDATE_SIGNATURE": true,
+	"JWT_VALIDATOR_ACCEPTABLE_CLOCK_SKEW_MINUTES": 5
 }
 `)
 )
