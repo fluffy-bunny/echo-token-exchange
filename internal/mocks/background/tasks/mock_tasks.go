@@ -37,10 +37,10 @@ func (m *MockISingletonTask) EXPECT() *MockISingletonTaskMockRecorder {
 }
 
 // EnqueTask mocks base method.
-func (m *MockISingletonTask) EnqueTask(arg0 interface{}, arg1 ...asynq.Option) (*asynq.TaskInfo, error) {
+func (m *MockISingletonTask) EnqueTask(arg0 context.Context, arg1 interface{}, arg2 ...asynq.Option) (*asynq.TaskInfo, error) {
 	m.ctrl.T.Helper()
-	varargs := []interface{}{arg0}
-	for _, a := range arg1 {
+	varargs := []interface{}{arg0, arg1}
+	for _, a := range arg2 {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "EnqueTask", varargs...)
@@ -50,9 +50,9 @@ func (m *MockISingletonTask) EnqueTask(arg0 interface{}, arg1 ...asynq.Option) (
 }
 
 // EnqueTask indicates an expected call of EnqueTask.
-func (mr *MockISingletonTaskMockRecorder) EnqueTask(arg0 interface{}, arg1 ...interface{}) *gomock.Call {
+func (mr *MockISingletonTaskMockRecorder) EnqueTask(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{arg0}, arg1...)
+	varargs := append([]interface{}{arg0, arg1}, arg2...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EnqueTask", reflect.TypeOf((*MockISingletonTask)(nil).EnqueTask), varargs...)
 }
 
@@ -108,10 +108,10 @@ func (m *MockITaskClient) EXPECT() *MockITaskClientMockRecorder {
 }
 
 // EnqueTask mocks base method.
-func (m *MockITaskClient) EnqueTask(arg0 *asynq.Task, arg1 ...asynq.Option) (*asynq.TaskInfo, error) {
+func (m *MockITaskClient) EnqueTask(arg0 context.Context, arg1 *asynq.Task, arg2 ...asynq.Option) (*asynq.TaskInfo, error) {
 	m.ctrl.T.Helper()
-	varargs := []interface{}{arg0}
-	for _, a := range arg1 {
+	varargs := []interface{}{arg0, arg1}
+	for _, a := range arg2 {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "EnqueTask", varargs...)
@@ -121,9 +121,9 @@ func (m *MockITaskClient) EnqueTask(arg0 *asynq.Task, arg1 ...asynq.Option) (*as
 }
 
 // EnqueTask indicates an expected call of EnqueTask.
-func (mr *MockITaskClientMockRecorder) EnqueTask(arg0 interface{}, arg1 ...interface{}) *gomock.Call {
+func (mr *MockITaskClientMockRecorder) EnqueTask(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{arg0}, arg1...)
+	varargs := append([]interface{}{arg0, arg1}, arg2...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EnqueTask", reflect.TypeOf((*MockITaskClient)(nil).EnqueTask), varargs...)
 }
 
