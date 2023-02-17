@@ -3,18 +3,37 @@
 {{template "header" .}}
 {{template "navbar" .}}
 <body>
+<script src="https://cdn.rawgit.com/showdownjs/showdown/2.0.3/dist/showdown.min.js"></script>
+<script>
+        let fetchRes = fetch("/static/markdown/home.md");
+        var converter = new showdown.Converter();
+        fetchRes.then(res =>
+            res.text()).then(md => {
+                document.getElementById('content').innerHTML = converter.makeHtml(md);
+                console.log(md)
+            })
+
+/*     
+  
+        // fetchRes is the promise to resolve
+        // it by using.then() method
+        fetchRes.then(res =>
+            res.text()).then(d => {
+                document.getElementById('content').innerHTML = marked.parse(d);
+                console.log(d)
+            })
+
+ */
+</script>
+
+
 <!-- Page content-->
 <div class="container">
-    <div class="text-center mt-5">
-        <h1>A Bootstrap 5 Starter Template</h1>
-        <p class="lead">A complete project boilerplate built with Bootstrap</p>
-        <p>Bootstrap v5.1.3</p>
-        <p><a class="nav-link active" aria-current="page" href="/.well-known/openid-configuration">openid-configuration</a></p>
-        <p><a class="nav-link active" aria-current="page" href="/.well-known/jwks">JWKS</a></p>
-    </div>
+    <div id="content"></div>
 </div>
 </body>
-    
+ 
 {{template "footer" .}}
 {{template "html_end" .}}
 {{end}}
+
