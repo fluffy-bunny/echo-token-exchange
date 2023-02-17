@@ -8,8 +8,10 @@ import (
 
 	contracts_config "echo-starter/internal/contracts/config"
 
+	"github.com/rs/zerolog/log"
+
 	contracts_core_claimsprincipal "github.com/fluffy-bunny/grpcdotnetgo/pkg/contracts/claimsprincipal"
-	contracts_logger "github.com/fluffy-bunny/grpcdotnetgo/pkg/contracts/logger"
+
 	contracts_timeutils "github.com/fluffy-bunny/grpcdotnetgo/pkg/contracts/timeutils"
 	contracts_container "github.com/fluffy-bunny/grpcdotnetgo/pkg/echo/contracts/container"
 	contracts_contextaccessor "github.com/fluffy-bunny/grpcdotnetgo/pkg/echo/contracts/contextaccessor"
@@ -26,7 +28,6 @@ type (
 		ContainerAccessor   contracts_container.ContainerAccessor           `inject:""`
 		TimeNow             contracts_timeutils.TimeNow                     `inject:""`
 		TimeParse           contracts_timeutils.TimeParse                   `inject:""`
-		Logger              contracts_logger.ILogger                        `inject:""`
 		ClaimsPrincipal     contracts_core_claimsprincipal.IClaimsPrincipal `inject:""`
 		SecureCookie        contracts_cookies.ISecureCookie                 `inject:""`
 		EchoContextAccessor contracts_contextaccessor.IEchoContextAccessor  `inject:""`
@@ -60,6 +61,8 @@ func (s *service) GetMiddleware() []echo.MiddlewareFunc {
 	return []echo.MiddlewareFunc{}
 }
 func (s *service) Do(c echo.Context) error {
-	s.Logger.Info().Str("timeNow", s.TimeNow().String()).Send()
+	ctx := c.Request().Context()
+	log := log.Ctx(ctx)
+	log.Info().Str("timeNow", s.TimeNow().String()).Send()
 	return templates.Render(c, s.ClaimsPrincipal, http.StatusOK, "views/home/index", map[string]interface{}{})
 }

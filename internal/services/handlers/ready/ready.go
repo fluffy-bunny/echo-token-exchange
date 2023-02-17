@@ -13,14 +13,12 @@ import (
 	contracts_handler "github.com/fluffy-bunny/grpcdotnetgo/pkg/echo/contracts/handler"
 	"github.com/rs/zerolog/log"
 
-	contracts_logger "github.com/fluffy-bunny/grpcdotnetgo/pkg/contracts/logger"
 	di "github.com/fluffy-bunny/sarulabsdi"
 	"github.com/labstack/echo/v4"
 )
 
 type (
 	service struct {
-		Logger contracts_logger.ILogger `inject:""`
 		Probes []contracts_probe.IProbe `inject:""`
 		runner workers.Runner
 	}
@@ -52,11 +50,13 @@ func (s *service) GetMiddleware() []echo.MiddlewareFunc {
 }
 
 func (s *service) Do(c echo.Context) error {
+	ctx := c.Request().Context()
+	log := log.Ctx(ctx)
 	for _, probe := range s.Probes {
-		s.Logger.Debug().Str("probe", probe.GetName()).Msg("issuing probe")
+		log.Debug().Str("probe", probe.GetName()).Msg("issuing probe")
 		s.runner.Send(probe)
 	}
-	s.Logger.Debug().Msg("Waiting for probes to complete")
+	log.Debug().Msg("Waiting for probes to complete")
 	err := s.runner.Wait()
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())

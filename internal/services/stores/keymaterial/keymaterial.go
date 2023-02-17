@@ -11,14 +11,13 @@ import (
 	"time"
 
 	linq "github.com/ahmetb/go-linq"
-	contracts_logger "github.com/fluffy-bunny/grpcdotnetgo/pkg/contracts/logger"
+
 	di "github.com/fluffy-bunny/sarulabsdi"
 )
 
 type (
 	service struct {
 		Config        *contracts_config.Config `inject:""`
-		Logger        contracts_logger.ILogger `inject:""`
 		lock          *sync.RWMutex
 		signingKeys   []*models.SigningKey
 		nextFetchTime time.Time

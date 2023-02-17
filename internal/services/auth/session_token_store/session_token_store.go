@@ -7,7 +7,6 @@ import (
 	"errors"
 	"reflect"
 
-	contracts_logger "github.com/fluffy-bunny/grpcdotnetgo/pkg/contracts/logger"
 	contracts_contextaccessor "github.com/fluffy-bunny/grpcdotnetgo/pkg/echo/contracts/contextaccessor"
 	contracts_cookies "github.com/fluffy-bunny/grpcdotnetgo/pkg/echo/contracts/cookies"
 	core_utils "github.com/fluffy-bunny/grpcdotnetgo/pkg/utils"
@@ -17,7 +16,6 @@ import (
 
 type (
 	service struct {
-		Logger              contracts_logger.ILogger                       `inject:""`
 		EchoContextAccessor contracts_contextaccessor.IEchoContextAccessor `inject:""`
 		SecureCookie        contracts_cookies.ISecureCookie                `inject:""`
 		cachedToken         *oauth2.Token

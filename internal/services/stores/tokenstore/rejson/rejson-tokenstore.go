@@ -14,7 +14,8 @@ import (
 	"time"
 
 	"github.com/fluffy-bunny/go-redis-search/ftsearch"
-	contracts_logger "github.com/fluffy-bunny/grpcdotnetgo/pkg/contracts/logger"
+	"github.com/rs/zerolog/log"
+
 	core_utils "github.com/fluffy-bunny/grpcdotnetgo/pkg/utils"
 	"github.com/fluffy-bunny/rejonson/v8"
 	di "github.com/fluffy-bunny/sarulabsdi"
@@ -30,7 +31,6 @@ var (
 type (
 	service struct {
 		Config         *contracts_config.Config `inject:"config"`
-		Logger         contracts_logger.ILogger `inject:"logger"`
 		lock           *sync.RWMutex
 		opts           *redis.Options
 		cli            *redis.Client
@@ -106,11 +106,12 @@ func (s *service) checkError(result redis.Cmder) (bool, error) {
 	return false, nil
 }
 func (s *service) StoreToken(ctx context.Context, handle string, info *models.TokenInfo) (h string, err error) {
+	log := log.Ctx(ctx)
 	//=================== PANIC RECOVERY ======================
 	defer func() {
 		if e := recover(); e != nil {
 			err = fmt.Errorf("%v", e)
-			s.Logger.Error().Err(err).Send()
+			log.Error().Err(err).Send()
 		}
 	}()
 	//=================== PANIC RECOVERY ======================
@@ -164,11 +165,12 @@ func (s *service) parseToken(result *redis.StringCmd) (*models.TokenInfo, error)
 }
 
 func (s *service) GetToken(ctx context.Context, handle string) (ti *models.TokenInfo, err error) {
+	log := log.Ctx(ctx)
 	//=================== PANIC RECOVERY ======================
 	defer func() {
 		if e := recover(); e != nil {
 			err = fmt.Errorf("%v", e)
-			s.Logger.Error().Err(err).Send()
+			log.Error().Err(err).Send()
 		}
 	}()
 	//=================== PANIC RECOVERY ======================
@@ -192,11 +194,13 @@ func (s *service) GetToken(ctx context.Context, handle string) (ti *models.Token
 // UpdateToken is like StoreToken except it only lets you do a StoreToken if the token already exists.
 // no deep update logic here.
 func (s *service) UpdateToken(ctx context.Context, handle string, info *models.TokenInfo) (err error) {
+	log := log.Ctx(ctx)
+
 	//=================== PANIC RECOVERY ======================
 	defer func() {
 		if e := recover(); e != nil {
 			err = fmt.Errorf("%v", e)
-			s.Logger.Error().Err(err).Send()
+			log.Error().Err(err).Send()
 		}
 	}()
 	//=================== PANIC RECOVERY ======================
@@ -216,11 +220,12 @@ func (s *service) UpdateToken(ctx context.Context, handle string, info *models.T
 
 }
 func (s *service) RemoveToken(ctx context.Context, handle string) (err error) {
+	log := log.Ctx(ctx)
 	//=================== PANIC RECOVERY ======================
 	defer func() {
 		if e := recover(); e != nil {
 			err = fmt.Errorf("%v", e)
-			s.Logger.Error().Err(err).Send()
+			log.Error().Err(err).Send()
 		}
 	}()
 	//=================== PANIC RECOVERY ======================
@@ -260,11 +265,12 @@ func (s *service) RemoveToken(ctx context.Context, handle string) (err error) {
 }
 
 func (s *service) RemoveTokenByClientID(ctx context.Context, clientID string) (err error) {
+	log := log.Ctx(ctx)
 	//=================== PANIC RECOVERY ======================
 	defer func() {
 		if e := recover(); e != nil {
 			err = fmt.Errorf("%v", e)
-			s.Logger.Error().Err(err).Send()
+			log.Error().Err(err).Send()
 		}
 	}()
 	//=================== PANIC RECOVERY ======================
@@ -305,11 +311,12 @@ func (s *service) RemoveTokenByClientID(ctx context.Context, clientID string) (e
 	return nil
 }
 func (s *service) RemoveTokenBySubject(ctx context.Context, subject string) (err error) {
+	log := log.Ctx(ctx)
 	//=================== PANIC RECOVERY ======================
 	defer func() {
 		if e := recover(); e != nil {
 			err = fmt.Errorf("%v", e)
-			s.Logger.Error().Err(err).Send()
+			log.Error().Err(err).Send()
 		}
 	}()
 	//=================== PANIC RECOVERY ======================
@@ -351,11 +358,12 @@ func (s *service) RemoveTokenBySubject(ctx context.Context, subject string) (err
 }
 
 func (s *service) RemoveTokenByClientIdAndSubject(ctx context.Context, clientID string, subject string) (err error) {
+	log := log.Ctx(ctx)
 	//=================== PANIC RECOVERY ======================
 	defer func() {
 		if e := recover(); e != nil {
 			err = fmt.Errorf("%v", e)
-			s.Logger.Error().Err(err).Send()
+			log.Error().Err(err).Send()
 		}
 	}()
 	//=================== PANIC RECOVERY ======================

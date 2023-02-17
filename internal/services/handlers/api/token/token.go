@@ -21,7 +21,7 @@ import (
 	"time"
 
 	"github.com/fatih/structs"
-	contracts_logger "github.com/fluffy-bunny/grpcdotnetgo/pkg/contracts/logger"
+
 	contracts_timeutils "github.com/fluffy-bunny/grpcdotnetgo/pkg/contracts/timeutils"
 	contracts_handler "github.com/fluffy-bunny/grpcdotnetgo/pkg/echo/contracts/handler"
 	core_hashset "github.com/fluffy-bunny/grpcdotnetgo/pkg/gods/sets/hashset"
@@ -39,7 +39,6 @@ type (
 	service struct {
 		Now                  contracts_timeutils.TimeNow                   `inject:""`
 		Config               *contracts_config.Config                      `inject:""`
-		Logger               contracts_logger.ILogger                      `inject:""`
 		APIResources         contracts_stores_apiresources.IAPIResources   `inject:""`
 		KeyMaterial          contracts_stores_keymaterial.IKeyMaterial     `inject:""`
 		JwtTokenStore        contracts_stores_tokenstore.IJwtTokenStore    `inject:""`

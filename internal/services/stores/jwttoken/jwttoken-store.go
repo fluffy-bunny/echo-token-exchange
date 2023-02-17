@@ -10,7 +10,6 @@ import (
 	"reflect"
 	"strings"
 
-	contracts_logger "github.com/fluffy-bunny/grpcdotnetgo/pkg/contracts/logger"
 	di "github.com/fluffy-bunny/sarulabsdi"
 	"github.com/golang-jwt/jwt"
 )
@@ -18,7 +17,6 @@ import (
 type (
 	service struct {
 		Config      *contracts_config.Config                  `inject:""`
-		Logger      contracts_logger.ILogger                  `inject:""`
 		KeyMaterial contracts_stores_keymaterial.IKeyMaterial `inject:""`
 	}
 )

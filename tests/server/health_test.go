@@ -69,6 +69,6 @@ func TestHealthCheck(t *testing.T) {
 		fmt.Println("data:", string(data))
 
 		r.Stop()
-		future.Get()
+		future.Join()
 	})
 }

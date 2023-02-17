@@ -5,13 +5,12 @@ import (
 
 	contracts_probe "echo-starter/internal/contracts/probe"
 
-	contracts_logger "github.com/fluffy-bunny/grpcdotnetgo/pkg/contracts/logger"
 	di "github.com/fluffy-bunny/sarulabsdi"
+	"github.com/rs/zerolog/log"
 )
 
 type (
 	service struct {
-		Logger contracts_logger.ILogger `inject:""`
 	}
 )
 
@@ -29,7 +28,7 @@ func (s *service) GetName() string {
 	return "oidc"
 }
 func (s *service) Probe() error {
-	s.Logger.Debug().Str("probe", "oidc").Send()
+	log.Debug().Str("probe", "oidc").Send()
 
 	return nil
 }

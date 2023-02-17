@@ -1,20 +1,21 @@
 package taskegine
 
 import (
+	"context"
 	"reflect"
 
 	contracts_background_tasks "echo-starter/internal/contracts/background/tasks"
 
 	contracts_config "echo-starter/internal/contracts/config"
 
-	contracts_logger "github.com/fluffy-bunny/grpcdotnetgo/pkg/contracts/logger"
+	"github.com/rs/zerolog/log"
+
 	di "github.com/fluffy-bunny/sarulabsdi"
 	"github.com/hibiken/asynq"
 )
 
 type (
 	service struct {
-		Logger contracts_logger.ILogger `inject:""`
 		Config *contracts_config.Config `inject:""`
 		client *asynq.Client
 	}
@@ -42,10 +43,12 @@ func (s *service) Ctor() {
 
 }
 
-func (s *service) EnqueTask(task *asynq.Task, opts ...asynq.Option) (*asynq.TaskInfo, error) {
+func (s *service) EnqueTask(ctx context.Context, task *asynq.Task, opts ...asynq.Option) (*asynq.TaskInfo, error) {
+
+	log := log.Ctx(ctx)
 	info, err := s.client.Enqueue(task, opts...)
 	if err != nil {
-		s.Logger.Error().Err(err).Msg("EnqueTask")
+		log.Error().Err(err).Msg("EnqueTask")
 	}
 	return info, err
 }

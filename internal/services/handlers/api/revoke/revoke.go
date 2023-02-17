@@ -77,7 +77,7 @@ func (s *service) post(c echo.Context) error {
 			Subject: u.Token,
 		}
 		queue := asynq.Queue(contracts_background_tasks.TaskQueueTokenExchangeCritical)
-		_, err := s.RemoveTokensSingletonTask.EnqueTaskTypeRemoveTokenBySubject(task, queue)
+		_, err := s.RemoveTokensSingletonTask.EnqueTaskTypeRemoveTokenBySubject(ctx, task, queue)
 		if err != nil {
 			return err
 		}
@@ -91,7 +91,7 @@ func (s *service) post(c echo.Context) error {
 			ClientID: u.Token,
 		}
 		queue := asynq.Queue(contracts_background_tasks.TaskQueueTokenExchangeCritical)
-		_, err := s.RemoveTokensSingletonTask.EnqueTaskTokenRemoveByClientID(task, queue)
+		_, err := s.RemoveTokensSingletonTask.EnqueTaskTokenRemoveByClientID(ctx, task, queue)
 		if err != nil {
 			return err
 		}
@@ -117,7 +117,7 @@ func (s *service) post(c echo.Context) error {
 				Subject: items[1],
 			},
 		}
-		_, err := s.RemoveTokensSingletonTask.EnqueTaskTokenRemoveByClientIDAndSubject(task, queue)
+		_, err := s.RemoveTokensSingletonTask.EnqueTaskTokenRemoveByClientIDAndSubject(ctx, task, queue)
 		if err != nil {
 			return err
 		}

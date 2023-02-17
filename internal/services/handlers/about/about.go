@@ -12,7 +12,8 @@ import (
 
 	golinq "github.com/ahmetb/go-linq/v3"
 	contracts_core_claimsprincipal "github.com/fluffy-bunny/grpcdotnetgo/pkg/contracts/claimsprincipal"
-	contracts_logger "github.com/fluffy-bunny/grpcdotnetgo/pkg/contracts/logger"
+	"github.com/rs/zerolog/log"
+
 	contracts_container "github.com/fluffy-bunny/grpcdotnetgo/pkg/echo/contracts/container"
 	contracts_handler "github.com/fluffy-bunny/grpcdotnetgo/pkg/echo/contracts/handler"
 	di "github.com/fluffy-bunny/sarulabsdi"
@@ -21,7 +22,6 @@ import (
 
 type (
 	service struct {
-		Logger            contracts_logger.ILogger                        `inject:""`
 		ClaimsPrincipal   contracts_core_claimsprincipal.IClaimsPrincipal `inject:""`
 		ContainerAccessor contracts_container.ContainerAccessor           `inject:""`
 		HandlerFactory    contracts_handler.IHandlerFactory               `inject:""`
@@ -53,8 +53,10 @@ func (s *service) GetMiddleware() []echo.MiddlewareFunc {
 	return []echo.MiddlewareFunc{}
 }
 func (s *service) Do(c echo.Context) error {
+	ctx := c.Request().Context()
+	log := log.Ctx(ctx)
 	handlerDefinitions := contracts_handler.GetIHandlerDefinitions(s.ContainerAccessor())
-	s.Logger.Info().Msg("about")
+	log.Info().Msg("about")
 	type row struct {
 		Verbs string
 		Path  string

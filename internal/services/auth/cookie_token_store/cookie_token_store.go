@@ -11,17 +11,16 @@ import (
 
 	contracts_config "echo-starter/internal/contracts/config"
 
-	contracts_logger "github.com/fluffy-bunny/grpcdotnetgo/pkg/contracts/logger"
 	contracts_contextaccessor "github.com/fluffy-bunny/grpcdotnetgo/pkg/echo/contracts/contextaccessor"
 	contracts_cookies "github.com/fluffy-bunny/grpcdotnetgo/pkg/echo/contracts/cookies"
 	di "github.com/fluffy-bunny/sarulabsdi"
+	"github.com/rs/zerolog/log"
 	"golang.org/x/oauth2"
 )
 
 type (
 	service struct {
 		Config              *contracts_config.Config                       `inject:""`
-		Logger              contracts_logger.ILogger                       `inject:""`
 		EchoContextAccessor contracts_contextaccessor.IEchoContextAccessor `inject:""`
 		SecureCookie        contracts_cookies.ISecureCookie                `inject:""`
 		cachedToken         *oauth2.Token
@@ -76,6 +75,9 @@ func (s *service) GetToken() (*oauth2.Token, error) {
 	return s.cachedToken, nil
 }
 func (s *service) GetTokenByIdempotencyKey(idempotencyKey string) (*oauth2.Token, error) {
+	c := s.EchoContextAccessor.GetContext()
+	ctx := c.Request().Context()
+	log := log.Ctx(ctx)
 	if s.cachedToken == nil {
 		authCookieName, err := s._getAuthCookieName()
 		if err != nil {
@@ -91,7 +93,7 @@ func (s *service) GetTokenByIdempotencyKey(idempotencyKey string) (*oauth2.Token
 			return nil, err
 		}
 		if container.ID != idempotencyKey {
-			s.Logger.Error().Str("request_binding_key", idempotencyKey).
+			log.Error().Str("request_binding_key", idempotencyKey).
 				Str("stored_binding_key", container.ID).Msg("idempotencyKey does not match cookieId")
 			return nil, errors.New("binding key requsted doesn't match the one stored")
 		}

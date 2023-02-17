@@ -9,7 +9,8 @@ import (
 	contracts_config "echo-starter/internal/contracts/config"
 
 	grpcdotnetgoasync "github.com/fluffy-bunny/grpcdotnetgo/pkg/async"
-	contracts_logger "github.com/fluffy-bunny/grpcdotnetgo/pkg/contracts/logger"
+	"github.com/rs/zerolog/log"
+
 	core_hashset "github.com/fluffy-bunny/grpcdotnetgo/pkg/gods/sets/hashset"
 	di "github.com/fluffy-bunny/sarulabsdi"
 	"github.com/hibiken/asynq"
@@ -21,10 +22,9 @@ type (
 		config contracts_background_tasks.TaskEngineConfig
 		mux    *asynq.ServeMux
 		srv    *asynq.Server
-		future async.Future
+		future async.Future[interface{}]
 	}
 	service struct {
-		Logger              contracts_logger.ILogger                    `inject:""`
 		Config              *contracts_config.Config                    `inject:""`
 		Handlers            []contracts_background_tasks.ISingletonTask `inject:""`
 		taskEngineConfigs   []contracts_background_tasks.TaskEngineConfig
@@ -95,7 +95,7 @@ func (s *service) Start() error {
 		}
 	}
 	for _, container := range s.serverMuxContainers {
-		container.future = grpcdotnetgoasync.ExecuteWithPromiseAsync(func(promise async.Promise) {
+		container.future = grpcdotnetgoasync.ExecuteWithPromiseAsync(func(promise async.Promise[interface{}]) {
 			var err error
 			defer func() {
 				promise.Success(&grpcdotnetgoasync.AsyncResponse{
@@ -105,7 +105,7 @@ func (s *service) Start() error {
 			}()
 			err = container.srv.Run(container.mux)
 			if err != nil {
-				s.Logger.Fatal().Err(err).Msg("Failed to start asynq server")
+				log.Fatal().Err(err).Msg("Failed to start asynq server")
 			}
 		})
 	}
@@ -120,9 +120,9 @@ func (s *service) Stop() error {
 
 	// wait for all to return the promise
 	for _, container := range s.serverMuxContainers {
-		promise, _ := container.future.Get()
+		promise, _ := container.future.Join()
 		response := promise.(grpcdotnetgoasync.AsyncResponse)
-		s.Logger.Info().Msg(response.Message)
+		log.Info().Msg(response.Message)
 	}
 	return nil
 }

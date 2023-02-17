@@ -8,13 +8,11 @@ import (
 
 	core_hashset "github.com/fluffy-bunny/grpcdotnetgo/pkg/gods/sets/hashset"
 
-	contracts_logger "github.com/fluffy-bunny/grpcdotnetgo/pkg/contracts/logger"
 	di "github.com/fluffy-bunny/sarulabsdi"
 )
 
 type (
 	service struct {
-		Logger          contracts_logger.ILogger `inject:""`
 		apiResources    []models.APIResource
 		apiResourcesMap map[string]models.APIResource
 		scopeMap        map[string]string

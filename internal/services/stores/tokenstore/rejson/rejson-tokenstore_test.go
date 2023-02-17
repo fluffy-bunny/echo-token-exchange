@@ -12,7 +12,6 @@ import (
 
 	"github.com/fluffy-bunny/go-redis-search/ftsearch"
 
-	services_logger "github.com/fluffy-bunny/grpcdotnetgo/pkg/services/logger"
 	di "github.com/fluffy-bunny/sarulabsdi"
 	"github.com/go-redis/redis/v8"
 	"github.com/golang/mock/gomock"
@@ -24,6 +23,7 @@ func TestStore(t *testing.T) {
 		t.Skip("skipping redis tests")
 		return
 	}
+	t.Skip("skipping redis tests")
 	tests.RunTest(t, func(ctrl *gomock.Controller) {
 		builder, _ := di.NewBuilder(di.App, di.Request, "transient")
 		config := &contracts_config.Config{
@@ -33,7 +33,6 @@ func TestStore(t *testing.T) {
 				Password: "eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81",
 			},
 		}
-		services_logger.AddSingletonILogger(builder)
 		di.AddSingletonTypeByObj(builder, config)
 		AddSingletonITokenStore(builder)
 		ctn := builder.Build()

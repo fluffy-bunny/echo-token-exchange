@@ -34,8 +34,8 @@ func tearDown() {
 	// your code here
 }
 
-func ExecuteWithPromiseAsync(runtime *runtime.Runtime) async.Future {
-	future := grpcdotnetgoasync.ExecuteWithPromiseAsync(func(promise async.Promise) {
+func ExecuteWithPromiseAsync(runtime *runtime.Runtime) async.Future[interface{}] {
+	future := grpcdotnetgoasync.ExecuteWithPromiseAsync(func(promise async.Promise[interface{}]) {
 		var err error
 		defer func() {
 			promise.Success(&grpcdotnetgoasync.AsyncResponse{

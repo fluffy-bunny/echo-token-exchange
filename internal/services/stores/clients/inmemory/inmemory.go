@@ -7,13 +7,11 @@ import (
 	contracts_clients "echo-starter/internal/contracts/stores/clients"
 	"echo-starter/internal/models"
 
-	contracts_logger "github.com/fluffy-bunny/grpcdotnetgo/pkg/contracts/logger"
 	di "github.com/fluffy-bunny/sarulabsdi"
 )
 
 type (
 	service struct {
-		Logger     contracts_logger.ILogger `inject:""`
 		clients    []models.Client
 		clientsMap map[string]models.Client
 	}

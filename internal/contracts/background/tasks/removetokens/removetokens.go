@@ -4,6 +4,7 @@ package removetokens
 
 //go:generate mockgen -package=$GOPACKAGE -destination=../../../../mocks/background/tasks/$GOPACKAGE/mock_$GOFILE   echo-starter/internal/contracts/background/tasks/$GOPACKAGE IRemoveTokensSingletonTask
 import (
+	"context"
 	contracts_background_tasks "echo-starter/internal/contracts/background/tasks"
 
 	"github.com/hibiken/asynq"
@@ -28,8 +29,8 @@ type (
 	}
 	IRemoveTokensSingletonTask interface {
 		contracts_background_tasks.ISingletonTask
-		EnqueTaskTokenRemoveByClientID(task *TokenRemoveByClientID, opts ...asynq.Option) (*asynq.TaskInfo, error)
-		EnqueTaskTypeRemoveTokenBySubject(task *TokenRemoveBySubject, opts ...asynq.Option) (*asynq.TaskInfo, error)
-		EnqueTaskTokenRemoveByClientIDAndSubject(task *TokenRemoveByClientIDAndSubject, opts ...asynq.Option) (*asynq.TaskInfo, error)
+		EnqueTaskTokenRemoveByClientID(ctx context.Context, task *TokenRemoveByClientID, opts ...asynq.Option) (*asynq.TaskInfo, error)
+		EnqueTaskTypeRemoveTokenBySubject(ctx context.Context, task *TokenRemoveBySubject, opts ...asynq.Option) (*asynq.TaskInfo, error)
+		EnqueTaskTokenRemoveByClientIDAndSubject(ctx context.Context, task *TokenRemoveByClientIDAndSubject, opts ...asynq.Option) (*asynq.TaskInfo, error)
 	}
 )

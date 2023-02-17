@@ -5,14 +5,12 @@ import (
 
 	contracts_clients "echo-starter/internal/contracts/stores/clients"
 
-	contracts_logger "github.com/fluffy-bunny/grpcdotnetgo/pkg/contracts/logger"
 	di "github.com/fluffy-bunny/sarulabsdi"
 )
 
 type (
 	service struct {
 		contracts_clients.CommonClientRequest
-		Logger contracts_logger.ILogger `inject:""`
 	}
 )
 
