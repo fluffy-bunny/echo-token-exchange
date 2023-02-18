@@ -171,7 +171,7 @@ jobs:
           docker buildx build --output "type=image,push=false" --platform linux/amd64,linux/arm/v6,linux/arm/v7,linux/arm64/v8,linux/ppc64le,linux/s390x  --tag $tag --file ./build/Dockerfile .
 
       - name: Build the image multiplatform
-        id: docker_build_main
+        id: docker_build_branch
         if: github.ref != 'refs/heads/main'
         run: |
           tag = ${{ secrets.DOCKER_HUB_USERNAME }}/${{env.DOCKER_IMAGE_NAME}}:${{needs.pre_flight.outputs.new_tag}}
