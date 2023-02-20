@@ -19,7 +19,7 @@ env:
   BINARY: 'server'
   GO_VERSION: '1.20'
   BUILD_PATH: './cmd/server'
-  IMAGE_NAME: 'echo-token-exchange'
+  IMAGE_NAME: 'ghstahl/echo-token-exchange'
   BASE_VERSION: '1.0.0'
 
   
