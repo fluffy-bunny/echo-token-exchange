@@ -13,6 +13,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/bsm/redislock"
 	core_utils "github.com/fluffy-bunny/grpcdotnetgo/pkg/utils"
 	di "github.com/fluffy-bunny/sarulabsdi"
 	"github.com/go-redis/redis/v8"
@@ -31,6 +32,7 @@ type (
 		opts   *redis.Options
 		cli    *redis.Client
 		ns     string
+		locker *redislock.Client
 	}
 	validated struct {
 		scopes []string
@@ -48,6 +50,8 @@ func (s *service) Ctor() {
 	if len(s.Config.RedisOptionsReferenceTokenStore.Namespace) > 0 {
 		s.ns = s.Config.RedisOptionsReferenceTokenStore.Namespace[0]
 	}
+	// Create a new lock client.
+	s.locker = redislock.New(s.cli)
 }
 func (s *service) Close() {
 	s.cli.Close()
@@ -62,6 +66,9 @@ var reflectType = reflect.TypeOf((*service)(nil))
 func AddSingletonITokenStore(builder *di.Builder) {
 	contracts_stores_tokenstore.AddSingletonITokenStore(builder, reflectType)
 }
+func (s *service) obtainLock(ctx context.Context, originalKey string, millSeconds int) (*redislock.Lock, error) {
+	return s.locker.Obtain(ctx, s.wrapperLockKey(originalKey), time.Duration(millSeconds)*time.Millisecond, nil)
+}
 func (s *service) wrapClientIDKey(clientID string) string {
 	return fmt.Sprintf("%s:client_id:%s", s.ns, clientID)
 }
@@ -73,7 +80,10 @@ func (s *service) wrapClientSubjectKey(clientID string, subject string) string {
 	return fmt.Sprintf("%s:client_id:%s:subject:%s", s.ns, clientID, subject)
 }
 func (s *service) wrapperKey(key string) string {
-	return fmt.Sprintf("%s%s", s.ns, key)
+	return fmt.Sprintf("%s:%s", s.ns, key)
+}
+func (s *service) wrapperLockKey(key string) string {
+	return fmt.Sprintf("%s:%s:lock", s.ns, key)
 }
 func (s *service) checkError(result redis.Cmder) (bool, error) {
 	if err := result.Err(); err != nil {
@@ -87,8 +97,13 @@ func (s *service) checkError(result redis.Cmder) (bool, error) {
 func (s *service) StoreToken(ctx context.Context, handle string, info *models.TokenInfo) (string, error) {
 
 	//--~--~--~--~--~-- BARBED WIRE --~--~--~--~--~--~--
-	s.lock.Lock()
-	defer s.lock.Unlock()
+	//s.lock.Lock()
+	//defer s.lock.Unlock()
+	lock, err := s.obtainLock(ctx, handle)
+	if err != nil {
+		return "", err
+	}
+	defer lock.Release(ctx)
 	//--~--~--~--~--~-- BARBED WIRE --~--~--~--~--~--~--
 	if core_utils.IsEmptyOrNil(handle) {
 		return "", errors.New("handle is empty")
@@ -153,8 +168,13 @@ func (s *service) GetToken(ctx context.Context, handle string) (*models.TokenInf
 	}
 
 	//--~--~--~--~--~-- BARBED WIRE --~--~--~--~--~--~--
-	s.lock.RLock()
-	defer s.lock.RUnlock()
+	//s.lock.Lock()
+	//defer s.lock.Unlock()
+	lock, err := s.obtainLock(ctx, handle)
+	if err != nil {
+		return nil, err
+	}
+	defer lock.Release(ctx)
 	//--~--~--~--~--~-- BARBED WIRE --~--~--~--~--~--~--
 	result := s.cli.Get(ctx, s.wrapperKey(handle))
 	return s.parseToken(result)
@@ -166,11 +186,16 @@ func (s *service) UpdateToken(ctx context.Context, handle string, info *models.T
 	}
 
 	//--~--~--~--~--~-- BARBED WIRE --~--~--~--~--~--~--
-	s.lock.Lock()
-	defer s.lock.Unlock()
+	//s.lock.Lock()
+	//defer s.lock.Unlock()
+	lock, err := s.obtainLock(ctx, handle)
+	if err != nil {
+		return err
+	}
+	defer lock.Release(ctx)
 	//--~--~--~--~--~-- BARBED WIRE --~--~--~--~--~--~--
 	result := s.cli.Get(ctx, s.wrapperKey(handle))
-	_, err := s.parseToken(result)
+	_, err = s.parseToken(result)
 	if err != nil {
 		return errors.New("not found")
 	}
@@ -207,8 +232,13 @@ func (s *service) RemoveToken(ctx context.Context, handle string) error {
 	}
 
 	//--~--~--~--~--~-- BARBED WIRE --~--~--~--~--~--~--
-	s.lock.Lock()
-	defer s.lock.Unlock()
+	//s.lock.Lock()
+	//defer s.lock.Unlock()
+	lock, err := s.obtainLock(ctx, handle)
+	if err != nil {
+		return err
+	}
+	defer lock.Release(ctx)
 	//--~--~--~--~--~-- BARBED WIRE --~--~--~--~--~--~--
 
 	pipe := s.cli.TxPipeline()
@@ -231,10 +261,6 @@ func (s *service) RemoveToken(ctx context.Context, handle string) error {
 	return nil
 }
 func (s *service) removeOneSetBlock(ctx context.Context, setKey string) (more bool, err error) {
-	//--~--~--~--~--~-- BARBED WIRE --~--~--~--~--~--~--
-	s.lock.Lock()
-	defer s.lock.Unlock()
-	//--~--~--~--~--~-- BARBED WIRE --~--~--~--~--~--~--
 
 	keys, _, err := s.cli.SScan(ctx, setKey, 0, "", 0).Result()
 	if err != nil {
@@ -258,6 +284,15 @@ func (s *service) RemoveTokenByClientID(ctx context.Context, clientID string) er
 	if core_utils.IsEmptyOrNil(clientID) {
 		return errors.New("client_id is empty")
 	}
+	//--~--~--~--~--~-- BARBED WIRE --~--~--~--~--~--~--
+	//s.lock.Lock()
+	//defer s.lock.Unlock()
+	lock, err := s.obtainLock(ctx, clientID)
+	if err != nil {
+		return err
+	}
+	defer lock.Release(ctx)
+	//--~--~--~--~--~-- BARBED WIRE --~--~--~--~--~--~--
 	setKey := s.wrapClientIDKey(clientID)
 	for {
 		more, err := s.removeOneSetBlock(ctx, setKey)
