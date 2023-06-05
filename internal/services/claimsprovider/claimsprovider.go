@@ -17,7 +17,9 @@ type (
 	}
 )
 
-func assertImplementation() {
+var stemService *service
+
+func init() {
 	var _ contracts_claimsprovider.IClaimsProvider = (*service)(nil)
 }
 
@@ -53,14 +55,18 @@ func init() {
 	}
 }
 
-var reflectType = reflect.TypeOf((*service)(nil))
+func (s *service) Ctor() (*service, error) {
+	return &service{}, nil
+}
 
 // AddSingletonIClaimsProvider registers the *service as a singleton.
 func AddSingletonIClaimsProvider(builder di.ContainerBuilder) {
-	contracts_claimsprovider.AddSingletonIClaimsProvider(builder, reflectType)
+	di.AddSingleton[*service](builder,
+		stemService.Ctor,
+		reflect.TypeOf((*contracts_claimsprovider.IClaimsProvider)(nil)),
+	)
 }
 
-func (s *service) Ctor() {}
 func (s *service) GetProfiles(userID string) (*core_hashset.StringSet, error) {
 	return mockUserProfileStore[userID], nil
 }

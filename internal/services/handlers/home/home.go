@@ -4,32 +4,27 @@ import (
 	"echo-starter/internal/templates"
 	"echo-starter/internal/wellknown"
 	"net/http"
-	"reflect"
 
 	contracts_config "echo-starter/internal/contracts/config"
 
 	di "github.com/dozm/di"
-	contracts_core_claimsprincipal "github.com/fluffy-bunny/grpcdotnetgo/pkg/contracts/claimsprincipal"
-	contracts_logger "github.com/fluffy-bunny/grpcdotnetgo/pkg/contracts/logger"
-	contracts_timeutils "github.com/fluffy-bunny/grpcdotnetgo/pkg/contracts/timeutils"
-	contracts_container "github.com/fluffy-bunny/grpcdotnetgo/pkg/echo/contracts/container"
-	contracts_contextaccessor "github.com/fluffy-bunny/grpcdotnetgo/pkg/echo/contracts/contextaccessor"
-	contracts_cookies "github.com/fluffy-bunny/grpcdotnetgo/pkg/echo/contracts/cookies"
-	contracts_handler "github.com/fluffy-bunny/grpcdotnetgo/pkg/echo/contracts/handler"
+	fluffycore_contracts_common "github.com/fluffy-bunny/fluffycore/contracts/common"
+	fluffycore_echo_contracts_container "github.com/fluffy-bunny/fluffycore/echo/contracts/container"
+	contracts_contextaccessor "github.com/fluffy-bunny/fluffycore/echo/contracts/contextaccessor"
+	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
 	"github.com/labstack/echo/v4"
+	"github.com/rs/zerolog"
 )
 
 type (
 	service struct {
 		// Required and Useful services that the runtime registers
 		//---------------------------------------------------------------------------------------------
-		ContainerAccessor   contracts_container.ContainerAccessor           `inject:""`
-		TimeNow             contracts_timeutils.TimeNow                     `inject:""`
-		TimeParse           contracts_timeutils.TimeParse                   `inject:""`
-		Logger              contracts_logger.ILogger                        `inject:""`
-		ClaimsPrincipal     contracts_core_claimsprincipal.IClaimsPrincipal `inject:""`
-		SecureCookie        contracts_cookies.ISecureCookie                 `inject:""`
-		EchoContextAccessor contracts_contextaccessor.IEchoContextAccessor  `inject:""`
+		ContainerAccessor   fluffycore_echo_contracts_container.ContainerAccessor `inject:""`
+		TimeNow             fluffycore_contracts_common.TimeNow                   `inject:""`
+		TimeParse           fluffycore_contracts_common.TimeParse                 `inject:""`
+		ClaimsPrincipal     fluffycore_contracts_common.IClaimsPrincipal          `inject:""`
+		EchoContextAccessor contracts_contextaccessor.IEchoContextAccessor        `inject:""`
 		//---------------------------------------------------------------------------------------------
 
 		// internal services
@@ -37,29 +32,46 @@ type (
 	}
 )
 
-func assertImplementation() {
+var stemService *service
+
+func (s *service) Ctor(
+	config *contracts_config.Config,
+	containerAccessor fluffycore_echo_contracts_container.ContainerAccessor,
+	TimeNow fluffycore_contracts_common.TimeNow,
+	TimeParse fluffycore_contracts_common.TimeParse,
+	ClaimsPrincipal fluffycore_contracts_common.IClaimsPrincipal,
+	EchoContextAccessor contracts_contextaccessor.IEchoContextAccessor) (*service, error) {
+	return &service{
+		Config:              config,
+		ContainerAccessor:   containerAccessor,
+		TimeNow:             TimeNow,
+		TimeParse:           TimeParse,
+		ClaimsPrincipal:     ClaimsPrincipal,
+		EchoContextAccessor: EchoContextAccessor,
+	}, nil
+
+}
+func init() {
 	var _ contracts_handler.IHandler = (*service)(nil)
 }
 
-var reflectType = reflect.TypeOf((*service)(nil))
-
 // AddScopedIHandler registers the *service as a singleton.
 func AddScopedIHandler(builder di.ContainerBuilder) {
-	contracts_handler.AddScopedIHandlerEx(builder,
-		reflectType,
+	contracts_handler.AddScopedIHandleWithMetadata[*service](builder,
+		stemService.Ctor,
 		[]contracts_handler.HTTPVERB{
 			contracts_handler.GET,
 		},
 		wellknown.HomePath)
-}
-
-func (s *service) Ctor() {
 
 }
+
 func (s *service) GetMiddleware() []echo.MiddlewareFunc {
 	return []echo.MiddlewareFunc{}
 }
 func (s *service) Do(c echo.Context) error {
-	s.Logger.Info().Str("timeNow", s.TimeNow().String()).Send()
+	ctx := c.Request().Context()
+	log := zerolog.Ctx(ctx).With().Logger()
+	log.Info().Str("timeNow", s.TimeNow().String()).Send()
 	return templates.Render(c, s.ClaimsPrincipal, http.StatusOK, "views/home/index", map[string]interface{}{})
 }

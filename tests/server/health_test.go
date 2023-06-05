@@ -6,24 +6,18 @@ import (
 	"net/http"
 	"testing"
 
-	"net/http/httptest"
-
 	contracts_background_tasks "echo-starter/internal/contracts/background/tasks"
+	mocks_background_tasks "echo-starter/internal/mocks/background/tasks"
+	startup "echo-starter/internal/startup"
+	tests "echo-starter/tests"
+	httptest "net/http/httptest"
 
 	di "github.com/dozm/di"
-	"github.com/labstack/echo/v4"
-	"github.com/stretchr/testify/require"
-
-	"echo-starter/internal/startup"
-
-	echo_contracts_startup "github.com/fluffy-bunny/grpcdotnetgo/pkg/echo/contracts/startup"
-
-	"echo-starter/tests"
-
-	mocks_background_tasks "echo-starter/internal/mocks/background/tasks"
-
-	"github.com/fluffy-bunny/grpcdotnetgo/pkg/echo/runtime"
-	"github.com/golang/mock/gomock"
+	echo_contracts_startup "github.com/fluffy-bunny/fluffycore/echo/contracts/startup"
+	runtime "github.com/fluffy-bunny/fluffycore/echo/runtime"
+	gomock "github.com/golang/mock/gomock"
+	echo "github.com/labstack/echo/v4"
+	require "github.com/stretchr/testify/require"
 )
 
 func TestHealthCheck(t *testing.T) {
@@ -40,9 +34,9 @@ func TestHealthCheck(t *testing.T) {
 		startup := startup.NewStartup()
 		var myEcho *echo.Echo
 		hooks := &echo_contracts_startup.Hooks{
-			PrebuildHook: func(builder *di.Builder) error {
+			PrebuildHook: func(builder di.ContainerBuilder) error {
 				// register a null task engine
-				contracts_background_tasks.AddSingletonITaskEngineFactoryByObj(builder, taskEngine)
+				di.AddInstance[contracts_background_tasks.ITaskEngineFactory](builder, taskEngine)
 				return nil
 			},
 			PreStartHook: func(echo *echo.Echo) error {
@@ -69,6 +63,6 @@ func TestHealthCheck(t *testing.T) {
 		fmt.Println("data:", string(data))
 
 		r.Stop()
-		future.Get()
+		future.Join()
 	})
 }

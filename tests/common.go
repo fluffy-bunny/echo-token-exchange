@@ -4,7 +4,8 @@ import (
 	"testing"
 
 	fluffycore_async "github.com/fluffy-bunny/fluffycore/async"
-	"github.com/fluffy-bunny/grpcdotnetgo/pkg/echo/runtime"
+	runtime "github.com/fluffy-bunny/fluffycore/echo/runtime"
+
 	"github.com/golang/mock/gomock"
 	"github.com/reugn/async"
 )

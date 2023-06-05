@@ -8,26 +8,23 @@ import (
 	contracts_stores_keymaterial "echo-starter/internal/contracts/stores/keymaterial"
 	contracts_stores_tokenstore "echo-starter/internal/contracts/stores/tokenstore"
 	contracts_tokenhandlers "echo-starter/internal/contracts/tokenhandlers"
-	"echo-starter/internal/models"
+	models "echo-starter/internal/models"
 	echo_oauth2 "echo-starter/internal/services/go-oauth2/oauth2"
-	"echo-starter/internal/utils"
-
-	"echo-starter/internal/wellknown"
+	utils "echo-starter/internal/utils"
+	wellknown "echo-starter/internal/wellknown"
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"reflect"
 	"strings"
 	"time"
 
 	di "github.com/dozm/di"
 	"github.com/fatih/structs"
-	contracts_logger "github.com/fluffy-bunny/grpcdotnetgo/pkg/contracts/logger"
-	contracts_timeutils "github.com/fluffy-bunny/grpcdotnetgo/pkg/contracts/timeutils"
-	contracts_handler "github.com/fluffy-bunny/grpcdotnetgo/pkg/echo/contracts/handler"
+	fluffycore_contracts_common "github.com/fluffy-bunny/fluffycore/contracts/common"
+	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
 	core_hashset "github.com/fluffy-bunny/grpcdotnetgo/pkg/gods/sets/hashset"
 	core_utils "github.com/fluffy-bunny/grpcdotnetgo/pkg/utils"
-	"github.com/go-oauth2/oauth2/v4"
+	oauth2 "github.com/go-oauth2/oauth2/v4"
 	"github.com/go-oauth2/oauth2/v4/errors"
 	oauth2_models "github.com/go-oauth2/oauth2/v4/models"
 	"github.com/golang-jwt/jwt"
@@ -37,9 +34,8 @@ import (
 
 type (
 	service struct {
-		Now                  contracts_timeutils.TimeNow                   `inject:""`
+		Now                  fluffycore_contracts_common.TimeNow           `inject:""`
 		Config               *contracts_config.Config                      `inject:""`
-		Logger               contracts_logger.ILogger                      `inject:""`
 		APIResources         contracts_stores_apiresources.IAPIResources   `inject:""`
 		KeyMaterial          contracts_stores_keymaterial.IKeyMaterial     `inject:""`
 		JwtTokenStore        contracts_stores_tokenstore.IJwtTokenStore    `inject:""`
@@ -53,31 +49,53 @@ type (
 	}
 )
 
-func assertImplementation() {
+var stemService *service
+
+func init() {
 	var _ contracts_handler.IHandler = (*service)(nil)
 }
 
-var reflectType = reflect.TypeOf((*service)(nil))
-
-// AddScopedIHandler registers the *service as a singleton.
-func AddScopedIHandler(builder di.ContainerBuilder) {
-	contracts_handler.AddScopedIHandlerEx(builder,
-		reflectType,
-		[]contracts_handler.HTTPVERB{
-			contracts_handler.POST,
-		},
-		wellknown.OAuth2TokenPath)
-}
-func (s *service) Ctor() {
-	s.TokenHandler = s.TokenHandlerAccessor.GetTokenHandler()
-
+func (s *service) Ctor(
+	now fluffycore_contracts_common.TimeNow,
+	config *contracts_config.Config,
+	apiResources contracts_stores_apiresources.IAPIResources,
+	keyMaterial contracts_stores_keymaterial.IKeyMaterial,
+	jwtTokenStore contracts_stores_tokenstore.IJwtTokenStore,
+	clientRequest contracts_clients.IClientRequest,
+	tokenHandlerAccessor contracts_tokenhandlers.ITokenHandlerAccessor,
+	referenceTokenStore contracts_stores_tokenstore.ITokenStore,
+) (*service, error) {
+	obj := &service{
+		Now:                  now,
+		Config:               config,
+		APIResources:         apiResources,
+		KeyMaterial:          keyMaterial,
+		JwtTokenStore:        jwtTokenStore,
+		ClientRequest:        clientRequest,
+		TokenHandlerAccessor: tokenHandlerAccessor,
+		ReferenceTokenStore:  referenceTokenStore,
+	}
+	obj.TokenHandler = s.TokenHandlerAccessor.GetTokenHandler()
 	signingKey, err := s.KeyMaterial.GetSigningKey()
 	if err != nil {
 		panic(err)
 	}
-	s.signingKey = signingKey
+	obj.signingKey = signingKey
+	return obj, nil
+}
+
+// AddScopedIHandler registers the *service as a singleton.
+func AddScopedIHandler(builder di.ContainerBuilder) {
+	contracts_handler.AddScopedIHandleWithMetadata[*service](builder,
+		stemService.Ctor,
+		[]contracts_handler.HTTPVERB{
+			contracts_handler.POST,
+		},
+		wellknown.OAuth2TokenPath,
+	)
 
 }
+
 func (s *service) GetMiddleware() []echo.MiddlewareFunc {
 	return []echo.MiddlewareFunc{}
 }
@@ -106,9 +124,8 @@ func (s *service) processRequest(c echo.Context) error {
 	if err != nil {
 		return s.tokenError(c.Response(), err)
 	}
-	iClaims := claims.(models.IClaims)
 
-	iClaims.Set("client_id", client.ClientID)
+	claims.Set("client_id", client.ClientID)
 
 	ti, err := s.GetAccessToken(ctx, validatedResult, "", claims)
 	if err != nil {
@@ -229,7 +246,7 @@ func (s *service) GenerateAccessToken(ctx context.Context,
 	ti.SetClientID(client.ClientID)
 	ti.SetUserID(subject)
 
-	scope, _ := validatedResult.Params["scope"]
+	scope := validatedResult.Params["scope"]
 	ti.SetScope(scope)
 	scopes := strings.Split(scope, " ")
 	scopeSet := core_hashset.NewStringSet(scopes...)
@@ -254,11 +271,11 @@ func (s *service) GenerateAccessToken(ctx context.Context,
 		}
 		if !core_utils.IsNil(extras) {
 			extraAudInterface := extras.Get("aud")
-			switch extraAudInterface.(type) {
+			switch extraAudienceType := extraAudInterface.(type) {
 			case string:
-				audienceSet.Add(extraAudInterface.(string))
+				audienceSet.Add(extraAudienceType)
 			case []string:
-				audienceSet.Add(extraAudInterface.([]string)...)
+				audienceSet.Add(extraAudienceType...)
 			}
 		}
 		extras.Set("aud", audienceSet.Values())
@@ -289,6 +306,9 @@ func (s *service) GenerateAccessToken(ctx context.Context,
 			},
 			Data: claims.Claims(),
 		})
+		if err != nil {
+			return nil, err
+		}
 
 	} else {
 		tokenHandle, err = s.JwtTokenStore.MintToken(ctx, claims)

@@ -2,13 +2,10 @@ package startup
 
 import (
 	"context"
-	echostarter_auth "echo-starter/internal/auth"
 	contracts_config "echo-starter/internal/contracts/config"
 	"echo-starter/internal/models"
 	services_handlers_about "echo-starter/internal/services/handlers/about"
-	app_session "echo-starter/internal/session"
 	"encoding/base64"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -21,8 +18,6 @@ import (
 	core_utils "github.com/fluffy-bunny/grpcdotnetgo/pkg/utils"
 	"github.com/quasoft/memstore"
 	"github.com/rs/zerolog/log"
-
-	"github.com/gorilla/securecookie"
 
 	services_background_taskclient "echo-starter/internal/services/background/taskclient"
 	services_background_taskenginefactory "echo-starter/internal/services/background/taskenginefactory"
@@ -64,13 +59,7 @@ import (
 	services_handlers_api_revoke "echo-starter/internal/services/handlers/api/revoke"
 	services_handlers_api_token "echo-starter/internal/services/handlers/api/token"
 
-	core_contracts_session "github.com/fluffy-bunny/grpcdotnetgo/pkg/echo/contracts/session"
-	core_middleware_claimsprincipal "github.com/fluffy-bunny/grpcdotnetgo/pkg/echo/middleware/claimsprincipal"
-
 	middleware_oauth2client "echo-starter/internal/middleware/oauth2client"
-
-	middleware_claimsprincipal "echo-starter/internal/middleware/claimsprincipal"
-	middleware_stores "echo-starter/internal/middleware/stores"
 
 	contracts_background_tasks "echo-starter/internal/contracts/background/tasks"
 	services_claimsprovider "echo-starter/internal/services/claimsprovider"
@@ -80,14 +69,10 @@ import (
 
 	di "github.com/dozm/di"
 	"github.com/fluffy-bunny/go-redis-search/ftsearch"
-	contracts_cookies "github.com/fluffy-bunny/grpcdotnetgo/pkg/echo/contracts/cookies"
-	core_middleware_session "github.com/fluffy-bunny/grpcdotnetgo/pkg/echo/middleware/session"
 	redis "github.com/go-redis/redis/v8"
 	"github.com/golang/mock/gomock"
-	"github.com/google/uuid"
 	"github.com/gorilla/sessions"
 	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
 	redisstore "github.com/rbcervilla/redisstore/v8"
 )
 
@@ -144,7 +129,8 @@ func (s *Startup) PreStartHook(echo *echo.Echo) error {
 		s.config.RedisOptions.Addr = s.miniRedisInstance.Addr()
 
 	}
-	s.taskEngine = contracts_background_tasks.GetITaskEngineFactoryFromContainer(s.container)
+	s.taskEngine = di.Get[contracts_background_tasks.ITaskEngineFactory](s.container)
+
 	return s.taskEngine.Start()
 }
 func (s *Startup) _createDevelopmentIndexes() error {
@@ -181,7 +167,7 @@ func (s *Startup) PreShutdownHook(echo *echo.Echo) error {
 }
 func (s *Startup) PostBuildHook(container di.Container) error {
 	if s.config.ApplicationEnvironment == "Development" {
-		di.Dump(container)
+		//		di.Dump(container)
 	}
 	s.container = container
 	return nil
@@ -254,31 +240,6 @@ func (s *Startup) GetConfigOptions() *fluffycore_contracts_runtime.ConfigOptions
 		Destination: s.config,
 	}
 }
-func (s *Startup) addSecureCookieOptions(builder di.ContainerBuilder) {
-	// map our config to accessor funcs that other services need
-	// SECURE COOKIE
-	if core_utils.IsEmptyOrNil(s.config.SecureCookieHashKey) {
-		fmt.Println("WARNING: SECURE_COOKIE_HASH_KEY must be set for production......")
-		key := securecookie.GenerateRandomKey(32)
-		encodedString := base64.StdEncoding.EncodeToString(key)
-		s.config.SecureCookieHashKey = encodedString
-		fmt.Printf("SECURE_COOKIE_HASH_KEY: %v\n", s.config.SecureCookieHashKey)
-	}
-	if core_utils.IsEmptyOrNil(s.config.SecureCookieEncryptionKey) {
-		fmt.Println("WARNING: SECURE_COOKIE_ENCRYPTION_KEY must be set for production......")
-		key := securecookie.GenerateRandomKey(32)
-		encodedString := base64.StdEncoding.EncodeToString(key)
-		s.config.SecureCookieEncryptionKey = encodedString
-		fmt.Printf("SECURE_COOKIE_ENCRYPTION_KEY: %v\n", s.config.SecureCookieEncryptionKey)
-	}
-
-	contracts_cookies.AddSecureCookieConfigAccessorFunc(builder, func() *contracts_cookies.SecureCookieConfig {
-		return &contracts_cookies.SecureCookieConfig{
-			SecureCookieHashKey:       s.config.SecureCookieHashKey,
-			SecureCookieEncryptionKey: s.config.SecureCookieEncryptionKey,
-		}
-	})
-}
 
 func (s *Startup) addBackgroundTasksHandlers(builder di.ContainerBuilder) {
 	// Add the engine
@@ -344,13 +305,6 @@ func (s *Startup) ConfigureServices(builder di.ContainerBuilder) error {
 	// add our config as a sigleton object
 	di.AddInstance[*contracts_config.Config](builder, s.config)
 
-	// Add our main session accessor func
-	core_contracts_session.AddGetSessionFunc(builder, app_session.GetSession)
-	core_contracts_session.AddGetSessionStoreFunc(builder, s.getSessionStore)
-
-	// Add our secure cookie configs
-	s.addSecureCookieOptions(builder)
-
 	services_handlers_auth_unauthorized.AddScopedIHandler(builder)
 
 	switch s.config.AuthStore {
@@ -369,20 +323,10 @@ func (s *Startup) ConfigureServices(builder di.ContainerBuilder) error {
 	return nil
 }
 func (s *Startup) Configure(e *echo.Echo, root di.Container) error {
-	e.Use(middleware.RequestIDWithConfig(middleware.RequestIDConfig{
-		Generator: func() string {
-			id := uuid.New()
-			return id.String()
-		},
-	}))
-	e.Use(middleware_stores.EnsureClearExpiredStorageItems(s.GetContainer()))
+
 	// DevelopmentMiddlewareUsingClaimsMap adds all the needed claims so that FinalAuthVerificationMiddlewareUsingClaimsMap succeeds
 	//e.Use(middleware_claimsprincipal.DevelopmentMiddlewareUsingClaimsMap(echostarter_auth.BuildGrpcEntrypointPermissionsClaimsMap(), true))
 	e.Use(middleware_oauth2client.AuthenticateOAuth2Client(s.GetContainer()))
-	e.Use(middleware_claimsprincipal.AuthenticatedSessionToClaimsPrincipalMiddleware(root))
-	e.Use(core_middleware_claimsprincipal.FinalAuthVerificationMiddlewareUsingClaimsMap(echostarter_auth.BuildGrpcEntrypointPermissionsClaimsMap(), true))
-	// only after we pass auth do we slide out the auth session
-	e.Use(core_middleware_session.EnsureSlidingSession(root, app_session.GetAuthSession))
 
 	return nil
 }

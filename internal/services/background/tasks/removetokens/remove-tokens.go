@@ -11,9 +11,9 @@ import (
 	contracts_stores_tokenstore "echo-starter/internal/contracts/stores/tokenstore"
 
 	core_hashset "github.com/fluffy-bunny/grpcdotnetgo/pkg/gods/sets/hashset"
+	"github.com/rs/zerolog"
 
 	di "github.com/dozm/di"
-	contracts_logger "github.com/fluffy-bunny/grpcdotnetgo/pkg/contracts/logger"
 	"github.com/hibiken/asynq"
 )
 
@@ -23,7 +23,6 @@ const (
 
 type (
 	service struct {
-		Logger     contracts_logger.ILogger                `inject:""`
 		TokenStore contracts_stores_tokenstore.ITokenStore `inject:""`
 		TaskClient contracts_background_tasks.ITaskClient  `inject:""`
 	}
@@ -37,10 +36,20 @@ func assertImplementation() {
 
 var reflectType = reflect.TypeOf((*service)(nil))
 
+func ctor(tokenStore contracts_stores_tokenstore.ITokenStore, taskClient contracts_background_tasks.ITaskClient) (*service, error) {
+	return &service{
+		TokenStore: tokenStore,
+		TaskClient: taskClient,
+	}, nil
+}
+
 // AddSingletonISingletonTask registers the *service as a singleton.
 func AddSingletonISingletonTask(builder di.ContainerBuilder) {
-	contracts_background_tasks.AddSingletonISingletonTask(builder, reflectType,
-		contracts_background_tasks_removetokens.ReflectTypeIRemoveTokensSingletonTask)
+
+	di.AddSingleton[*service](builder, ctor,
+		reflect.TypeOf((*contracts_background_tasks.ISingletonTask)(nil)),
+		reflect.TypeOf((*contracts_background_tasks_removetokens.IRemoveTokensSingletonTask)(nil)),
+	)
 }
 func (s *service) GetPatterns() *core_hashset.StringSet {
 	return core_hashset.NewStringSet(
@@ -50,43 +59,45 @@ func (s *service) GetPatterns() *core_hashset.StringSet {
 
 }
 func (s *service) processRemoveTokenByClientID(ctx context.Context, t *asynq.Task) error {
-
+	log := zerolog.Ctx(ctx).With().Logger()
 	var p contracts_background_tasks_removetokens.TokenRemoveByClientID
 	if err := json.Unmarshal(t.Payload(), &p); err != nil {
-		s.Logger.Error().Err(err).Msg("failed to unmarshal task payload")
+		log.Error().Err(err).Msg("failed to unmarshal task payload")
 		return fmt.Errorf("json.Unmarshal failed: %v: %w", err, asynq.SkipRetry)
 	}
 	err := s.TokenStore.RemoveTokenByClientID(ctx, p.ClientID)
 	if err != nil {
-		s.Logger.Error().Err(err).Msg("failed to remove token by client id")
+		log.Error().Err(err).Msg("failed to remove token by client id")
 		return fmt.Errorf("failed to remove token by client id: %v", err)
 	}
 	return nil
 }
 func (s *service) processRemoveTokenBySubject(ctx context.Context, t *asynq.Task) error {
+	log := zerolog.Ctx(ctx).With().Logger()
 
 	var p contracts_background_tasks_removetokens.TokenRemoveBySubject
 	if err := json.Unmarshal(t.Payload(), &p); err != nil {
-		s.Logger.Error().Err(err).Msg("failed to unmarshal task payload")
+		log.Error().Err(err).Msg("failed to unmarshal task payload")
 		return fmt.Errorf("json.Unmarshal failed: %v: %w", err, asynq.SkipRetry)
 	}
 	err := s.TokenStore.RemoveTokenBySubject(ctx, p.Subject)
 	if err != nil {
-		s.Logger.Error().Err(err).Msg("failed to remove token by subject")
+		log.Error().Err(err).Msg("failed to remove token by subject")
 		return fmt.Errorf("failed to remove token by subject: %v", err)
 	}
 	return nil
 }
 func (s *service) processRemoveTokenByClientIDAndSubject(ctx context.Context, t *asynq.Task) error {
+	log := zerolog.Ctx(ctx).With().Logger()
 
 	var p contracts_background_tasks_removetokens.TokenRemoveByClientIDAndSubject
 	if err := json.Unmarshal(t.Payload(), &p); err != nil {
-		s.Logger.Error().Err(err).Msg("failed to unmarshal task payload")
+		log.Error().Err(err).Msg("failed to unmarshal task payload")
 		return fmt.Errorf("json.Unmarshal failed: %v: %w", err, asynq.SkipRetry)
 	}
 	err := s.TokenStore.RemoveTokenByClientIdAndSubject(ctx, p.ClientID, p.Subject)
 	if err != nil {
-		s.Logger.Error().Err(err).Msg("failed to remove token by client id and subject")
+		log.Error().Err(err).Msg("failed to remove token by client id and subject")
 		return fmt.Errorf("failed to remove token by client id and subject: %v", err)
 	}
 	return nil
@@ -104,7 +115,7 @@ func (s *service) ProcessTask(ctx context.Context, t *asynq.Task) error {
 	}
 
 }
-func (s *service) EnqueTask(payload interface{}, opts ...asynq.Option) (*asynq.TaskInfo, error) {
+func (s *service) EnqueTask(ctx context.Context, payload interface{}, opts ...asynq.Option) (*asynq.TaskInfo, error) {
 	var name string
 	if removeByClient := payload.(*contracts_background_tasks_removetokens.TokenRemoveByClientID); removeByClient != nil {
 		name = contracts_background_tasks_removetokens.TypeRemoveTokenByClientID
@@ -120,14 +131,14 @@ func (s *service) EnqueTask(payload interface{}, opts ...asynq.Option) (*asynq.T
 		return nil, err
 	}
 	task := asynq.NewTask(name, payloadJson)
-	return s.TaskClient.EnqueTask(task, opts...)
+	return s.TaskClient.EnqueTask(ctx, task, opts...)
 }
-func (s *service) EnqueTaskTokenRemoveByClientID(task *contracts_background_tasks_removetokens.TokenRemoveByClientID, opts ...asynq.Option) (*asynq.TaskInfo, error) {
-	return s.EnqueTask(task, opts...)
+func (s *service) EnqueTaskTokenRemoveByClientID(ctx context.Context, task *contracts_background_tasks_removetokens.TokenRemoveByClientID, opts ...asynq.Option) (*asynq.TaskInfo, error) {
+	return s.EnqueTask(ctx, task, opts...)
 }
-func (s *service) EnqueTaskTypeRemoveTokenBySubject(task *contracts_background_tasks_removetokens.TokenRemoveBySubject, opts ...asynq.Option) (*asynq.TaskInfo, error) {
-	return s.EnqueTask(task, opts...)
+func (s *service) EnqueTaskTypeRemoveTokenBySubject(ctx context.Context, task *contracts_background_tasks_removetokens.TokenRemoveBySubject, opts ...asynq.Option) (*asynq.TaskInfo, error) {
+	return s.EnqueTask(ctx, task, opts...)
 }
-func (s *service) EnqueTaskTokenRemoveByClientIDAndSubject(task *contracts_background_tasks_removetokens.TokenRemoveByClientIDAndSubject, opts ...asynq.Option) (*asynq.TaskInfo, error) {
-	return s.EnqueTask(task, opts...)
+func (s *service) EnqueTaskTokenRemoveByClientIDAndSubject(ctx context.Context, task *contracts_background_tasks_removetokens.TokenRemoveByClientIDAndSubject, opts ...asynq.Option) (*asynq.TaskInfo, error) {
+	return s.EnqueTask(ctx, task, opts...)
 }
