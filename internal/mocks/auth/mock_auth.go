@@ -5,6 +5,7 @@
 package auth
 
 import (
+	context "context"
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
@@ -35,75 +36,75 @@ func (m *MockIInternalTokenStore) EXPECT() *MockIInternalTokenStoreMockRecorder 
 }
 
 // Clear mocks base method.
-func (m *MockIInternalTokenStore) Clear() error {
+func (m *MockIInternalTokenStore) Clear(arg0 context.Context) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Clear")
+	ret := m.ctrl.Call(m, "Clear", arg0)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Clear indicates an expected call of Clear.
-func (mr *MockIInternalTokenStoreMockRecorder) Clear() *gomock.Call {
+func (mr *MockIInternalTokenStoreMockRecorder) Clear(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Clear", reflect.TypeOf((*MockIInternalTokenStore)(nil).Clear))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Clear", reflect.TypeOf((*MockIInternalTokenStore)(nil).Clear), arg0)
 }
 
 // GetToken mocks base method.
-func (m *MockIInternalTokenStore) GetToken() (*oauth2.Token, error) {
+func (m *MockIInternalTokenStore) GetToken(arg0 context.Context) (*oauth2.Token, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetToken")
+	ret := m.ctrl.Call(m, "GetToken", arg0)
 	ret0, _ := ret[0].(*oauth2.Token)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetToken indicates an expected call of GetToken.
-func (mr *MockIInternalTokenStoreMockRecorder) GetToken() *gomock.Call {
+func (mr *MockIInternalTokenStoreMockRecorder) GetToken(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetToken", reflect.TypeOf((*MockIInternalTokenStore)(nil).GetToken))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetToken", reflect.TypeOf((*MockIInternalTokenStore)(nil).GetToken), arg0)
 }
 
 // GetTokenByIdempotencyKey mocks base method.
-func (m *MockIInternalTokenStore) GetTokenByIdempotencyKey(arg0 string) (*oauth2.Token, error) {
+func (m *MockIInternalTokenStore) GetTokenByIdempotencyKey(arg0 context.Context, arg1 string) (*oauth2.Token, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetTokenByIdempotencyKey", arg0)
+	ret := m.ctrl.Call(m, "GetTokenByIdempotencyKey", arg0, arg1)
 	ret0, _ := ret[0].(*oauth2.Token)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetTokenByIdempotencyKey indicates an expected call of GetTokenByIdempotencyKey.
-func (mr *MockIInternalTokenStoreMockRecorder) GetTokenByIdempotencyKey(arg0 interface{}) *gomock.Call {
+func (mr *MockIInternalTokenStoreMockRecorder) GetTokenByIdempotencyKey(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTokenByIdempotencyKey", reflect.TypeOf((*MockIInternalTokenStore)(nil).GetTokenByIdempotencyKey), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTokenByIdempotencyKey", reflect.TypeOf((*MockIInternalTokenStore)(nil).GetTokenByIdempotencyKey), arg0, arg1)
 }
 
 // SlideOutExpiration mocks base method.
-func (m *MockIInternalTokenStore) SlideOutExpiration() error {
+func (m *MockIInternalTokenStore) SlideOutExpiration(arg0 context.Context) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SlideOutExpiration")
+	ret := m.ctrl.Call(m, "SlideOutExpiration", arg0)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // SlideOutExpiration indicates an expected call of SlideOutExpiration.
-func (mr *MockIInternalTokenStoreMockRecorder) SlideOutExpiration() *gomock.Call {
+func (mr *MockIInternalTokenStoreMockRecorder) SlideOutExpiration(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SlideOutExpiration", reflect.TypeOf((*MockIInternalTokenStore)(nil).SlideOutExpiration))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SlideOutExpiration", reflect.TypeOf((*MockIInternalTokenStore)(nil).SlideOutExpiration), arg0)
 }
 
 // StoreTokenByIdempotencyKey mocks base method.
-func (m *MockIInternalTokenStore) StoreTokenByIdempotencyKey(arg0 string, arg1 *oauth2.Token) error {
+func (m *MockIInternalTokenStore) StoreTokenByIdempotencyKey(arg0 context.Context, arg1 string, arg2 *oauth2.Token) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "StoreTokenByIdempotencyKey", arg0, arg1)
+	ret := m.ctrl.Call(m, "StoreTokenByIdempotencyKey", arg0, arg1, arg2)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // StoreTokenByIdempotencyKey indicates an expected call of StoreTokenByIdempotencyKey.
-func (mr *MockIInternalTokenStoreMockRecorder) StoreTokenByIdempotencyKey(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockIInternalTokenStoreMockRecorder) StoreTokenByIdempotencyKey(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StoreTokenByIdempotencyKey", reflect.TypeOf((*MockIInternalTokenStore)(nil).StoreTokenByIdempotencyKey), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StoreTokenByIdempotencyKey", reflect.TypeOf((*MockIInternalTokenStore)(nil).StoreTokenByIdempotencyKey), arg0, arg1, arg2)
 }
 
 // MockITokenStore is a mock of ITokenStore interface.
@@ -130,30 +131,30 @@ func (m *MockITokenStore) EXPECT() *MockITokenStoreMockRecorder {
 }
 
 // Clear mocks base method.
-func (m *MockITokenStore) Clear() error {
+func (m *MockITokenStore) Clear(arg0 context.Context) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Clear")
+	ret := m.ctrl.Call(m, "Clear", arg0)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Clear indicates an expected call of Clear.
-func (mr *MockITokenStoreMockRecorder) Clear() *gomock.Call {
+func (mr *MockITokenStoreMockRecorder) Clear(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Clear", reflect.TypeOf((*MockITokenStore)(nil).Clear))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Clear", reflect.TypeOf((*MockITokenStore)(nil).Clear), arg0)
 }
 
 // GetToken mocks base method.
-func (m *MockITokenStore) GetToken() (*oauth2.Token, error) {
+func (m *MockITokenStore) GetToken(arg0 context.Context) (*oauth2.Token, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetToken")
+	ret := m.ctrl.Call(m, "GetToken", arg0)
 	ret0, _ := ret[0].(*oauth2.Token)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetToken indicates an expected call of GetToken.
-func (mr *MockITokenStoreMockRecorder) GetToken() *gomock.Call {
+func (mr *MockITokenStoreMockRecorder) GetToken(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetToken", reflect.TypeOf((*MockITokenStore)(nil).GetToken))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetToken", reflect.TypeOf((*MockITokenStore)(nil).GetToken), arg0)
 }
