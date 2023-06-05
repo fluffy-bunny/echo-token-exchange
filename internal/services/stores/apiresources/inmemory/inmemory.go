@@ -8,8 +8,8 @@ import (
 
 	core_hashset "github.com/fluffy-bunny/grpcdotnetgo/pkg/gods/sets/hashset"
 
+	di "github.com/dozm/di"
 	contracts_logger "github.com/fluffy-bunny/grpcdotnetgo/pkg/contracts/logger"
-	di "github.com/fluffy-bunny/sarulabsdi"
 )
 
 type (
@@ -35,7 +35,7 @@ func (s *service) Ctor() {
 }
 
 // AddSingletonIAPIResources registers the *service as a singleton.
-func AddSingletonIAPIResources(builder *di.Builder, apiResources []models.APIResource) {
+func AddSingletonIAPIResources(builder di.ContainerBuilder, apiResources []models.APIResource) {
 	contracts_stores_apiresources.AddSingletonIAPIResourcesByFunc(builder, reflectType, func(ctn di.Container) (interface{}, error) {
 		obj := &service{}
 		obj.Ctor()

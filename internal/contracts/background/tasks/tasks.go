@@ -32,9 +32,9 @@ type (
 	ISingletonTask interface {
 		GetPatterns() *core_hashset.StringSet
 		ProcessTask(ctx context.Context, t *asynq.Task) error
-		EnqueTask(payload interface{}, opts ...asynq.Option) (*asynq.TaskInfo, error)
+		EnqueTask(ctx context.Context, payload interface{}, opts ...asynq.Option) (*asynq.TaskInfo, error)
 	}
 	ITaskClient interface {
-		EnqueTask(task *asynq.Task, opts ...asynq.Option) (*asynq.TaskInfo, error)
+		EnqueTask(ctx context.Context, task *asynq.Task, opts ...asynq.Option) (*asynq.TaskInfo, error)
 	}
 )

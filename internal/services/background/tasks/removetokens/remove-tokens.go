@@ -12,8 +12,8 @@ import (
 
 	core_hashset "github.com/fluffy-bunny/grpcdotnetgo/pkg/gods/sets/hashset"
 
+	di "github.com/dozm/di"
 	contracts_logger "github.com/fluffy-bunny/grpcdotnetgo/pkg/contracts/logger"
-	di "github.com/fluffy-bunny/sarulabsdi"
 	"github.com/hibiken/asynq"
 )
 
@@ -38,7 +38,7 @@ func assertImplementation() {
 var reflectType = reflect.TypeOf((*service)(nil))
 
 // AddSingletonISingletonTask registers the *service as a singleton.
-func AddSingletonISingletonTask(builder *di.Builder) {
+func AddSingletonISingletonTask(builder di.ContainerBuilder) {
 	contracts_background_tasks.AddSingletonISingletonTask(builder, reflectType,
 		contracts_background_tasks_removetokens.ReflectTypeIRemoveTokensSingletonTask)
 }

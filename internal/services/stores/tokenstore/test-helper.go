@@ -11,7 +11,7 @@ import (
 	"echo-starter/internal/models"
 	"echo-starter/internal/utils"
 
-	di "github.com/fluffy-bunny/sarulabsdi"
+	di "github.com/dozm/di"
 	"github.com/go-test/deep"
 	"github.com/jinzhu/copier"
 	"github.com/stretchr/testify/require"

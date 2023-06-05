@@ -10,7 +10,7 @@ import (
 
 	contracts_background_tasks "echo-starter/internal/contracts/background/tasks"
 
-	di "github.com/fluffy-bunny/sarulabsdi"
+	di "github.com/dozm/di"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/require"
 

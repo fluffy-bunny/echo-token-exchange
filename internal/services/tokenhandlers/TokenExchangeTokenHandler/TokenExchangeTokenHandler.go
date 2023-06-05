@@ -10,8 +10,8 @@ import (
 	"net/http"
 	"reflect"
 
+	di "github.com/dozm/di"
 	core_utils "github.com/fluffy-bunny/grpcdotnetgo/pkg/utils"
-	di "github.com/fluffy-bunny/sarulabsdi"
 )
 
 type (
@@ -37,7 +37,7 @@ func assertImplementation() {
 var reflectType = reflect.TypeOf((*service)(nil))
 
 // AddScopedITokenExchangeTokenHandler registers the *service.
-func AddScopedITokenExchangeTokenHandler(builder *di.Builder) {
+func AddScopedITokenExchangeTokenHandler(builder di.ContainerBuilder) {
 	contracts_tokenhandlers.AddScopedITokenExchangeTokenHandler(builder, reflectType)
 }
 

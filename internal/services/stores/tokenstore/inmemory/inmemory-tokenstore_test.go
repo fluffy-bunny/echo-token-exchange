@@ -7,7 +7,7 @@ import (
 
 	"echo-starter/internal/services/stores/tokenstore"
 
-	di "github.com/fluffy-bunny/sarulabsdi"
+	di "github.com/dozm/di"
 	"github.com/golang/mock/gomock"
 )
 

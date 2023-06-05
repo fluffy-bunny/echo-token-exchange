@@ -3,7 +3,7 @@ package tests
 import (
 	"testing"
 
-	grpcdotnetgoasync "github.com/fluffy-bunny/grpcdotnetgo/pkg/async"
+	fluffycore_async "github.com/fluffy-bunny/fluffycore/async"
 	"github.com/fluffy-bunny/grpcdotnetgo/pkg/echo/runtime"
 	"github.com/golang/mock/gomock"
 	"github.com/reugn/async"
@@ -34,11 +34,11 @@ func tearDown() {
 	// your code here
 }
 
-func ExecuteWithPromiseAsync(runtime *runtime.Runtime) async.Future {
-	future := grpcdotnetgoasync.ExecuteWithPromiseAsync(func(promise async.Promise) {
+func ExecuteWithPromiseAsync(runtime *runtime.Runtime) async.Future[interface{}] {
+	future := fluffycore_async.ExecuteWithPromiseAsync(func(promise async.Promise[interface{}]) {
 		var err error
 		defer func() {
-			promise.Success(&grpcdotnetgoasync.AsyncResponse{
+			promise.Success(&fluffycore_async.AsyncResponse{
 				Message: "End Serve - echo Server",
 				Error:   err,
 			})

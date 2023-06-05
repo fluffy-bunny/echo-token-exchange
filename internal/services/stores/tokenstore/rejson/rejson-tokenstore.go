@@ -13,11 +13,11 @@ import (
 	"sync"
 	"time"
 
+	di "github.com/dozm/di"
 	"github.com/fluffy-bunny/go-redis-search/ftsearch"
 	contracts_logger "github.com/fluffy-bunny/grpcdotnetgo/pkg/contracts/logger"
 	core_utils "github.com/fluffy-bunny/grpcdotnetgo/pkg/utils"
 	"github.com/fluffy-bunny/rejonson/v8"
-	di "github.com/fluffy-bunny/sarulabsdi"
 	"github.com/go-redis/redis/v8"
 	jsoniter "github.com/json-iterator/go"
 )
@@ -78,7 +78,7 @@ func assertImplementation() {
 var reflectType = reflect.TypeOf((*service)(nil))
 
 // AddSingletonITokenStore registers the *service.
-func AddSingletonITokenStore(builder *di.Builder) {
+func AddSingletonITokenStore(builder di.ContainerBuilder) {
 	contracts_stores_tokenstore.AddSingletonITokenStore(builder, reflectType)
 }
 func (s *service) wrapClientIDKey(clientID string) string {

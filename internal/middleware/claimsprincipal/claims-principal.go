@@ -5,15 +5,15 @@ import (
 
 	core_contracts_oidc "github.com/fluffy-bunny/grpcdotnetgo/pkg/contracts/oidc"
 	core_echo "github.com/fluffy-bunny/grpcdotnetgo/pkg/echo"
+	"github.com/rs/zerolog"
 
-	contracts_logger "github.com/fluffy-bunny/grpcdotnetgo/pkg/contracts/logger"
 	core_wellknown "github.com/fluffy-bunny/grpcdotnetgo/pkg/echo/wellknown"
 
 	contracts_auth "echo-starter/internal/contracts/auth"
 
+	di "github.com/dozm/di"
 	contracts_core_claimsprincipal "github.com/fluffy-bunny/grpcdotnetgo/pkg/contracts/claimsprincipal"
 	middleware_oidc "github.com/fluffy-bunny/grpcdotnetgo/pkg/middleware/oidc"
-	di "github.com/fluffy-bunny/sarulabsdi"
 	"github.com/labstack/echo/v4"
 	"gopkg.in/square/go-jose.v2/jwt"
 )
@@ -47,10 +47,11 @@ const middlewareLogName = "token-to-claims-principal"
 func AuthenticatedSessionToClaimsPrincipalMiddleware(root di.Container) echo.MiddlewareFunc {
 	// get authCookie service once during configuration
 
-	oidcAuthenticator, _ := core_contracts_oidc.SafeGetIOIDCAuthenticatorFromContainer(root)
+	oidcAuthenticator, _ := di.TryGet[core_contracts_oidc.IOIDCAuthenticator](root)
 
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
+			ctx := c.Request().Context()
 
 			for {
 
@@ -74,27 +75,23 @@ func AuthenticatedSessionToClaimsPrincipalMiddleware(root di.Container) echo.Mid
 				}
 
 				scopedContainer := c.Get(core_wellknown.SCOPED_CONTAINER_KEY).(di.Container)
-				logger := contracts_logger.GetILoggerFromContainer(scopedContainer)
-				errorEvent := logger.GetLogger().Error().Str("middleware", middlewareLogName)
-				debugEvent := logger.GetLogger().Debug().Str("middleware", middlewareLogName)
+				logger := zerolog.Ctx(ctx).With().Str("middleware", middlewareLogName).Logger()
+				tokenStore := di.Get[contracts_auth.IInternalTokenStore](scopedContainer)
 
-				tokenStore := contracts_auth.GetIInternalTokenStoreFromContainer(scopedContainer)
-
-				token, err := tokenStore.GetTokenByIdempotencyKey(bindingKey.(string))
+				token, err := tokenStore.GetTokenByIdempotencyKey(ctx, bindingKey.(string))
 				if err != nil {
 					// not necessarily an error. The tokens could have been removed and our idompotent key could be stale
-					debugEvent.Err(err).Msg("Failed to get token")
+					logger.Debug().Err(err).Msg("Failed to get token")
 					terminateAuthSession()
 					break
 				}
-
-				claimsPrincipal := contracts_core_claimsprincipal.GetIClaimsPrincipalFromContainer(scopedContainer)
+				claimsPrincipal := di.Get[contracts_core_claimsprincipal.IClaimsPrincipal](scopedContainer)
 
 				if ok, _ := isJWT(token.AccessToken); ok {
 					if oidcAuthenticator != nil {
 						accessToken, err := oidcAuthenticator.ValidateJWTAccessToken(token.AccessToken)
 						if err != nil {
-							errorEvent.Err(err).Msg("ValidateJWTAccessToken failed")
+							logger.Error().Err(err).Msg("ValidateJWTAccessToken failed")
 							terminateAuthSession()
 							break
 						}

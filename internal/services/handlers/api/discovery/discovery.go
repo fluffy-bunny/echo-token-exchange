@@ -8,8 +8,8 @@ import (
 
 	"echo-starter/internal/models"
 
+	di "github.com/dozm/di"
 	contracts_handler "github.com/fluffy-bunny/grpcdotnetgo/pkg/echo/contracts/handler"
-	di "github.com/fluffy-bunny/sarulabsdi"
 	"github.com/labstack/echo/v4"
 )
 
@@ -24,7 +24,7 @@ func assertImplementation() {
 var reflectType = reflect.TypeOf((*service)(nil))
 
 // AddScopedIHandler registers the *service as a singleton.
-func AddScopedIHandler(builder *di.Builder) {
+func AddScopedIHandler(builder di.ContainerBuilder) {
 	contracts_handler.AddScopedIHandlerEx(builder,
 		reflectType,
 		[]contracts_handler.HTTPVERB{

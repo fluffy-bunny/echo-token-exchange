@@ -11,8 +11,8 @@ import (
 	"time"
 
 	linq "github.com/ahmetb/go-linq"
+	di "github.com/dozm/di"
 	contracts_logger "github.com/fluffy-bunny/grpcdotnetgo/pkg/contracts/logger"
-	di "github.com/fluffy-bunny/sarulabsdi"
 )
 
 type (
@@ -34,7 +34,7 @@ func assertImplementation() {
 var reflectType = reflect.TypeOf((*service)(nil))
 
 // AddSingletonIKeyMaterial registers the *service as a singleton.
-func AddSingletonIKeyMaterial(builder *di.Builder) {
+func AddSingletonIKeyMaterial(builder di.ContainerBuilder) {
 	contracts_stores_keymaterial.AddSingletonIKeyMaterial(builder, reflectType)
 }
 func (s *service) Ctor() {

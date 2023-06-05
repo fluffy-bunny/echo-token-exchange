@@ -11,9 +11,9 @@ import (
 	"echo-starter/internal/models"
 	"echo-starter/internal/utils"
 
+	di "github.com/dozm/di"
 	core_hashset "github.com/fluffy-bunny/grpcdotnetgo/pkg/gods/sets/hashset"
 	core_utils "github.com/fluffy-bunny/grpcdotnetgo/pkg/utils"
-	di "github.com/fluffy-bunny/sarulabsdi"
 )
 
 type (
@@ -29,7 +29,7 @@ func assertImplementation() {
 var reflectType = reflect.TypeOf((*service)(nil))
 
 // AddScopedIClientCredentialsTokenHandler registers the *service.
-func AddScopedIClientCredentialsTokenHandler(builder *di.Builder) {
+func AddScopedIClientCredentialsTokenHandler(builder di.ContainerBuilder) {
 	contracts_tokenhandlers.AddScopedIClientCredentialsTokenHandler(builder, reflectType)
 }
 

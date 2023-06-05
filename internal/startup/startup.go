@@ -12,11 +12,12 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
-	"strconv"
 
 	"github.com/alicebob/miniredis/v2"
-	"github.com/fluffy-bunny/grpcdotnetgo/pkg/echo/contracts/startup"
-	echo_contracts_startup "github.com/fluffy-bunny/grpcdotnetgo/pkg/echo/contracts/startup"
+	contracts_startup "github.com/fluffy-bunny/fluffycore/echo/contracts/startup"
+	echo_contracts_startup "github.com/fluffy-bunny/fluffycore/echo/contracts/startup"
+	echo_services_startup "github.com/fluffy-bunny/fluffycore/echo/services/startup"
+
 	core_utils "github.com/fluffy-bunny/grpcdotnetgo/pkg/utils"
 	"github.com/quasoft/memstore"
 	"github.com/rs/zerolog/log"
@@ -25,6 +26,8 @@ import (
 
 	services_background_taskclient "echo-starter/internal/services/background/taskclient"
 	services_background_taskenginefactory "echo-starter/internal/services/background/taskenginefactory"
+
+	fluffycore_contracts_runtime "github.com/fluffy-bunny/fluffycore/contracts/runtime"
 
 	services_background_tasks_removetokens "echo-starter/internal/services/background/tasks/removetokens"
 
@@ -75,11 +78,10 @@ import (
 	services_handlers_error "echo-starter/internal/services/handlers/error"
 	services_handlers_home "echo-starter/internal/services/handlers/home"
 
+	di "github.com/dozm/di"
 	"github.com/fluffy-bunny/go-redis-search/ftsearch"
-	core_contracts "github.com/fluffy-bunny/grpcdotnetgo/pkg/contracts/core"
 	contracts_cookies "github.com/fluffy-bunny/grpcdotnetgo/pkg/echo/contracts/cookies"
 	core_middleware_session "github.com/fluffy-bunny/grpcdotnetgo/pkg/echo/middleware/session"
-	di "github.com/fluffy-bunny/sarulabsdi"
 	redis "github.com/go-redis/redis/v8"
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
@@ -90,7 +92,7 @@ import (
 )
 
 type Startup struct {
-	echo_contracts_startup.CommonStartup
+	echo_services_startup.StartupBase
 	config            *contracts_config.Config
 	ctrl              *gomock.Controller
 	clients           []models.Client
@@ -239,27 +241,20 @@ func (s *Startup) RegisterStaticRoutes(e *echo.Echo) error {
 	return nil
 }
 
-func (s *Startup) GetOptions() *startup.Options {
-	return &startup.Options{
+func (s *Startup) GetOptions() *contracts_startup.Options {
+	return &contracts_startup.Options{
 		Port: s.config.Port,
 	}
 }
 
-func (s *Startup) GetConfigOptions() *core_contracts.ConfigOptions {
-	prettyLog, err := strconv.ParseBool(os.Getenv("PRETTY_LOG"))
-	if err != nil {
-		prettyLog = false
-	}
+func (s *Startup) GetConfigOptions() *fluffycore_contracts_runtime.ConfigOptions {
 
-	return &core_contracts.ConfigOptions{
-		RootConfig:             []byte(contracts_config.ConfigDefaultJSON),
-		Destination:            s.config,
-		LogLevel:               os.Getenv("LOG_LEVEL"),
-		PrettyLog:              prettyLog,
-		ApplicationEnvironment: os.Getenv("APPLICATION_ENVIRONMENT"),
+	return &fluffycore_contracts_runtime.ConfigOptions{
+		RootConfig:  []byte(contracts_config.ConfigDefaultJSON),
+		Destination: s.config,
 	}
 }
-func (s *Startup) addSecureCookieOptions(builder *di.Builder) {
+func (s *Startup) addSecureCookieOptions(builder di.ContainerBuilder) {
 	// map our config to accessor funcs that other services need
 	// SECURE COOKIE
 	if core_utils.IsEmptyOrNil(s.config.SecureCookieHashKey) {
@@ -285,7 +280,7 @@ func (s *Startup) addSecureCookieOptions(builder *di.Builder) {
 	})
 }
 
-func (s *Startup) addBackgroundTasksHandlers(builder *di.Builder) {
+func (s *Startup) addBackgroundTasksHandlers(builder di.ContainerBuilder) {
 	// Add the engine
 	services_background_taskenginefactory.AddSingletonITaskEngineFactory(builder)
 	// Add the client use for enqueing tasks
@@ -294,7 +289,7 @@ func (s *Startup) addBackgroundTasksHandlers(builder *di.Builder) {
 	// add all the handlers
 	services_background_tasks_removetokens.AddSingletonISingletonTask(builder)
 }
-func (s *Startup) addAppHandlers(builder *di.Builder) {
+func (s *Startup) addAppHandlers(builder di.ContainerBuilder) {
 
 	services_handlers_healthz.AddScopedIHandler(builder)
 	services_handlers_ready.AddScopedIHandler(builder)
@@ -342,12 +337,12 @@ func (s *Startup) addAppHandlers(builder *di.Builder) {
 
 }
 
-func (s *Startup) ConfigureServices(builder *di.Builder) error {
+func (s *Startup) ConfigureServices(builder di.ContainerBuilder) error {
 	dst := &contracts_config.Config{}
 	core_utils.PrettyPrintRedacted(s.config, dst)
 
 	// add our config as a sigleton object
-	di.AddSingletonTypeByObj(builder, s.config)
+	di.AddInstance[*contracts_config.Config](builder, s.config)
 
 	// Add our main session accessor func
 	core_contracts_session.AddGetSessionFunc(builder, app_session.GetSession)

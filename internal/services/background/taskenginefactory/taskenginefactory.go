@@ -8,12 +8,12 @@ import (
 	contracts_background_tasks_removetokens "echo-starter/internal/contracts/background/tasks/removetokens"
 	contracts_config "echo-starter/internal/contracts/config"
 
-	grpcdotnetgoasync "github.com/fluffy-bunny/grpcdotnetgo/pkg/async"
-	contracts_logger "github.com/fluffy-bunny/grpcdotnetgo/pkg/contracts/logger"
+	di "github.com/dozm/di"
+	fluffycore_async "github.com/fluffy-bunny/fluffycore/async"
 	core_hashset "github.com/fluffy-bunny/grpcdotnetgo/pkg/gods/sets/hashset"
-	di "github.com/fluffy-bunny/sarulabsdi"
 	"github.com/hibiken/asynq"
 	"github.com/reugn/async"
+	"github.com/rs/zerolog/log"
 )
 
 type (
@@ -21,10 +21,9 @@ type (
 		config contracts_background_tasks.TaskEngineConfig
 		mux    *asynq.ServeMux
 		srv    *asynq.Server
-		future async.Future
+		future async.Future[interface{}]
 	}
 	service struct {
-		Logger              contracts_logger.ILogger                    `inject:""`
 		Config              *contracts_config.Config                    `inject:""`
 		Handlers            []contracts_background_tasks.ISingletonTask `inject:""`
 		taskEngineConfigs   []contracts_background_tasks.TaskEngineConfig
@@ -32,15 +31,24 @@ type (
 	}
 )
 
-func assertImplementation() {
+func ctor(config *contracts_config.Config,
+	handlers []contracts_background_tasks.ISingletonTask) (*service, error) {
+	return &service{
+		Config:   config,
+		Handlers: handlers,
+	}, nil
+}
+func init() {
 	var _ contracts_background_tasks.ITaskEngineFactory = (*service)(nil)
 }
 
 var reflectType = reflect.TypeOf((*service)(nil))
 
 // AddSingletonITaskEngineFactory registers the *service as a singleton.
-func AddSingletonITaskEngineFactory(builder *di.Builder) {
-	contracts_background_tasks.AddSingletonITaskEngineFactory(builder, reflectType)
+func AddSingletonITaskEngineFactory(builder di.ContainerBuilder) {
+	di.AddSingleton[*service](builder, ctor,
+		reflect.TypeOf((*contracts_background_tasks.ITaskEngineFactory)(nil)),
+	)
 }
 func (s *service) Ctor() {
 
@@ -95,17 +103,17 @@ func (s *service) Start() error {
 		}
 	}
 	for _, container := range s.serverMuxContainers {
-		container.future = grpcdotnetgoasync.ExecuteWithPromiseAsync(func(promise async.Promise) {
+		container.future = fluffycore_async.ExecuteWithPromiseAsync(func(promise async.Promise[interface{}]) {
 			var err error
 			defer func() {
-				promise.Success(&grpcdotnetgoasync.AsyncResponse{
+				promise.Success(&fluffycore_async.AsyncResponse{
 					Message: "End Serve - echo Server",
 					Error:   err,
 				})
 			}()
 			err = container.srv.Run(container.mux)
 			if err != nil {
-				s.Logger.Fatal().Err(err).Msg("Failed to start asynq server")
+				log.Fatal().Err(err).Msg("Failed to start asynq server")
 			}
 		})
 	}
@@ -120,9 +128,9 @@ func (s *service) Stop() error {
 
 	// wait for all to return the promise
 	for _, container := range s.serverMuxContainers {
-		promise, _ := container.future.Get()
-		response := promise.(grpcdotnetgoasync.AsyncResponse)
-		s.Logger.Info().Msg(response.Message)
+		promise, _ := container.future.Join()
+		response := promise.(fluffycore_async.AsyncResponse)
+		log.Info().Msg(response.Message)
 	}
 	return nil
 }

@@ -5,7 +5,7 @@ import (
 
 	contracts_tokenhandlers "echo-starter/internal/contracts/tokenhandlers"
 
-	di "github.com/fluffy-bunny/sarulabsdi"
+	di "github.com/dozm/di"
 )
 
 type (
@@ -21,6 +21,6 @@ func assertImplementation() {
 var reflectType = reflect.TypeOf((*service)(nil))
 
 // AddScopedITokenHandlerAccessor registers the *service.
-func AddScopedITokenHandlerAccessor(builder *di.Builder) {
+func AddScopedITokenHandlerAccessor(builder di.ContainerBuilder) {
 	contracts_tokenhandlers.AddScopedITokenHandlerAccessor(builder, reflectType, contracts_tokenhandlers.ReflectTypeIInternalTokenHandlerAccessor)
 }

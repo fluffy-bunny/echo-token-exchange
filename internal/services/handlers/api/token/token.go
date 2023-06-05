@@ -20,13 +20,13 @@ import (
 	"strings"
 	"time"
 
+	di "github.com/dozm/di"
 	"github.com/fatih/structs"
 	contracts_logger "github.com/fluffy-bunny/grpcdotnetgo/pkg/contracts/logger"
 	contracts_timeutils "github.com/fluffy-bunny/grpcdotnetgo/pkg/contracts/timeutils"
 	contracts_handler "github.com/fluffy-bunny/grpcdotnetgo/pkg/echo/contracts/handler"
 	core_hashset "github.com/fluffy-bunny/grpcdotnetgo/pkg/gods/sets/hashset"
 	core_utils "github.com/fluffy-bunny/grpcdotnetgo/pkg/utils"
-	di "github.com/fluffy-bunny/sarulabsdi"
 	"github.com/go-oauth2/oauth2/v4"
 	"github.com/go-oauth2/oauth2/v4/errors"
 	oauth2_models "github.com/go-oauth2/oauth2/v4/models"
@@ -60,7 +60,7 @@ func assertImplementation() {
 var reflectType = reflect.TypeOf((*service)(nil))
 
 // AddScopedIHandler registers the *service as a singleton.
-func AddScopedIHandler(builder *di.Builder) {
+func AddScopedIHandler(builder di.ContainerBuilder) {
 	contracts_handler.AddScopedIHandlerEx(builder,
 		reflectType,
 		[]contracts_handler.HTTPVERB{

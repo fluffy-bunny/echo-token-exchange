@@ -8,6 +8,7 @@ import (
 
 	contracts_config "echo-starter/internal/contracts/config"
 
+	di "github.com/dozm/di"
 	contracts_core_claimsprincipal "github.com/fluffy-bunny/grpcdotnetgo/pkg/contracts/claimsprincipal"
 	contracts_logger "github.com/fluffy-bunny/grpcdotnetgo/pkg/contracts/logger"
 	contracts_timeutils "github.com/fluffy-bunny/grpcdotnetgo/pkg/contracts/timeutils"
@@ -15,7 +16,6 @@ import (
 	contracts_contextaccessor "github.com/fluffy-bunny/grpcdotnetgo/pkg/echo/contracts/contextaccessor"
 	contracts_cookies "github.com/fluffy-bunny/grpcdotnetgo/pkg/echo/contracts/cookies"
 	contracts_handler "github.com/fluffy-bunny/grpcdotnetgo/pkg/echo/contracts/handler"
-	di "github.com/fluffy-bunny/sarulabsdi"
 	"github.com/labstack/echo/v4"
 )
 
@@ -44,7 +44,7 @@ func assertImplementation() {
 var reflectType = reflect.TypeOf((*service)(nil))
 
 // AddScopedIHandler registers the *service as a singleton.
-func AddScopedIHandler(builder *di.Builder) {
+func AddScopedIHandler(builder di.ContainerBuilder) {
 	contracts_handler.AddScopedIHandlerEx(builder,
 		reflectType,
 		[]contracts_handler.HTTPVERB{

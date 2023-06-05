@@ -5,8 +5,8 @@ import (
 
 	contracts_clients "echo-starter/internal/contracts/stores/clients"
 
+	di "github.com/dozm/di"
 	contracts_logger "github.com/fluffy-bunny/grpcdotnetgo/pkg/contracts/logger"
-	di "github.com/fluffy-bunny/sarulabsdi"
 )
 
 type (
@@ -23,6 +23,6 @@ func assertImplementation() {
 var reflectType = reflect.TypeOf((*service)(nil))
 
 // AddScopedIClientRequest registers the *service as a scoped.
-func AddScopedIClientRequest(builder *di.Builder) {
+func AddScopedIClientRequest(builder di.ContainerBuilder) {
 	contracts_clients.AddScopedIClientRequest(builder, reflectType, contracts_clients.ReflectTypeIClientRequestInternal)
 }

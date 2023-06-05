@@ -6,10 +6,10 @@ import (
 	"path/filepath"
 
 	"echo-starter/internal"
-	"echo-starter/internal/startup"
+	startup "echo-starter/internal/startup"
 
-	"github.com/fluffy-bunny/grpcdotnetgo/pkg/echo/runtime"
-	"github.com/rs/zerolog/log"
+	runtime "github.com/fluffy-bunny/fluffycore/echo/runtime"
+	log "github.com/rs/zerolog/log"
 )
 
 var version = "Development"

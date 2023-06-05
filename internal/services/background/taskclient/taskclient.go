@@ -1,34 +1,40 @@
 package taskegine
 
 import (
+	"context"
 	"reflect"
 
 	contracts_background_tasks "echo-starter/internal/contracts/background/tasks"
-
 	contracts_config "echo-starter/internal/contracts/config"
 
-	contracts_logger "github.com/fluffy-bunny/grpcdotnetgo/pkg/contracts/logger"
-	di "github.com/fluffy-bunny/sarulabsdi"
-	"github.com/hibiken/asynq"
+	di "github.com/dozm/di"
+	asynq "github.com/hibiken/asynq"
+	"github.com/rs/zerolog"
 )
 
 type (
 	service struct {
-		Logger contracts_logger.ILogger `inject:""`
 		Config *contracts_config.Config `inject:""`
 		client *asynq.Client
 	}
 )
 
-func assertImplementation() {
+func init() {
 	var _ contracts_background_tasks.ITaskClient = (*service)(nil)
 }
 
 var reflectType = reflect.TypeOf((*service)(nil))
 
+func ctor(config *contracts_config.Config) (contracts_background_tasks.ITaskClient, asynq.ErrorHandler) {
+	return &service{
+		Config: config,
+	}, nil
+}
+
 // AddSingletonITaskClient registers the *service as a singleton.
-func AddSingletonITaskClient(builder *di.Builder) {
-	contracts_background_tasks.AddSingletonITaskClient(builder, reflectType)
+func AddSingletonITaskClient(builder di.ContainerBuilder) {
+	di.AddSingleton[contracts_background_tasks.ITaskClient](builder,
+		ctor)
 }
 func (s *service) Close() {
 	s.client.Close()
@@ -42,10 +48,11 @@ func (s *service) Ctor() {
 
 }
 
-func (s *service) EnqueTask(task *asynq.Task, opts ...asynq.Option) (*asynq.TaskInfo, error) {
+func (s *service) EnqueTask(ctx context.Context, task *asynq.Task, opts ...asynq.Option) (*asynq.TaskInfo, error) {
+	log := zerolog.Ctx(ctx).With().Logger()
 	info, err := s.client.Enqueue(task, opts...)
 	if err != nil {
-		s.Logger.Error().Err(err).Msg("EnqueTask")
+		log.Error().Err(err).Msg("EnqueTask")
 	}
 	return info, err
 }

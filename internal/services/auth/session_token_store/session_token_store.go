@@ -1,30 +1,29 @@
 package session_token_store
 
 import (
+	"context"
 	contracts_auth "echo-starter/internal/contracts/auth"
 	"echo-starter/internal/session"
 	"encoding/json"
 	"errors"
 	"reflect"
 
-	contracts_logger "github.com/fluffy-bunny/grpcdotnetgo/pkg/contracts/logger"
+	di "github.com/dozm/di"
 	contracts_contextaccessor "github.com/fluffy-bunny/grpcdotnetgo/pkg/echo/contracts/contextaccessor"
 	contracts_cookies "github.com/fluffy-bunny/grpcdotnetgo/pkg/echo/contracts/cookies"
 	core_utils "github.com/fluffy-bunny/grpcdotnetgo/pkg/utils"
-	di "github.com/fluffy-bunny/sarulabsdi"
 	"golang.org/x/oauth2"
 )
 
 type (
 	service struct {
-		Logger              contracts_logger.ILogger                       `inject:""`
 		EchoContextAccessor contracts_contextaccessor.IEchoContextAccessor `inject:""`
 		SecureCookie        contracts_cookies.ISecureCookie                `inject:""`
 		cachedToken         *oauth2.Token
 	}
 )
 
-func assertImplementation() {
+func init() {
 	var _ contracts_auth.ITokenStore = (*service)(nil)
 	var _ contracts_auth.IInternalTokenStore = (*service)(nil)
 
@@ -32,27 +31,40 @@ func assertImplementation() {
 
 var reflectType = reflect.TypeOf((*service)(nil))
 
-// AddScopedITokenStore registers the *service as a singleton.
-func AddScopedITokenStore(builder *di.Builder) {
-	contracts_auth.AddScopedITokenStore(builder, reflectType, contracts_auth.ReflectTypeIInternalTokenStore)
+func ctor(echoContextAccessor contracts_contextaccessor.IEchoContextAccessor,
+	secureCookie contracts_cookies.ISecureCookie) (*service, error) {
+	return &service{
+		EchoContextAccessor: echoContextAccessor,
+		SecureCookie:        secureCookie,
+	}, nil
 }
 
-func (s *service) Clear() error {
+// AddScopedITokenStore registers the *service as a singleton.
+func AddScopedITokenStore(builder di.ContainerBuilder) {
+	di.AddScoped[*service](builder,
+		ctor,
+		reflect.TypeOf((*contracts_auth.IInternalTokenStore)(nil)),
+		reflect.TypeOf((*contracts_auth.ITokenStore)(nil)),
+	)
+
+}
+
+func (s *service) Clear(ctx context.Context) error {
 	c := s.EchoContextAccessor.GetContext()
 	session.TerminateAuthSession(c)
 	s.cachedToken = nil
 	return nil
 }
-func (s *service) GetToken() (*oauth2.Token, error) {
+func (s *service) GetToken(ctx context.Context) (*oauth2.Token, error) {
 	return s.cachedToken, nil
 }
-func (s *service) SlideOutExpiration() error {
+func (s *service) SlideOutExpiration(ctx context.Context) error {
 	c := s.EchoContextAccessor.GetContext()
 	authSess := session.GetAuthSession(c)
 	return authSess.Save(c.Request(), c.Response())
 }
 
-func (s *service) GetTokenByIdempotencyKey(bindingKey string) (*oauth2.Token, error) {
+func (s *service) GetTokenByIdempotencyKey(ctx context.Context, bindingKey string) (*oauth2.Token, error) {
 	if s.cachedToken == nil {
 		c := s.EchoContextAccessor.GetContext()
 		authSess := session.GetAuthSession(c)
@@ -80,7 +92,7 @@ func (s *service) GetTokenByIdempotencyKey(bindingKey string) (*oauth2.Token, er
 	}
 	return s.cachedToken, nil
 }
-func (s *service) StoreTokenByIdempotencyKey(bindingKey string, token *oauth2.Token) error {
+func (s *service) StoreTokenByIdempotencyKey(ctx context.Context, bindingKey string, token *oauth2.Token) error {
 	c := s.EchoContextAccessor.GetContext()
 	authTokensB, err := json.Marshal(token)
 	if err != nil {

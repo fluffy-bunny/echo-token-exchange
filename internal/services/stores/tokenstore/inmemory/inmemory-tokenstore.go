@@ -9,8 +9,8 @@ import (
 	"sync"
 	"time"
 
+	di "github.com/dozm/di"
 	core_utils "github.com/fluffy-bunny/grpcdotnetgo/pkg/utils"
-	di "github.com/fluffy-bunny/sarulabsdi"
 )
 
 type (
@@ -36,7 +36,7 @@ func assertImplementation() {
 var reflectType = reflect.TypeOf((*service)(nil))
 
 // AddSingletonITokenStore registers the *service.
-func AddSingletonITokenStore(builder *di.Builder) {
+func AddSingletonITokenStore(builder di.ContainerBuilder) {
 	contracts_stores_tokenstore.AddSingletonITokenStore(builder, reflectType,
 		contracts_stores_tokenstore.ReflectTypeIInternalTokenStore)
 }

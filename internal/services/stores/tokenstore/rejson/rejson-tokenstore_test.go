@@ -12,8 +12,8 @@ import (
 
 	"github.com/fluffy-bunny/go-redis-search/ftsearch"
 
+	di "github.com/dozm/di"
 	services_logger "github.com/fluffy-bunny/grpcdotnetgo/pkg/services/logger"
-	di "github.com/fluffy-bunny/sarulabsdi"
 	"github.com/go-redis/redis/v8"
 	"github.com/golang/mock/gomock"
 )

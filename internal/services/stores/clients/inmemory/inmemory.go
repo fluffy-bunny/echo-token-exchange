@@ -7,8 +7,8 @@ import (
 	contracts_clients "echo-starter/internal/contracts/stores/clients"
 	"echo-starter/internal/models"
 
+	di "github.com/dozm/di"
 	contracts_logger "github.com/fluffy-bunny/grpcdotnetgo/pkg/contracts/logger"
-	di "github.com/fluffy-bunny/sarulabsdi"
 )
 
 type (
@@ -26,7 +26,7 @@ func assertImplementation() {
 var reflectType = reflect.TypeOf((*service)(nil))
 
 // AddSingletonIClientStore registers the *service as a singleton.
-func AddSingletonIClientStore(builder *di.Builder, clients []models.Client) {
+func AddSingletonIClientStore(builder di.ContainerBuilder, clients []models.Client) {
 	contracts_clients.AddSingletonIClientStoreByFunc(builder, reflectType, func(ctn di.Container) (interface{}, error) {
 
 		cMap := make(map[string]models.Client)

@@ -1,6 +1,7 @@
 package cookie_token_store
 
 import (
+	"context"
 	contracts_auth "echo-starter/internal/contracts/auth"
 	"echo-starter/internal/session"
 	"encoding/json"
@@ -11,17 +12,16 @@ import (
 
 	contracts_config "echo-starter/internal/contracts/config"
 
-	contracts_logger "github.com/fluffy-bunny/grpcdotnetgo/pkg/contracts/logger"
+	di "github.com/dozm/di"
 	contracts_contextaccessor "github.com/fluffy-bunny/grpcdotnetgo/pkg/echo/contracts/contextaccessor"
 	contracts_cookies "github.com/fluffy-bunny/grpcdotnetgo/pkg/echo/contracts/cookies"
-	di "github.com/fluffy-bunny/sarulabsdi"
+	"github.com/rs/zerolog"
 	"golang.org/x/oauth2"
 )
 
 type (
 	service struct {
 		Config              *contracts_config.Config                       `inject:""`
-		Logger              contracts_logger.ILogger                       `inject:""`
 		EchoContextAccessor contracts_contextaccessor.IEchoContextAccessor `inject:""`
 		SecureCookie        contracts_cookies.ISecureCookie                `inject:""`
 		cachedToken         *oauth2.Token
@@ -32,19 +32,31 @@ type (
 	}
 )
 
-func assertImplementation() {
+func init() {
 	var _ contracts_auth.ITokenStore = (*service)(nil)
 	var _ contracts_auth.IInternalTokenStore = (*service)(nil)
 
 }
-
-var reflectType = reflect.TypeOf((*service)(nil))
+func ctor(config *contracts_config.Config,
+	echoContextAccessor contracts_contextaccessor.IEchoContextAccessor,
+	secureCookie contracts_cookies.ISecureCookie) (*service, error) {
+	return &service{
+		Config:              config,
+		EchoContextAccessor: echoContextAccessor,
+		SecureCookie:        secureCookie,
+	}, nil
+}
 
 // AddScopedITokenStore registers the *service as a singleton.
-func AddScopedITokenStore(builder *di.Builder) {
-	contracts_auth.AddScopedITokenStore(builder, reflectType, contracts_auth.ReflectTypeIInternalTokenStore)
+func AddScopedITokenStore(builder di.ContainerBuilder) {
+	di.AddScoped[*service](builder,
+		ctor,
+		reflect.TypeOf((*contracts_auth.IInternalTokenStore)(nil)),
+		reflect.TypeOf((*contracts_auth.ITokenStore)(nil)),
+	)
+
 }
-func (s *service) Clear() error {
+func (s *service) Clear(ctx context.Context) error {
 	authCookieName, err := s._getAuthCookieName()
 	if err != nil {
 		return err
@@ -64,7 +76,7 @@ func (s *service) _getAuthCookieName() (string, error) {
 	authCookieName := fmt.Sprintf("%s_%s", s.Config.AuthCookieName, idempotencyKey)
 	return authCookieName, nil
 }
-func (s *service) SlideOutExpiration() error {
+func (s *service) SlideOutExpiration(ctx context.Context) error {
 	authCookieName, err := s._getAuthCookieName()
 	if err != nil {
 		return err
@@ -72,10 +84,11 @@ func (s *service) SlideOutExpiration() error {
 	return s.SecureCookie.RefreshCookie(authCookieName, time.Duration(s.Config.SessionMaxAgeSeconds)*time.Second)
 }
 
-func (s *service) GetToken() (*oauth2.Token, error) {
+func (s *service) GetToken(ctx context.Context) (*oauth2.Token, error) {
 	return s.cachedToken, nil
 }
-func (s *service) GetTokenByIdempotencyKey(idempotencyKey string) (*oauth2.Token, error) {
+func (s *service) GetTokenByIdempotencyKey(ctx context.Context, idempotencyKey string) (*oauth2.Token, error) {
+	log := zerolog.Ctx(ctx).With().Logger()
 	if s.cachedToken == nil {
 		authCookieName, err := s._getAuthCookieName()
 		if err != nil {
@@ -91,7 +104,7 @@ func (s *service) GetTokenByIdempotencyKey(idempotencyKey string) (*oauth2.Token
 			return nil, err
 		}
 		if container.ID != idempotencyKey {
-			s.Logger.Error().Str("request_binding_key", idempotencyKey).
+			log.Error().Str("request_binding_key", idempotencyKey).
 				Str("stored_binding_key", container.ID).Msg("idempotencyKey does not match cookieId")
 			return nil, errors.New("binding key requsted doesn't match the one stored")
 		}
@@ -99,7 +112,7 @@ func (s *service) GetTokenByIdempotencyKey(idempotencyKey string) (*oauth2.Token
 	}
 	return s.cachedToken, nil
 }
-func (s *service) StoreTokenByIdempotencyKey(idempotencyKey string, token *oauth2.Token) error {
+func (s *service) StoreTokenByIdempotencyKey(ctx context.Context, idempotencyKey string, token *oauth2.Token) error {
 	payload := &cookieContainer{
 		ID:    idempotencyKey,
 		Token: token,

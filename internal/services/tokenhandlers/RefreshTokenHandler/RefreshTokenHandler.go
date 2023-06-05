@@ -13,9 +13,9 @@ import (
 	"reflect"
 	"time"
 
+	di "github.com/dozm/di"
 	"github.com/fatih/structs"
 	core_utils "github.com/fluffy-bunny/grpcdotnetgo/pkg/utils"
-	di "github.com/fluffy-bunny/sarulabsdi"
 	"github.com/go-oauth2/oauth2/v4/errors"
 )
 
@@ -38,7 +38,7 @@ func assertImplementation() {
 var reflectType = reflect.TypeOf((*service)(nil))
 
 // AddScopedIRefreshTokenHandler registers the *service.
-func AddScopedIRefreshTokenHandler(builder *di.Builder) {
+func AddScopedIRefreshTokenHandler(builder di.ContainerBuilder) {
 	contracts_tokenhandlers.AddScopedIRefreshTokenHandler(builder, reflectType)
 }
 

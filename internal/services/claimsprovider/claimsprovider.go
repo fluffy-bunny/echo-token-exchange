@@ -9,7 +9,7 @@ import (
 
 	core_hashset "github.com/fluffy-bunny/grpcdotnetgo/pkg/gods/sets/hashset"
 
-	di "github.com/fluffy-bunny/sarulabsdi"
+	di "github.com/dozm/di"
 )
 
 type (
@@ -56,7 +56,7 @@ func init() {
 var reflectType = reflect.TypeOf((*service)(nil))
 
 // AddSingletonIClaimsProvider registers the *service as a singleton.
-func AddSingletonIClaimsProvider(builder *di.Builder) {
+func AddSingletonIClaimsProvider(builder di.ContainerBuilder) {
 	contracts_claimsprovider.AddSingletonIClaimsProvider(builder, reflectType)
 }
 

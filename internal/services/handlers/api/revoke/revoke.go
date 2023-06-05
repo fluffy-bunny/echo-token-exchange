@@ -11,9 +11,9 @@ import (
 	contracts_background_tasks_removetokens "echo-starter/internal/contracts/background/tasks/removetokens"
 	contracts_stores_tokenstore "echo-starter/internal/contracts/stores/tokenstore"
 
+	di "github.com/dozm/di"
 	contracts_handler "github.com/fluffy-bunny/grpcdotnetgo/pkg/echo/contracts/handler"
 	core_utils "github.com/fluffy-bunny/grpcdotnetgo/pkg/utils"
-	di "github.com/fluffy-bunny/sarulabsdi"
 	"github.com/hibiken/asynq"
 	"github.com/labstack/echo/v4"
 )
@@ -32,7 +32,7 @@ func assertImplementation() {
 var reflectType = reflect.TypeOf((*service)(nil))
 
 // AddScopedIHandler registers the *service as a singleton.
-func AddScopedIHandler(builder *di.Builder) {
+func AddScopedIHandler(builder di.ContainerBuilder) {
 	contracts_handler.AddScopedIHandlerEx(builder,
 		reflectType,
 		[]contracts_handler.HTTPVERB{

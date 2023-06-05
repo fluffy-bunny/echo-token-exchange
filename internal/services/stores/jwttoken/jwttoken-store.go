@@ -10,8 +10,8 @@ import (
 	"reflect"
 	"strings"
 
+	di "github.com/dozm/di"
 	contracts_logger "github.com/fluffy-bunny/grpcdotnetgo/pkg/contracts/logger"
-	di "github.com/fluffy-bunny/sarulabsdi"
 	"github.com/golang-jwt/jwt"
 )
 
@@ -30,7 +30,7 @@ func assertImplementation() {
 var reflectType = reflect.TypeOf((*service)(nil))
 
 // AddSingletonIJwtTokenStore registers the *service as a singleton.
-func AddSingletonIJwtTokenStore(builder *di.Builder) {
+func AddSingletonIJwtTokenStore(builder di.ContainerBuilder) {
 	contracts_stores_tokenstore.AddSingletonIJwtTokenStore(builder, reflectType)
 }
 

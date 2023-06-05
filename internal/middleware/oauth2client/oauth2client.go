@@ -11,10 +11,10 @@ import (
 
 	contracts_tokenhandlers "echo-starter/internal/contracts/tokenhandlers"
 
+	di "github.com/dozm/di"
 	core_wellknown "github.com/fluffy-bunny/grpcdotnetgo/pkg/echo/wellknown"
 	core_hashset "github.com/fluffy-bunny/grpcdotnetgo/pkg/gods/sets/hashset"
 	core_utils "github.com/fluffy-bunny/grpcdotnetgo/pkg/utils"
-	di "github.com/fluffy-bunny/sarulabsdi"
 	"github.com/go-oauth2/oauth2/v4/errors"
 	oauth2_server "github.com/go-oauth2/oauth2/v4/server"
 	"github.com/labstack/echo/v4"
@@ -52,7 +52,7 @@ func _clientInfoHandler(c echo.Context, clientStore contracts_clients.IClientSto
 
 func AuthenticateOAuth2Client(root di.Container) echo.MiddlewareFunc {
 
-	clientStore := contracts_clients.GetIClientStoreFromContainer(root)
+	clientStore := di.Get[contracts_clients.IClientStore](root)
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			r := c.Request()
@@ -108,20 +108,20 @@ func AuthenticateOAuth2Client(root di.Container) echo.MiddlewareFunc {
 			}
 
 			scopedContainer := c.Get(core_wellknown.SCOPED_CONTAINER_KEY).(di.Container)
-			clientRequest := contracts_clients.GetIClientRequestInternalFromContainer(scopedContainer)
+			clientRequest := di.Get[contracts_clients.IClientRequestInternal](scopedContainer)
 			clientRequest.SetClient(client)
 
-			tokenHandlerAccessor := contracts_tokenhandlers.GetIInternalTokenHandlerAccessorFromContainer(scopedContainer)
+			tokenHandlerAccessor := di.Get[contracts_tokenhandlers.IInternalTokenHandlerAccessor](scopedContainer)
 			tokenHandlerAccessor.SetGrantType(grantType)
 			switch grantType {
 			case wellknown.OAuth2GrantType_ClientCredentials:
-				tokenHandler := contracts_tokenhandlers.GetIClientCredentialsTokenHandlerFromContainer(scopedContainer)
+				tokenHandler := di.Get[contracts_tokenhandlers.IClientCredentialsTokenHandler](scopedContainer)
 				tokenHandlerAccessor.SetTokenHandler(tokenHandler)
 			case wellknown.OAuth2GrantType_RefreshToken:
-				tokenHandler := contracts_tokenhandlers.GetIRefreshTokenHandlerFromContainer(scopedContainer)
+				tokenHandler := di.Get[contracts_tokenhandlers.IRefreshTokenHandler](scopedContainer)
 				tokenHandlerAccessor.SetTokenHandler(tokenHandler)
 			case wellknown.OAuth2GrantType_TokenExchange:
-				tokenHandler := contracts_tokenhandlers.GetITokenExchangeTokenHandlerFromContainer(scopedContainer)
+				tokenHandler := di.Get[contracts_tokenhandlers.ITokenExchangeTokenHandler](scopedContainer)
 				tokenHandlerAccessor.SetTokenHandler(tokenHandler)
 			}
 			return next(c)
