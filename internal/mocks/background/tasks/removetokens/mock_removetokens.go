@@ -58,10 +58,10 @@ func (mr *MockIRemoveTokensSingletonTaskMockRecorder) EnqueTask(arg0, arg1 inter
 }
 
 // EnqueTaskTokenRemoveByClientID mocks base method.
-func (m *MockIRemoveTokensSingletonTask) EnqueTaskTokenRemoveByClientID(arg0 *removetokens.TokenRemoveByClientID, arg1 ...asynq.Option) (*asynq.TaskInfo, error) {
+func (m *MockIRemoveTokensSingletonTask) EnqueTaskTokenRemoveByClientID(arg0 context.Context, arg1 *removetokens.TokenRemoveByClientID, arg2 ...asynq.Option) (*asynq.TaskInfo, error) {
 	m.ctrl.T.Helper()
-	varargs := []interface{}{arg0}
-	for _, a := range arg1 {
+	varargs := []interface{}{arg0, arg1}
+	for _, a := range arg2 {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "EnqueTaskTokenRemoveByClientID", varargs...)
@@ -71,17 +71,17 @@ func (m *MockIRemoveTokensSingletonTask) EnqueTaskTokenRemoveByClientID(arg0 *re
 }
 
 // EnqueTaskTokenRemoveByClientID indicates an expected call of EnqueTaskTokenRemoveByClientID.
-func (mr *MockIRemoveTokensSingletonTaskMockRecorder) EnqueTaskTokenRemoveByClientID(arg0 interface{}, arg1 ...interface{}) *gomock.Call {
+func (mr *MockIRemoveTokensSingletonTaskMockRecorder) EnqueTaskTokenRemoveByClientID(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{arg0}, arg1...)
+	varargs := append([]interface{}{arg0, arg1}, arg2...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EnqueTaskTokenRemoveByClientID", reflect.TypeOf((*MockIRemoveTokensSingletonTask)(nil).EnqueTaskTokenRemoveByClientID), varargs...)
 }
 
 // EnqueTaskTokenRemoveByClientIDAndSubject mocks base method.
-func (m *MockIRemoveTokensSingletonTask) EnqueTaskTokenRemoveByClientIDAndSubject(arg0 *removetokens.TokenRemoveByClientIDAndSubject, arg1 ...asynq.Option) (*asynq.TaskInfo, error) {
+func (m *MockIRemoveTokensSingletonTask) EnqueTaskTokenRemoveByClientIDAndSubject(arg0 context.Context, arg1 *removetokens.TokenRemoveByClientIDAndSubject, arg2 ...asynq.Option) (*asynq.TaskInfo, error) {
 	m.ctrl.T.Helper()
-	varargs := []interface{}{arg0}
-	for _, a := range arg1 {
+	varargs := []interface{}{arg0, arg1}
+	for _, a := range arg2 {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "EnqueTaskTokenRemoveByClientIDAndSubject", varargs...)
@@ -91,17 +91,17 @@ func (m *MockIRemoveTokensSingletonTask) EnqueTaskTokenRemoveByClientIDAndSubjec
 }
 
 // EnqueTaskTokenRemoveByClientIDAndSubject indicates an expected call of EnqueTaskTokenRemoveByClientIDAndSubject.
-func (mr *MockIRemoveTokensSingletonTaskMockRecorder) EnqueTaskTokenRemoveByClientIDAndSubject(arg0 interface{}, arg1 ...interface{}) *gomock.Call {
+func (mr *MockIRemoveTokensSingletonTaskMockRecorder) EnqueTaskTokenRemoveByClientIDAndSubject(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{arg0}, arg1...)
+	varargs := append([]interface{}{arg0, arg1}, arg2...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EnqueTaskTokenRemoveByClientIDAndSubject", reflect.TypeOf((*MockIRemoveTokensSingletonTask)(nil).EnqueTaskTokenRemoveByClientIDAndSubject), varargs...)
 }
 
 // EnqueTaskTypeRemoveTokenBySubject mocks base method.
-func (m *MockIRemoveTokensSingletonTask) EnqueTaskTypeRemoveTokenBySubject(arg0 *removetokens.TokenRemoveBySubject, arg1 ...asynq.Option) (*asynq.TaskInfo, error) {
+func (m *MockIRemoveTokensSingletonTask) EnqueTaskTypeRemoveTokenBySubject(arg0 context.Context, arg1 *removetokens.TokenRemoveBySubject, arg2 ...asynq.Option) (*asynq.TaskInfo, error) {
 	m.ctrl.T.Helper()
-	varargs := []interface{}{arg0}
-	for _, a := range arg1 {
+	varargs := []interface{}{arg0, arg1}
+	for _, a := range arg2 {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "EnqueTaskTypeRemoveTokenBySubject", varargs...)
@@ -111,9 +111,9 @@ func (m *MockIRemoveTokensSingletonTask) EnqueTaskTypeRemoveTokenBySubject(arg0 
 }
 
 // EnqueTaskTypeRemoveTokenBySubject indicates an expected call of EnqueTaskTypeRemoveTokenBySubject.
-func (mr *MockIRemoveTokensSingletonTaskMockRecorder) EnqueTaskTypeRemoveTokenBySubject(arg0 interface{}, arg1 ...interface{}) *gomock.Call {
+func (mr *MockIRemoveTokensSingletonTaskMockRecorder) EnqueTaskTypeRemoveTokenBySubject(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{arg0}, arg1...)
+	varargs := append([]interface{}{arg0, arg1}, arg2...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EnqueTaskTypeRemoveTokenBySubject", reflect.TypeOf((*MockIRemoveTokensSingletonTask)(nil).EnqueTaskTypeRemoveTokenBySubject), varargs...)
 }
 

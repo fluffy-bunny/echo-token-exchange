@@ -5,6 +5,7 @@
 package probe
 
 import (
+	context "context"
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
@@ -48,15 +49,15 @@ func (mr *MockIProbeMockRecorder) GetName() *gomock.Call {
 }
 
 // Probe mocks base method.
-func (m *MockIProbe) Probe() error {
+func (m *MockIProbe) Probe(arg0 context.Context) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Probe")
+	ret := m.ctrl.Call(m, "Probe", arg0)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Probe indicates an expected call of Probe.
-func (mr *MockIProbeMockRecorder) Probe() *gomock.Call {
+func (mr *MockIProbeMockRecorder) Probe(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Probe", reflect.TypeOf((*MockIProbe)(nil).Probe))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Probe", reflect.TypeOf((*MockIProbe)(nil).Probe), arg0)
 }
