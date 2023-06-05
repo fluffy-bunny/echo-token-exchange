@@ -38,7 +38,7 @@
                 "REDIS_OPTIONS__NAMESPACE": "echotx",
                 "REDIS_URL": "localhost:6379",
                 "CLIENT_STORE_PROVIDER": "inmemory",
-	            "TOKEN_STORE_PROVIDER": "redis",
+	            "TOKEN_STORE_PROVIDER": "inmemory",
 
             },
             "args": [  ]

@@ -2,7 +2,6 @@ package taskegine
 
 import (
 	"context"
-	"reflect"
 
 	contracts_background_tasks "echo-starter/internal/contracts/background/tasks"
 	contracts_config "echo-starter/internal/contracts/config"
@@ -19,33 +18,31 @@ type (
 	}
 )
 
+var stemService *service
+
 func init() {
 	var _ contracts_background_tasks.ITaskClient = (*service)(nil)
 }
 
-var reflectType = reflect.TypeOf((*service)(nil))
-
-func ctor(config *contracts_config.Config) (contracts_background_tasks.ITaskClient, asynq.ErrorHandler) {
-	return &service{
+func (s *service) Ctor(config *contracts_config.Config) (*service, error) {
+	obj := &service{
 		Config: config,
-	}, nil
+	}
+	obj.client = asynq.NewClient(asynq.RedisClientOpt{
+		Addr:     s.Config.RedisOptions.Addr,
+		Network:  s.Config.RedisOptions.Network,
+		Password: s.Config.RedisOptions.Password,
+		Username: s.Config.RedisOptions.Username})
+	return obj, nil
 }
 
 // AddSingletonITaskClient registers the *service as a singleton.
 func AddSingletonITaskClient(builder di.ContainerBuilder) {
 	di.AddSingleton[contracts_background_tasks.ITaskClient](builder,
-		ctor)
+		stemService.Ctor)
 }
 func (s *service) Close() {
 	s.client.Close()
-}
-func (s *service) Ctor() {
-	s.client = asynq.NewClient(asynq.RedisClientOpt{
-		Addr:     s.Config.RedisOptions.Addr,
-		Network:  s.Config.RedisOptions.Network,
-		Password: s.Config.RedisOptions.Password,
-		Username: s.Config.RedisOptions.Username})
-
 }
 
 func (s *service) EnqueTask(ctx context.Context, task *asynq.Task, opts ...asynq.Option) (*asynq.TaskInfo, error) {
