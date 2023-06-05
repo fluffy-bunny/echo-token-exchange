@@ -85,9 +85,7 @@
 		"allowedScopes": ["offline_access","artificer-ns","a", "b", "c","invoices","users.read"],
 		"allowedGrantTypes": [
 			"client_credentials",
-			"refresh_token",
-			"arbitrary_resource_owner",
-			"arbitrary_identity"
+			"urn:ietf:params:oauth:grant-type:token-exchange" 
 		],
 		"clientSecrets": [{
 			"expiration": 1604102400,

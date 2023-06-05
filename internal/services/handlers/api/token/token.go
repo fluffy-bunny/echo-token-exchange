@@ -75,8 +75,8 @@ func (s *service) Ctor(
 		TokenHandlerAccessor: tokenHandlerAccessor,
 		ReferenceTokenStore:  referenceTokenStore,
 	}
-	obj.TokenHandler = s.TokenHandlerAccessor.GetTokenHandler()
-	signingKey, err := s.KeyMaterial.GetSigningKey()
+	obj.TokenHandler = obj.TokenHandlerAccessor.GetTokenHandler()
+	signingKey, err := obj.KeyMaterial.GetSigningKey()
 	if err != nil {
 		panic(err)
 	}

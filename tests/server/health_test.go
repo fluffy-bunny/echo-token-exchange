@@ -6,8 +6,6 @@ import (
 	"net/http"
 	"testing"
 
-	contracts_background_tasks "echo-starter/internal/contracts/background/tasks"
-	mocks_background_tasks "echo-starter/internal/mocks/background/tasks"
 	startup "echo-starter/internal/startup"
 	tests "echo-starter/tests"
 	httptest "net/http/httptest"
@@ -23,9 +21,6 @@ import (
 func TestHealthCheck(t *testing.T) {
 	tests.RunTest(t, func(ctrl *gomock.Controller) {
 
-		taskEngine := mocks_background_tasks.NewMockITaskEngineFactory(ctrl)
-		taskEngine.EXPECT().Start().Return(nil)
-		taskEngine.EXPECT().Stop().Return(nil)
 		folderChanger := NewFolderChanger("../../cmd/server")
 		defer folderChanger.ChangeBack()
 
@@ -36,7 +31,7 @@ func TestHealthCheck(t *testing.T) {
 		hooks := &echo_contracts_startup.Hooks{
 			PrebuildHook: func(builder di.ContainerBuilder) error {
 				// register a null task engine
-				di.AddInstance[contracts_background_tasks.ITaskEngineFactory](builder, taskEngine)
+
 				return nil
 			},
 			PreStartHook: func(echo *echo.Echo) error {
