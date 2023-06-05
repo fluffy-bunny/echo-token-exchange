@@ -36,7 +36,7 @@ func (a *Claims) Get(key string) interface{} {
 func (a *Claims) JwtClaims() jwt.Claims {
 	return a
 }
-func assertImplementation() {
+func init() {
 	var _ IClaims = (*Claims)(nil)
 	var _ jwt.Claims = (*Claims)(nil)
 }

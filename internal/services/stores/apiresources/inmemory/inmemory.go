@@ -1,20 +1,15 @@
 package inmemory
 
 import (
-	"reflect"
-
 	contracts_stores_apiresources "echo-starter/internal/contracts/stores/apiresources"
-	"echo-starter/internal/models"
-
-	core_hashset "github.com/fluffy-bunny/grpcdotnetgo/pkg/gods/sets/hashset"
+	models "echo-starter/internal/models"
 
 	di "github.com/dozm/di"
-	contracts_logger "github.com/fluffy-bunny/grpcdotnetgo/pkg/contracts/logger"
+	core_hashset "github.com/fluffy-bunny/grpcdotnetgo/pkg/gods/sets/hashset"
 )
 
 type (
 	service struct {
-		Logger          contracts_logger.ILogger `inject:""`
 		apiResources    []models.APIResource
 		apiResourcesMap map[string]models.APIResource
 		scopeMap        map[string]string
@@ -22,39 +17,40 @@ type (
 	}
 )
 
-func assertImplementation() {
+var stemService *service
+
+func init() {
 	var _ contracts_stores_apiresources.IAPIResources = (*service)(nil)
 }
 
-var reflectType = reflect.TypeOf((*service)(nil))
+func (s *service) Ctor(apiResources []models.APIResource) (*service, error) {
+	obj := &service{
+		apiResources:    []models.APIResource{},
+		apiResourcesMap: make(map[string]models.APIResource),
+		scopeMap:        make(map[string]string),
+		scopes:          core_hashset.NewStringSet(),
+	}
 
-func (s *service) Ctor() {
-	s.scopes = core_hashset.NewStringSet()
-	s.scopeMap = make(map[string]string)
-	s.apiResourcesMap = make(map[string]models.APIResource)
+	for _, item := range apiResources {
+		obj.apiResourcesMap[item.Name] = item
+		for _, scope := range item.Scopes {
+			obj.scopeMap[scope] = item.Name
+			obj.scopes.Add(scope)
+		}
+	}
+	return obj, nil
 }
 
 // AddSingletonIAPIResources registers the *service as a singleton.
 func AddSingletonIAPIResources(builder di.ContainerBuilder, apiResources []models.APIResource) {
-	contracts_stores_apiresources.AddSingletonIAPIResourcesByFunc(builder, reflectType, func(ctn di.Container) (interface{}, error) {
-		obj := &service{}
-		obj.Ctor()
+	obj, err := stemService.Ctor(apiResources)
+	if err != nil {
+		panic(err)
+	}
 
-		scopeMap := make(map[string]string)
-		apiResourcesMap := make(map[string]models.APIResource)
-		for _, item := range apiResources {
-			apiResourcesMap[item.Name] = item
-			for _, scope := range item.Scopes {
-				scopeMap[scope] = item.Name
-				obj.scopes.Add(scope)
-			}
-		}
-		obj.apiResources = apiResources
-		obj.apiResourcesMap = apiResourcesMap
-		obj.scopeMap = scopeMap
+	di.AddInstance[contracts_stores_apiresources.IAPIResources](builder,
+		obj)
 
-		return obj, nil
-	})
 }
 func (s *service) GetApiResourceByScope(scope string) (*models.APIResource, bool, error) {
 	name, found := s.scopeMap[scope]
@@ -65,8 +61,7 @@ func (s *service) GetApiResourceByScope(scope string) (*models.APIResource, bool
 	if !found {
 		return nil, false, nil
 	}
-	var copyOfItem models.APIResource
-	copyOfItem = item
+	copyOfItem := item
 	return &copyOfItem, true, nil
 }
 
@@ -78,8 +73,7 @@ func (s *service) GetAPIResource(name string) (*models.APIResource, bool, error)
 	if !found {
 		return nil, false, nil
 	}
-	var copyOfItem models.APIResource
-	copyOfItem = item
+	copyOfItem := item
 	return &copyOfItem, true, nil
 }
 func (s *service) GetApiResourceScopes() (*core_hashset.StringSet, error) {

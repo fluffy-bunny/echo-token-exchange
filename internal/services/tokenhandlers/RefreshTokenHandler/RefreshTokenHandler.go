@@ -10,12 +10,11 @@ import (
 	"echo-starter/internal/wellknown"
 	"encoding/json"
 	"net/http"
-	"reflect"
 	"time"
 
 	di "github.com/dozm/di"
 	"github.com/fatih/structs"
-	core_utils "github.com/fluffy-bunny/grpcdotnetgo/pkg/utils"
+	core_utils "github.com/fluffy-bunny/fluffycore/utils"
 	"github.com/go-oauth2/oauth2/v4/errors"
 )
 
@@ -31,15 +30,28 @@ type (
 	}
 )
 
-func assertImplementation() {
+var stemService *service
+
+func init() {
 	var _ contracts_tokenhandlers.IClientCredentialsTokenHandler = (*service)(nil)
 }
 
-var reflectType = reflect.TypeOf((*service)(nil))
+func (s *service) Ctor(
+	tokenExchangeTokenHandler contracts_tokenhandlers.ITokenExchangeTokenHandler,
+	clientCredentialsTokenHandler contracts_tokenhandlers.IClientCredentialsTokenHandler,
+	referenceTokenStore contracts_stores_tokenstore.ITokenStore,
+	clientRequest contracts_clients.IClientRequest) (*service, error) {
+	return &service{
+		TokenExchangeTokenHandler:     tokenExchangeTokenHandler,
+		ClientCredentialsTokenHandler: clientCredentialsTokenHandler,
+		ReferenceTokenStore:           referenceTokenStore,
+		ClientRequest:                 clientRequest,
+	}, nil
+}
 
 // AddScopedIRefreshTokenHandler registers the *service.
 func AddScopedIRefreshTokenHandler(builder di.ContainerBuilder) {
-	contracts_tokenhandlers.AddScopedIRefreshTokenHandler(builder, reflectType)
+	di.AddScoped[contracts_tokenhandlers.IRefreshTokenHandler](builder, stemService.Ctor)
 }
 
 func (s *service) ValidationTokenRequest(r *http.Request) (result *contracts_tokenhandlers.ValidatedTokenRequestResult, err error) {
@@ -60,7 +72,7 @@ func (s *service) ValidationTokenRequest(r *http.Request) (result *contracts_tok
 }
 func (s *service) ProcessTokenRequest(ctx context.Context, result *contracts_tokenhandlers.ValidatedTokenRequestResult) (models.IClaims, error) {
 	now := time.Now()
-	handle, _ := result.Params[models.TokenTypeRefreshToken]
+	handle := result.Params[models.TokenTypeRefreshToken]
 	rt, err := s.ReferenceTokenStore.GetToken(ctx, handle)
 	if err != nil {
 		return nil, errors.ErrInvalidRequest

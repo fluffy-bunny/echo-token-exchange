@@ -13,7 +13,6 @@ import (
 	"github.com/fluffy-bunny/go-redis-search/ftsearch"
 
 	di "github.com/dozm/di"
-	services_logger "github.com/fluffy-bunny/grpcdotnetgo/pkg/services/logger"
 	"github.com/go-redis/redis/v8"
 	"github.com/golang/mock/gomock"
 )
@@ -25,7 +24,7 @@ func TestStore(t *testing.T) {
 		return
 	}
 	tests.RunTest(t, func(ctrl *gomock.Controller) {
-		builder, _ := di.NewBuilder(di.App, di.Request, "transient")
+		builder := di.Builder()
 		config := &contracts_config.Config{
 			RedisOptions: contracts_config.RedisOptions{
 				Addr:     "localhost:6379",
@@ -33,8 +32,7 @@ func TestStore(t *testing.T) {
 				Password: "eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81",
 			},
 		}
-		services_logger.AddSingletonILogger(builder)
-		di.AddSingletonTypeByObj(builder, config)
+		di.AddInstance[*contracts_config.Config](builder, config)
 		AddSingletonITokenStore(builder)
 		ctn := builder.Build()
 		redisOptions := &redis.Options{

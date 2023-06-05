@@ -1,13 +1,12 @@
 /*
 Copyright © 2022 NAME HERE <EMAIL ADDRESS>
-
 */
 package argon2
 
 import (
 	"echo-starter/internal/utils"
 
-	core_utils "github.com/fluffy-bunny/grpcdotnetgo/pkg/utils"
+	core_utils "github.com/fluffy-bunny/fluffycore/utils"
 
 	"fmt"
 

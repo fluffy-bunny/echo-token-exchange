@@ -3,7 +3,6 @@ package ClientCredentialsTokenHandler
 import (
 	"context"
 	"net/http"
-	"reflect"
 	"strings"
 
 	contracts_stores_apiresources "echo-starter/internal/contracts/stores/apiresources"
@@ -12,8 +11,8 @@ import (
 	"echo-starter/internal/utils"
 
 	di "github.com/dozm/di"
+	core_utils "github.com/fluffy-bunny/fluffycore/utils"
 	core_hashset "github.com/fluffy-bunny/grpcdotnetgo/pkg/gods/sets/hashset"
-	core_utils "github.com/fluffy-bunny/grpcdotnetgo/pkg/utils"
 )
 
 type (
@@ -22,15 +21,21 @@ type (
 	}
 )
 
-func assertImplementation() {
+var stemService *service
+
+func init() {
 	var _ contracts_tokenhandlers.IClientCredentialsTokenHandler = (*service)(nil)
 }
 
-var reflectType = reflect.TypeOf((*service)(nil))
+func (s *service) Ctor(apiResources contracts_stores_apiresources.IAPIResources) (*service, error) {
+	return &service{
+		APIResources: apiResources,
+	}, nil
+}
 
 // AddScopedIClientCredentialsTokenHandler registers the *service.
 func AddScopedIClientCredentialsTokenHandler(builder di.ContainerBuilder) {
-	contracts_tokenhandlers.AddScopedIClientCredentialsTokenHandler(builder, reflectType)
+	di.AddScoped[contracts_tokenhandlers.IClientCredentialsTokenHandler](builder, stemService.Ctor)
 }
 
 func (s *service) ValidationTokenRequest(r *http.Request) (result *contracts_tokenhandlers.ValidatedTokenRequestResult, err error) {

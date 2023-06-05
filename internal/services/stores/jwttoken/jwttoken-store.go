@@ -7,31 +7,38 @@ import (
 	contracts_stores_tokenstore "echo-starter/internal/contracts/stores/tokenstore"
 	"echo-starter/internal/models"
 	"fmt"
-	"reflect"
 	"strings"
 
 	di "github.com/dozm/di"
-	contracts_logger "github.com/fluffy-bunny/grpcdotnetgo/pkg/contracts/logger"
 	"github.com/golang-jwt/jwt"
 )
 
 type (
 	service struct {
 		Config      *contracts_config.Config                  `inject:""`
-		Logger      contracts_logger.ILogger                  `inject:""`
 		KeyMaterial contracts_stores_keymaterial.IKeyMaterial `inject:""`
 	}
 )
 
-func assertImplementation() {
+var stemService *service
+
+func init() {
 	var _ contracts_stores_tokenstore.IJwtTokenStore = (*service)(nil)
 }
 
-var reflectType = reflect.TypeOf((*service)(nil))
+func (s *service) Ctor(
+	config *contracts_config.Config,
+	keyMaterial contracts_stores_keymaterial.IKeyMaterial,
+) (*service, error) {
+	return &service{
+		Config:      config,
+		KeyMaterial: keyMaterial,
+	}, nil
+}
 
 // AddSingletonIJwtTokenStore registers the *service as a singleton.
 func AddSingletonIJwtTokenStore(builder di.ContainerBuilder) {
-	contracts_stores_tokenstore.AddSingletonIJwtTokenStore(builder, reflectType)
+	di.AddSingleton[contracts_stores_tokenstore.IJwtTokenStore](builder, stemService.Ctor)
 }
 
 func (s *service) MintToken(ctx context.Context, extras models.IClaims) (jwtToken string, err error) {

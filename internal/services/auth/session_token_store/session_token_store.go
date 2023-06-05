@@ -9,9 +9,9 @@ import (
 	"reflect"
 
 	di "github.com/dozm/di"
+	core_utils "github.com/fluffy-bunny/fluffycore/utils"
 	contracts_contextaccessor "github.com/fluffy-bunny/grpcdotnetgo/pkg/echo/contracts/contextaccessor"
 	contracts_cookies "github.com/fluffy-bunny/grpcdotnetgo/pkg/echo/contracts/cookies"
-	core_utils "github.com/fluffy-bunny/grpcdotnetgo/pkg/utils"
 	"golang.org/x/oauth2"
 )
 

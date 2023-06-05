@@ -19,7 +19,7 @@ import (
 
 func RunTestSuite(t *testing.T, ctn di.Container) {
 	now := time.Now()
-	store := contracts_stores_tokenstore.GetITokenStoreFromContainer(ctn)
+	store := di.Get[contracts_stores_tokenstore.ITokenStore](ctn)
 	expectedTokenInfoOri := &models.TokenInfo{
 		Metadata: models.TokenMetadata{
 			Type:       models.TokenTypeReferenceToken,

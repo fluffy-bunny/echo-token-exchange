@@ -1,11 +1,10 @@
 /*
 Copyright © 2022 NAME HERE <EMAIL ADDRESS>
-
 */
 package secrets
 
 import (
-	core_utils "github.com/fluffy-bunny/grpcdotnetgo/pkg/utils"
+	core_utils "github.com/fluffy-bunny/fluffycore/utils"
 
 	"encoding/base64"
 	"fmt"

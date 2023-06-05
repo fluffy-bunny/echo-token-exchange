@@ -8,10 +8,9 @@ import (
 	"echo-starter/internal/models"
 	"echo-starter/internal/utils"
 	"net/http"
-	"reflect"
 
 	di "github.com/dozm/di"
-	core_utils "github.com/fluffy-bunny/grpcdotnetgo/pkg/utils"
+	core_utils "github.com/fluffy-bunny/fluffycore/utils"
 )
 
 type (
@@ -30,15 +29,21 @@ type (
 	}
 )
 
-func assertImplementation() {
+var stemService *service
+
+func init() {
 	var _ contracts_tokenhandlers.IClientCredentialsTokenHandler = (*service)(nil)
 }
 
-var reflectType = reflect.TypeOf((*service)(nil))
+func (s *service) Ctor(claimsProvider contracts_claimsprovider.IClaimsProvider) (*service, error) {
+	return &service{
+		ClaimsProvider: claimsProvider,
+	}, nil
+}
 
 // AddScopedITokenExchangeTokenHandler registers the *service.
 func AddScopedITokenExchangeTokenHandler(builder di.ContainerBuilder) {
-	contracts_tokenhandlers.AddScopedITokenExchangeTokenHandler(builder, reflectType)
+	di.AddScoped[contracts_tokenhandlers.ITokenExchangeTokenHandler](builder, stemService.Ctor)
 }
 
 func (s *service) ValidationTokenRequest(r *http.Request) (result *contracts_tokenhandlers.ValidatedTokenRequestResult, err error) {

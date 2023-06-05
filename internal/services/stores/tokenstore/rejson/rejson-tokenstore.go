@@ -9,17 +9,17 @@ import (
 	"echo-starter/internal/models"
 	"errors"
 	"fmt"
-	"reflect"
 	"sync"
 	"time"
 
 	di "github.com/dozm/di"
+	core_utils "github.com/fluffy-bunny/fluffycore/utils"
 	"github.com/fluffy-bunny/go-redis-search/ftsearch"
-	contracts_logger "github.com/fluffy-bunny/grpcdotnetgo/pkg/contracts/logger"
-	core_utils "github.com/fluffy-bunny/grpcdotnetgo/pkg/utils"
 	"github.com/fluffy-bunny/rejonson/v8"
 	"github.com/go-redis/redis/v8"
 	jsoniter "github.com/json-iterator/go"
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 )
 
 var (
@@ -30,7 +30,6 @@ var (
 type (
 	service struct {
 		Config         *contracts_config.Config `inject:"config"`
-		Logger         contracts_logger.ILogger `inject:"logger"`
 		lock           *sync.RWMutex
 		opts           *redis.Options
 		cli            *redis.Client
@@ -48,38 +47,39 @@ type (
 	}
 )
 
-func (s *service) Ctor() {
-	s.lock = &sync.RWMutex{}
+var stemService *service
+
+func (s *service) Ctor(config *contracts_config.Config) (*service, error) {
+	obj := &service{}
+	obj.lock = &sync.RWMutex{}
 
 	redisOptions := &redis.Options{
-		Addr:     s.Config.RedisOptions.Addr,
-		Network:  s.Config.RedisOptions.Network,
-		Password: s.Config.RedisOptions.Password,
-		Username: s.Config.RedisOptions.Username,
+		Addr:     config.RedisOptions.Addr,
+		Network:  config.RedisOptions.Network,
+		Password: config.RedisOptions.Password,
+		Username: config.RedisOptions.Username,
 	}
-	s.cli = redis.NewClient(redisOptions)
-	if len(s.Config.RedisOptions.Namespace) > 0 {
-		s.ns = s.Config.RedisOptions.Namespace[0]
+	obj.cli = redis.NewClient(redisOptions)
+	if len(config.RedisOptions.Namespace) > 0 {
+		obj.ns = config.RedisOptions.Namespace[0]
 	}
 
-	s.rejonsonClient = rejonson.ExtendClient(s.cli)
+	obj.rejonsonClient = rejonson.ExtendClient(obj.cli)
 
-	s.ftSearch = ftsearch.NewClient(s.cli)
-
+	obj.ftSearch = ftsearch.NewClient(obj.cli)
+	return obj, nil
 }
 func (s *service) Close() {
 	s.cli.Close()
 
 }
-func assertImplementation() {
+func init() {
 	var _ contracts_stores_tokenstore.ITokenStore = (*service)(nil)
 }
 
-var reflectType = reflect.TypeOf((*service)(nil))
-
 // AddSingletonITokenStore registers the *service.
 func AddSingletonITokenStore(builder di.ContainerBuilder) {
-	contracts_stores_tokenstore.AddSingletonITokenStore(builder, reflectType)
+	di.AddSingleton[contracts_stores_tokenstore.ITokenStore](builder, stemService.Ctor)
 }
 func (s *service) wrapClientIDKey(clientID string) string {
 	return fmt.Sprintf("%s:client_id:%s", s.ns, clientID)
@@ -106,11 +106,12 @@ func (s *service) checkError(result redis.Cmder) (bool, error) {
 	return false, nil
 }
 func (s *service) StoreToken(ctx context.Context, handle string, info *models.TokenInfo) (h string, err error) {
+	log := zerolog.Ctx(ctx).With().Logger()
 	//=================== PANIC RECOVERY ======================
 	defer func() {
 		if e := recover(); e != nil {
 			err = fmt.Errorf("%v", e)
-			s.Logger.Error().Err(err).Send()
+			log.Error().Err(err).Send()
 		}
 	}()
 	//=================== PANIC RECOVERY ======================
@@ -164,11 +165,13 @@ func (s *service) parseToken(result *redis.StringCmd) (*models.TokenInfo, error)
 }
 
 func (s *service) GetToken(ctx context.Context, handle string) (ti *models.TokenInfo, err error) {
+	log := zerolog.Ctx(ctx).With().Logger()
+
 	//=================== PANIC RECOVERY ======================
 	defer func() {
 		if e := recover(); e != nil {
 			err = fmt.Errorf("%v", e)
-			s.Logger.Error().Err(err).Send()
+			log.Error().Err(err).Send()
 		}
 	}()
 	//=================== PANIC RECOVERY ======================
@@ -192,11 +195,13 @@ func (s *service) GetToken(ctx context.Context, handle string) (ti *models.Token
 // UpdateToken is like StoreToken except it only lets you do a StoreToken if the token already exists.
 // no deep update logic here.
 func (s *service) UpdateToken(ctx context.Context, handle string, info *models.TokenInfo) (err error) {
+	log := zerolog.Ctx(ctx).With().Logger()
+
 	//=================== PANIC RECOVERY ======================
 	defer func() {
 		if e := recover(); e != nil {
 			err = fmt.Errorf("%v", e)
-			s.Logger.Error().Err(err).Send()
+			log.Error().Err(err).Send()
 		}
 	}()
 	//=================== PANIC RECOVERY ======================
@@ -216,11 +221,13 @@ func (s *service) UpdateToken(ctx context.Context, handle string, info *models.T
 
 }
 func (s *service) RemoveToken(ctx context.Context, handle string) (err error) {
+	log := zerolog.Ctx(ctx).With().Logger()
+
 	//=================== PANIC RECOVERY ======================
 	defer func() {
 		if e := recover(); e != nil {
 			err = fmt.Errorf("%v", e)
-			s.Logger.Error().Err(err).Send()
+			log.Error().Err(err).Send()
 		}
 	}()
 	//=================== PANIC RECOVERY ======================
@@ -260,11 +267,12 @@ func (s *service) RemoveToken(ctx context.Context, handle string) (err error) {
 }
 
 func (s *service) RemoveTokenByClientID(ctx context.Context, clientID string) (err error) {
+	log := zerolog.Ctx(ctx).With().Logger()
 	//=================== PANIC RECOVERY ======================
 	defer func() {
 		if e := recover(); e != nil {
 			err = fmt.Errorf("%v", e)
-			s.Logger.Error().Err(err).Send()
+			log.Error().Err(err).Send()
 		}
 	}()
 	//=================== PANIC RECOVERY ======================
@@ -309,7 +317,7 @@ func (s *service) RemoveTokenBySubject(ctx context.Context, subject string) (err
 	defer func() {
 		if e := recover(); e != nil {
 			err = fmt.Errorf("%v", e)
-			s.Logger.Error().Err(err).Send()
+			log.Error().Err(err).Send()
 		}
 	}()
 	//=================== PANIC RECOVERY ======================
@@ -355,7 +363,7 @@ func (s *service) RemoveTokenByClientIdAndSubject(ctx context.Context, clientID 
 	defer func() {
 		if e := recover(); e != nil {
 			err = fmt.Errorf("%v", e)
-			s.Logger.Error().Err(err).Send()
+			log.Error().Err(err).Send()
 		}
 	}()
 	//=================== PANIC RECOVERY ======================

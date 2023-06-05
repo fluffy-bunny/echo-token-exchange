@@ -14,13 +14,20 @@ type (
 	}
 )
 
-func assertImplementation() {
-	var _ contracts_tokenhandlers.ITokenHandlerAccessor = (*service)(nil)
-}
+var stemService *service
 
-var reflectType = reflect.TypeOf((*service)(nil))
+func init() {
+	var _ contracts_tokenhandlers.ITokenHandlerAccessor = (*service)(nil)
+	var _ contracts_tokenhandlers.IInternalTokenHandlerAccessor = (*service)(nil)
+}
+func (s *service) Ctor() (*service, error) {
+	return &service{}, nil
+}
 
 // AddScopedITokenHandlerAccessor registers the *service.
 func AddScopedITokenHandlerAccessor(builder di.ContainerBuilder) {
-	contracts_tokenhandlers.AddScopedITokenHandlerAccessor(builder, reflectType, contracts_tokenhandlers.ReflectTypeIInternalTokenHandlerAccessor)
+	di.AddScoped[*service](builder, stemService.Ctor,
+		reflect.TypeOf((*contracts_tokenhandlers.ITokenHandlerAccessor)(nil)),
+		reflect.TypeOf((*contracts_tokenhandlers.IInternalTokenHandlerAccessor)(nil)),
+	)
 }

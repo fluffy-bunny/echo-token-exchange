@@ -6,19 +6,16 @@ import (
 	"echo-starter/internal/models"
 	"echo-starter/internal/utils/ecdsa"
 	"encoding/json"
-	"reflect"
 	"sync"
 	"time"
 
 	linq "github.com/ahmetb/go-linq"
 	di "github.com/dozm/di"
-	contracts_logger "github.com/fluffy-bunny/grpcdotnetgo/pkg/contracts/logger"
 )
 
 type (
 	service struct {
 		Config        *contracts_config.Config `inject:""`
-		Logger        contracts_logger.ILogger `inject:""`
 		lock          *sync.RWMutex
 		signingKeys   []*models.SigningKey
 		nextFetchTime time.Time
@@ -27,26 +24,32 @@ type (
 	}
 )
 
-func assertImplementation() {
+var stemService *service
+
+func init() {
 	var _ contracts_stores_keymaterial.IKeyMaterial = (*service)(nil)
 }
 
-var reflectType = reflect.TypeOf((*service)(nil))
-
-// AddSingletonIKeyMaterial registers the *service as a singleton.
-func AddSingletonIKeyMaterial(builder di.ContainerBuilder) {
-	contracts_stores_keymaterial.AddSingletonIKeyMaterial(builder, reflectType)
-}
-func (s *service) Ctor() {
-	s.lock = &sync.RWMutex{}
+func (s *service) Ctor(config *contracts_config.Config) (*service, error) {
+	obj := &service{
+		Config: config,
+	}
+	obj.lock = &sync.RWMutex{}
 	var signingKeys []*models.SigningKey
 	err := json.Unmarshal([]byte(s.Config.SigningKeys), &signingKeys)
 	if err != nil {
 		panic(err)
 	}
-	s.signingKeys = signingKeys
-	s.nextFetchTime = time.Now().Add(time.Duration(-24) * time.Hour)
+	obj.signingKeys = signingKeys
+	obj.nextFetchTime = time.Now().Add(time.Duration(-24) * time.Hour)
+	return obj, nil
 }
+
+// AddSingletonIKeyMaterial registers the *service as a singleton.
+func AddSingletonIKeyMaterial(builder di.ContainerBuilder) {
+	di.AddSingleton[contracts_stores_keymaterial.IKeyMaterial](builder, stemService.Ctor)
+}
+
 func (s *service) _reloadKeys() {
 	now := time.Now()
 	if now.After(s.nextFetchTime) {

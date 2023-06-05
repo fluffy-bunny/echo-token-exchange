@@ -28,7 +28,7 @@ type (
 	}
 )
 
-func assertImplementation() {
+func init() {
 	var _ contracts_background_tasks.ISingletonTask = (*service)(nil)
 	var _ contracts_background_tasks_removetokens.IRemoveTokensSingletonTask = (*service)(nil)
 

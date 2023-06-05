@@ -10,7 +10,7 @@ import (
 	"time"
 
 	di "github.com/dozm/di"
-	core_utils "github.com/fluffy-bunny/grpcdotnetgo/pkg/utils"
+	core_utils "github.com/fluffy-bunny/fluffycore/utils"
 )
 
 type (
@@ -23,22 +23,29 @@ type (
 	}
 )
 
-func (s *service) Ctor() {
-	s.lock = &sync.RWMutex{}
-	s.tokens = make(map[string]*models.TokenInfo)
+var stemService *service
+
+func (s *service) Ctor() (*service, error) {
+	obj := &service{
+		lock:   &sync.RWMutex{},
+		tokens: make(map[string]*models.TokenInfo),
+	}
+	return obj, nil
 }
-func assertImplementation() {
+func init() {
 	var _ contracts_stores_tokenstore.ITokenStore = (*service)(nil)
 	var _ contracts_stores_tokenstore.IInternalTokenStore = (*service)(nil)
 
 }
 
-var reflectType = reflect.TypeOf((*service)(nil))
-
 // AddSingletonITokenStore registers the *service.
 func AddSingletonITokenStore(builder di.ContainerBuilder) {
-	contracts_stores_tokenstore.AddSingletonITokenStore(builder, reflectType,
-		contracts_stores_tokenstore.ReflectTypeIInternalTokenStore)
+	di.AddSingleton[*service](
+		builder,
+		stemService.Ctor,
+		reflect.TypeOf((*contracts_stores_tokenstore.ITokenStore)(nil)),
+		reflect.TypeOf((*contracts_stores_tokenstore.IInternalTokenStore)(nil)))
+
 }
 
 func (s *service) StoreToken(ctx context.Context, handle string, info *models.TokenInfo) (string, error) {

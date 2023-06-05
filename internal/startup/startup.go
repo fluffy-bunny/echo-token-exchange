@@ -55,16 +55,14 @@ import (
 	//----------------------------------------------------------------------------------------------------------------------
 	services_handlers_api_discovery "echo-starter/internal/services/handlers/api/discovery"
 	services_handlers_api_discoveryjwks "echo-starter/internal/services/handlers/api/discoveryjwks"
-	services_handlers_api_introspect "echo-starter/internal/services/handlers/api/introspect"
-	services_handlers_api_revoke "echo-starter/internal/services/handlers/api/revoke"
+
 	services_handlers_api_token "echo-starter/internal/services/handlers/api/token"
 
 	middleware_oauth2client "echo-starter/internal/middleware/oauth2client"
 
 	contracts_background_tasks "echo-starter/internal/contracts/background/tasks"
 	services_claimsprovider "echo-starter/internal/services/claimsprovider"
-	services_handlers_auth_unauthorized "echo-starter/internal/services/handlers/auth/unauthorized"
-	services_handlers_error "echo-starter/internal/services/handlers/error"
+
 	services_handlers_home "echo-starter/internal/services/handlers/home"
 
 	di "github.com/dozm/di"
@@ -87,7 +85,7 @@ type Startup struct {
 	miniRedisInstance *miniredis.Miniredis
 }
 
-func assertImplementation() {
+func init() {
 	var _ echo_contracts_startup.IStartup = (*Startup)(nil)
 }
 
@@ -258,7 +256,6 @@ func (s *Startup) addAppHandlers(builder di.ContainerBuilder) {
 	services_probes_oidc.AddSingletonIProbe(builder)
 
 	services_handlers_home.AddScopedIHandler(builder)
-	services_handlers_error.AddScopedIHandler(builder)
 	services_handlers_about.AddScopedIHandler(builder)
 
 	// OAuth2
@@ -293,8 +290,6 @@ func (s *Startup) addAppHandlers(builder di.ContainerBuilder) {
 	services_handlers_api_discovery.AddScopedIHandler(builder)
 	services_handlers_api_discoveryjwks.AddScopedIHandler(builder)
 	services_handlers_api_token.AddScopedIHandler(builder)
-	services_handlers_api_revoke.AddScopedIHandler(builder)
-	services_handlers_api_introspect.AddScopedIHandler(builder)
 
 }
 
@@ -304,8 +299,6 @@ func (s *Startup) ConfigureServices(builder di.ContainerBuilder) error {
 
 	// add our config as a sigleton object
 	di.AddInstance[*contracts_config.Config](builder, s.config)
-
-	services_handlers_auth_unauthorized.AddScopedIHandler(builder)
 
 	switch s.config.AuthStore {
 	case "session":

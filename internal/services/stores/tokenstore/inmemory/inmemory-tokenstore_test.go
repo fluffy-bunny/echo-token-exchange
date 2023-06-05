@@ -13,7 +13,7 @@ import (
 
 func TestStore(t *testing.T) {
 	tests.RunTest(t, func(ctrl *gomock.Controller) {
-		builder, _ := di.NewBuilder(di.App, di.Request, "transient")
+		builder := di.Builder()
 		AddSingletonITokenStore(builder)
 		ctn := builder.Build()
 		tokenstore.RunTestSuite(t, ctn)
