@@ -5,7 +5,7 @@ import (
 	models "echo-starter/internal/models"
 
 	di "github.com/dozm/di"
-	core_hashset "github.com/fluffy-bunny/grpcdotnetgo/pkg/gods/sets/hashset"
+	core_hashset "github.com/fluffy-bunny/fluffycore/gods/sets/hashset"
 )
 
 type (
@@ -17,7 +17,7 @@ type (
 	}
 )
 
-var stemService *service
+var stemService *service = new(service)
 
 func init() {
 	var _ contracts_stores_apiresources.IAPIResources = (*service)(nil)

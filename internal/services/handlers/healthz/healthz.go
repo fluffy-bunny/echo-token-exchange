@@ -15,7 +15,7 @@ type (
 	}
 )
 
-var stemService *service
+var stemService *service = new(service)
 
 func init() {
 	var _ contracts_handler.IHandler = (*service)(nil)

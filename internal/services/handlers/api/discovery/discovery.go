@@ -16,7 +16,7 @@ type (
 	service struct{}
 )
 
-var stemService *service
+var stemService *service = new(service)
 
 func init() {
 	var _ contracts_handler.IHandler = (*service)(nil)
@@ -58,11 +58,11 @@ func (s *service) Do(c echo.Context) error {
 func (s *service) get(c echo.Context) error {
 	rootPath := utils.GetMyRootPath(c)
 	discovery := models.DiscoveryDocument{
-		Issuer:                rootPath + "/",
-		TokenEndpoint:         rootPath + wellknown.OAuth2TokenPath,
-		JwksURI:               rootPath + wellknown.WellKnownJWKS,
-		RevocationEndpoint:    rootPath + wellknown.OAuth2RevokePath,
-		IntrospectionEndpoint: rootPath + wellknown.OAuth2IntrospectPath,
+		Issuer:        rootPath + "/",
+		TokenEndpoint: rootPath + wellknown.OAuth2TokenPath,
+		JwksURI:       rootPath + wellknown.WellKnownJWKS,
+		//	RevocationEndpoint:    rootPath + wellknown.OAuth2RevokePath,
+		//	IntrospectionEndpoint: rootPath + wellknown.OAuth2IntrospectPath,
 		GrantTypesSupported: []string{
 			wellknown.OAuth2GrantType_ClientCredentials,
 			wellknown.OAuth2GrantType_RefreshToken,

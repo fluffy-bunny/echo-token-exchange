@@ -11,6 +11,8 @@ replace github.com/hibiken/asynq => github.com/fluffy-bunny/asynq v0.23.2
 
 replace github.com/dozm/di => github.com/fluffy-bunny/dozm-di v0.3.3
 
+//replace github.com/fluffy-bunny/fluffycore => ../fluffycore
+
 require (
 	github.com/ahmetb/go-linq v3.0.0+incompatible
 	github.com/ahmetb/go-linq/v3 v3.2.0
@@ -22,7 +24,7 @@ require (
 	github.com/coreos/go-oidc/v3 v3.1.0
 	github.com/dozm/di v0.3.0
 	github.com/fatih/structs v1.1.0
-	github.com/fluffy-bunny/fluffycore v0.0.0-20230604144713-6555583a60b4
+	github.com/fluffy-bunny/fluffycore v0.0.2
 	github.com/fluffy-bunny/go-redis-search v0.0.5
 	github.com/fluffy-bunny/grpcdotnetgo v0.1.252
 	github.com/fluffy-bunny/rejonson/v8 v8.0.2
@@ -35,7 +37,6 @@ require (
 	github.com/golang/mock v1.6.0
 	github.com/gorilla/securecookie v1.1.1
 	github.com/gorilla/sessions v1.2.1
-	github.com/hibiken/asynq v0.24.1
 	github.com/jinzhu/copier v0.3.5
 	github.com/json-iterator/go v1.1.12
 	github.com/labstack/echo-contrib v0.15.0
@@ -111,7 +112,6 @@ require (
 	github.com/pkg/profile v1.7.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/rivo/uniseg v0.4.4 // indirect
-	github.com/robfig/cron/v3 v3.0.1 // indirect
 	github.com/sirupsen/logrus v1.9.0 // indirect
 	github.com/spf13/afero v1.9.5 // indirect
 	github.com/spf13/cast v1.5.1 // indirect

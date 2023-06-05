@@ -23,7 +23,7 @@ type (
 	}
 )
 
-var stemService *service
+var stemService *service = new(service)
 
 func (s *service) Ctor() (*service, error) {
 	obj := &service{

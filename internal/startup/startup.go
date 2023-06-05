@@ -19,19 +19,11 @@ import (
 	"github.com/quasoft/memstore"
 	"github.com/rs/zerolog/log"
 
-	services_background_taskclient "echo-starter/internal/services/background/taskclient"
-	services_background_taskenginefactory "echo-starter/internal/services/background/taskenginefactory"
-
 	fluffycore_contracts_runtime "github.com/fluffy-bunny/fluffycore/contracts/runtime"
 
-	services_background_tasks_removetokens "echo-starter/internal/services/background/tasks/removetokens"
-
-	services_auth_cookie_token_store "echo-starter/internal/services/auth/cookie_token_store"
 	services_apiresources_inmemory "echo-starter/internal/services/stores/apiresources/inmemory"
 	services_clients_clientrequest "echo-starter/internal/services/stores/clients/clientrequest"
 	services_clients_inmemory "echo-starter/internal/services/stores/clients/inmemory"
-
-	services_auth_session_token_store "echo-starter/internal/services/auth/session_token_store"
 
 	services_handlers_healthz "echo-starter/internal/services/handlers/healthz"
 	services_handlers_ready "echo-starter/internal/services/handlers/ready"
@@ -60,7 +52,6 @@ import (
 
 	middleware_oauth2client "echo-starter/internal/middleware/oauth2client"
 
-	contracts_background_tasks "echo-starter/internal/contracts/background/tasks"
 	services_claimsprovider "echo-starter/internal/services/claimsprovider"
 
 	services_handlers_home "echo-starter/internal/services/handlers/home"
@@ -80,7 +71,6 @@ type Startup struct {
 	ctrl              *gomock.Controller
 	clients           []models.Client
 	apiResources      []models.APIResource
-	taskEngine        contracts_background_tasks.ITaskEngineFactory
 	container         di.Container
 	miniRedisInstance *miniredis.Miniredis
 }
@@ -127,9 +117,7 @@ func (s *Startup) PreStartHook(echo *echo.Echo) error {
 		s.config.RedisOptions.Addr = s.miniRedisInstance.Addr()
 
 	}
-	s.taskEngine = di.Get[contracts_background_tasks.ITaskEngineFactory](s.container)
-
-	return s.taskEngine.Start()
+	return nil
 }
 func (s *Startup) _createDevelopmentIndexes() error {
 	if s.config.ApplicationEnvironment != "Development" {
@@ -161,7 +149,7 @@ func (s *Startup) PreShutdownHook(echo *echo.Echo) error {
 	if s.config.RedisUseMiniRedis {
 		s.miniRedisInstance.Close()
 	}
-	return s.taskEngine.Stop()
+	return nil
 }
 func (s *Startup) PostBuildHook(container di.Container) error {
 	if s.config.ApplicationEnvironment == "Development" {
@@ -239,15 +227,6 @@ func (s *Startup) GetConfigOptions() *fluffycore_contracts_runtime.ConfigOptions
 	}
 }
 
-func (s *Startup) addBackgroundTasksHandlers(builder di.ContainerBuilder) {
-	// Add the engine
-	services_background_taskenginefactory.AddSingletonITaskEngineFactory(builder)
-	// Add the client use for enqueing tasks
-	services_background_taskclient.AddSingletonITaskClient(builder)
-
-	// add all the handlers
-	services_background_tasks_removetokens.AddSingletonISingletonTask(builder)
-}
 func (s *Startup) addAppHandlers(builder di.ContainerBuilder) {
 
 	services_handlers_healthz.AddScopedIHandler(builder)
@@ -300,17 +279,8 @@ func (s *Startup) ConfigureServices(builder di.ContainerBuilder) error {
 	// add our config as a sigleton object
 	di.AddInstance[*contracts_config.Config](builder, s.config)
 
-	switch s.config.AuthStore {
-	case "session":
-		services_auth_session_token_store.AddScopedITokenStore(builder)
-	default:
-		services_auth_cookie_token_store.AddScopedITokenStore(builder) // overrides the session one
-	}
-
 	// add our app handlers
 	s.addAppHandlers(builder)
-
-	s.addBackgroundTasksHandlers(builder)
 
 	services_claimsprovider.AddSingletonIClaimsProvider(builder)
 	return nil

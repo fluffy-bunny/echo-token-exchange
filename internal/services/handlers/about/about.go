@@ -3,17 +3,19 @@ package about
 import (
 	"echo-starter/internal/templates"
 	"echo-starter/internal/wellknown"
-	"fmt"
 	"net/http"
 	"reflect"
 	"strings"
 
+	contracts_config "echo-starter/internal/contracts/config"
 	contracts_stores_keymaterial "echo-starter/internal/contracts/stores/keymaterial"
+
+	fluffycore_echo_contracts_container "github.com/fluffy-bunny/fluffycore/echo/contracts/container"
+	contracts_contextaccessor "github.com/fluffy-bunny/fluffycore/echo/contracts/contextaccessor"
 
 	golinq "github.com/ahmetb/go-linq/v3"
 	di "github.com/dozm/di"
 	fluffycore_contracts_common "github.com/fluffy-bunny/fluffycore/contracts/common"
-	contracts_container "github.com/fluffy-bunny/fluffycore/echo/contracts/container"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
 	echo "github.com/labstack/echo/v4"
 	zerolog "github.com/rs/zerolog"
@@ -21,29 +23,45 @@ import (
 
 type (
 	service struct {
-		ClaimsPrincipal   fluffycore_contracts_common.IClaimsPrincipal `inject:""`
-		ContainerAccessor contracts_container.ContainerAccessor        `inject:""`
-		HandlerFactory    contracts_handler.IHandlerFactory            `inject:""`
-		KeyMaterial       contracts_stores_keymaterial.IKeyMaterial    `inject:""`
+		// Required and Useful services that the runtime registers
+		//---------------------------------------------------------------------------------------------
+		ContainerAccessor   fluffycore_echo_contracts_container.ContainerAccessor `inject:""`
+		TimeNow             fluffycore_contracts_common.TimeNow                   `inject:""`
+		TimeParse           fluffycore_contracts_common.TimeParse                 `inject:""`
+		ClaimsPrincipal     fluffycore_contracts_common.IClaimsPrincipal          `inject:""`
+		EchoContextAccessor contracts_contextaccessor.IEchoContextAccessor        `inject:""`
+		//---------------------------------------------------------------------------------------------
+
+		// internal services
+		Config *contracts_config.Config `inject:""`
+
+		KeyMaterial contracts_stores_keymaterial.IKeyMaterial `inject:""`
 	}
 )
 
-var stemService *service
+var stemService *service = new(service)
 
 func (s *service) Ctor(
-	claimsPrincipal fluffycore_contracts_common.IClaimsPrincipal,
-	containerAccessor contracts_container.ContainerAccessor,
-	handlerFactory contracts_handler.IHandlerFactory,
-	keyMaterial contracts_stores_keymaterial.IKeyMaterial) (*service, error) {
-	keys, _ := s.KeyMaterial.GetPublicWebKeys()
-	fmt.Println(keys)
+	config *contracts_config.Config,
+	containerAccessor fluffycore_echo_contracts_container.ContainerAccessor,
+	TimeNow fluffycore_contracts_common.TimeNow,
+	TimeParse fluffycore_contracts_common.TimeParse,
+	ClaimsPrincipal fluffycore_contracts_common.IClaimsPrincipal,
+	EchoContextAccessor contracts_contextaccessor.IEchoContextAccessor,
+	keyMaterial contracts_stores_keymaterial.IKeyMaterial,
+) (*service, error) {
 	return &service{
-		ClaimsPrincipal:   claimsPrincipal,
-		ContainerAccessor: containerAccessor,
-		HandlerFactory:    handlerFactory,
-		KeyMaterial:       keyMaterial,
+		Config:              config,
+		ContainerAccessor:   containerAccessor,
+		TimeNow:             TimeNow,
+		TimeParse:           TimeParse,
+		ClaimsPrincipal:     ClaimsPrincipal,
+		EchoContextAccessor: EchoContextAccessor,
+		KeyMaterial:         keyMaterial,
 	}, nil
+
 }
+
 func init() {
 	var _ contracts_handler.IHandler = (*service)(nil)
 }
@@ -75,35 +93,47 @@ func (s *service) Do(c echo.Context) error {
 
 	var rows []row
 
-	golinq.From(descriptors).Select(func(c interface{}) interface{} {
-		descriptor := c.(*di.Descriptor)
-		found := false
-		for _, serviceType := range descriptor.ImplementedInterfaceTypes {
-			if serviceType == reflect.TypeOf((*contracts_handler.IHandler)(nil)).Elem() {
-				found = true
-				break
+	golinq.
+		From(descriptors).
+		WhereT(func(descriptor *di.Descriptor) bool {
+			found := false
+			for _, serviceType := range descriptor.ImplementedInterfaceTypes {
+				if serviceType == reflect.TypeOf((*contracts_handler.IHandler)(nil)).Elem() {
+					found = true
+					break
+				}
 			}
-		}
-		if !found {
-			return nil
-		}
-		metadata := descriptor.Metadata
-		path := metadata["path"].(string)
-		httpVerbs, _ := metadata["httpVerbs"].([]contracts_handler.HTTPVERB)
-		verbBldr := strings.Builder{}
-
-		for idx, verb := range httpVerbs {
-			verbBldr.WriteString(verb.String())
-			if idx < len(httpVerbs)-1 {
-				verbBldr.WriteString(",")
+			return found
+		}).
+		Select(func(c interface{}) interface{} {
+			descriptor := c.(*di.Descriptor)
+			found := false
+			for _, serviceType := range descriptor.ImplementedInterfaceTypes {
+				if serviceType == reflect.TypeOf((*contracts_handler.IHandler)(nil)).Elem() {
+					found = true
+					break
+				}
 			}
-		}
-		return row{
-			Verbs: verbBldr.String(),
-			Path:  path,
-		}
+			if !found {
+				return nil
+			}
+			metadata := descriptor.Metadata
+			path := metadata["path"].(string)
+			httpVerbs, _ := metadata["httpVerbs"].([]contracts_handler.HTTPVERB)
+			verbBldr := strings.Builder{}
 
-	}).OrderBy(func(i interface{}) interface{} {
+			for idx, verb := range httpVerbs {
+				verbBldr.WriteString(verb.String())
+				if idx < len(httpVerbs)-1 {
+					verbBldr.WriteString(",")
+				}
+			}
+			return row{
+				Verbs: verbBldr.String(),
+				Path:  path,
+			}
+
+		}).OrderBy(func(i interface{}) interface{} {
 		return i.(row).Path
 	}).ToSlice(&rows)
 

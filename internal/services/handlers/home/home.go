@@ -1,7 +1,6 @@
 package home
 
 import (
-	"echo-starter/internal/templates"
 	"echo-starter/internal/wellknown"
 	"net/http"
 
@@ -32,7 +31,7 @@ type (
 	}
 )
 
-var stemService *service
+var stemService *service = new(service)
 
 func (s *service) Ctor(
 	config *contracts_config.Config,
@@ -73,5 +72,5 @@ func (s *service) Do(c echo.Context) error {
 	ctx := c.Request().Context()
 	log := zerolog.Ctx(ctx).With().Logger()
 	log.Info().Str("timeNow", s.TimeNow().String()).Send()
-	return templates.Render(c, s.ClaimsPrincipal, http.StatusOK, "views/home/index", map[string]interface{}{})
+	return c.Render(http.StatusOK, "views/home/index", map[string]interface{}{})
 }

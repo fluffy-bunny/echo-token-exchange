@@ -8,7 +8,7 @@ import (
 	models "echo-starter/internal/models"
 	reflect "reflect"
 
-	hashset "github.com/fluffy-bunny/grpcdotnetgo/pkg/gods/sets/hashset"
+	hashset "github.com/fluffy-bunny/fluffycore/gods/sets/hashset"
 	gomock "github.com/golang/mock/gomock"
 )
 

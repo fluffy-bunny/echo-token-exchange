@@ -1,7 +1,7 @@
 package wellknown
 
 import (
-	core_hashset "github.com/fluffy-bunny/grpcdotnetgo/pkg/gods/sets/hashset"
+	core_hashset "github.com/fluffy-bunny/fluffycore/gods/sets/hashset"
 )
 
 // reference: https://datatracker.ietf.org/doc/html/draft-ietf-oauth-token-exchange-12

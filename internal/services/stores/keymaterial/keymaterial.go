@@ -24,7 +24,7 @@ type (
 	}
 )
 
-var stemService *service
+var stemService *service = new(service)
 
 func init() {
 	var _ contracts_stores_keymaterial.IKeyMaterial = (*service)(nil)
@@ -36,7 +36,7 @@ func (s *service) Ctor(config *contracts_config.Config) (*service, error) {
 	}
 	obj.lock = &sync.RWMutex{}
 	var signingKeys []*models.SigningKey
-	err := json.Unmarshal([]byte(s.Config.SigningKeys), &signingKeys)
+	err := json.Unmarshal([]byte(obj.Config.SigningKeys), &signingKeys)
 	if err != nil {
 		panic(err)
 	}

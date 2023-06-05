@@ -11,8 +11,8 @@ import (
 	"echo-starter/internal/utils"
 
 	di "github.com/dozm/di"
+	core_hashset "github.com/fluffy-bunny/fluffycore/gods/sets/hashset"
 	core_utils "github.com/fluffy-bunny/fluffycore/utils"
-	core_hashset "github.com/fluffy-bunny/grpcdotnetgo/pkg/gods/sets/hashset"
 )
 
 type (
@@ -21,7 +21,7 @@ type (
 	}
 )
 
-var stemService *service
+var stemService *service = new(service)
 
 func init() {
 	var _ contracts_tokenhandlers.IClientCredentialsTokenHandler = (*service)(nil)

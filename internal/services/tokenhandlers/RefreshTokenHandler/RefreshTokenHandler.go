@@ -30,7 +30,7 @@ type (
 	}
 )
 
-var stemService *service
+var stemService *service = new(service)
 
 func init() {
 	var _ contracts_tokenhandlers.IClientCredentialsTokenHandler = (*service)(nil)

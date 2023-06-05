@@ -7,7 +7,7 @@ import (
 	"errors"
 	"reflect"
 
-	core_hashset "github.com/fluffy-bunny/grpcdotnetgo/pkg/gods/sets/hashset"
+	core_hashset "github.com/fluffy-bunny/fluffycore/gods/sets/hashset"
 
 	di "github.com/dozm/di"
 )
@@ -17,7 +17,7 @@ type (
 	}
 )
 
-var stemService *service
+var stemService *service = new(service)
 
 func init() {
 	var _ contracts_claimsprovider.IClaimsProvider = (*service)(nil)

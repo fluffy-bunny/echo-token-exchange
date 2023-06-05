@@ -16,7 +16,7 @@ type (
 	}
 )
 
-var stemService *service
+var stemService *service = new(service)
 
 func (s *service) Ctor(clients []models.Client) (*service, error) {
 	cMap := make(map[string]models.Client)

@@ -22,8 +22,8 @@ import (
 	"github.com/fatih/structs"
 	fluffycore_contracts_common "github.com/fluffy-bunny/fluffycore/contracts/common"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
+	core_hashset "github.com/fluffy-bunny/fluffycore/gods/sets/hashset"
 	core_utils "github.com/fluffy-bunny/fluffycore/utils"
-	core_hashset "github.com/fluffy-bunny/grpcdotnetgo/pkg/gods/sets/hashset"
 	oauth2 "github.com/go-oauth2/oauth2/v4"
 	"github.com/go-oauth2/oauth2/v4/errors"
 	oauth2_models "github.com/go-oauth2/oauth2/v4/models"
@@ -49,7 +49,7 @@ type (
 	}
 )
 
-var stemService *service
+var stemService *service = new(service)
 
 func init() {
 	var _ contracts_handler.IHandler = (*service)(nil)

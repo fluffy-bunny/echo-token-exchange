@@ -3,8 +3,8 @@ package models
 import (
 	"time"
 
+	core_hashset "github.com/fluffy-bunny/fluffycore/gods/sets/hashset"
 	contracts_claimsprincipal "github.com/fluffy-bunny/grpcdotnetgo/pkg/contracts/claimsprincipal"
-	core_hashset "github.com/fluffy-bunny/grpcdotnetgo/pkg/gods/sets/hashset"
 )
 
 const (

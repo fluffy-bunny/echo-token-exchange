@@ -9,7 +9,7 @@ import (
 	"path"
 	"sort"
 
-	core_hashset "github.com/fluffy-bunny/grpcdotnetgo/pkg/gods/sets/hashset"
+	core_hashset "github.com/fluffy-bunny/fluffycore/gods/sets/hashset"
 
 	"github.com/spf13/viper"
 	"github.com/xeipuuv/gojsonschema"

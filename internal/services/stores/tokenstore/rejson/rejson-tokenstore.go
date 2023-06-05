@@ -47,7 +47,7 @@ type (
 	}
 )
 
-var stemService *service
+var stemService *service = new(service)
 
 func (s *service) Ctor(config *contracts_config.Config) (*service, error) {
 	obj := &service{}
