@@ -98,7 +98,7 @@ var (
 	"JWT_VALIDATOR_OPTIONS": {
 		"CLOCK_SKEW_MINUTES": 5,
 		"VALIDATE_SIGNATURE": true,
-		"VALIDATE_ISSUER": true
+		"VALIDATE_ISSUER": true,
 		"ISSUER": "http://localhost:1523/"
 	} 
 }
