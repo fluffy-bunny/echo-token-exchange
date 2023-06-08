@@ -36,6 +36,7 @@ import (
 	services_stores_jwttoken "echo-starter/internal/services/stores/jwttoken"
 	services_stores_keymaterial "echo-starter/internal/services/stores/keymaterial"
 	services_stores_tokenstore_inmemory "echo-starter/internal/services/stores/tokenstore/inmemory"
+	services_stores_tokenstore_jwt "echo-starter/internal/services/stores/tokenstore/jwt"
 	services_stores_tokenstore_rejson "echo-starter/internal/services/stores/tokenstore/rejson"
 
 	services_tokenhandlers "echo-starter/internal/services/tokenhandlers"
@@ -244,6 +245,8 @@ func (s *Startup) addAppHandlers(builder di.ContainerBuilder) {
 		services_stores_tokenstore_inmemory.AddSingletonITokenStore(builder)
 	case "redis":
 		services_stores_tokenstore_rejson.AddSingletonITokenStore(builder)
+	case "jwt":
+		services_stores_tokenstore_jwt.AddSingletonITokenStore(builder)
 	default:
 		panic("token store provider not supported")
 	}
