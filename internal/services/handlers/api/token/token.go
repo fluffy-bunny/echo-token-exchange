@@ -298,11 +298,14 @@ func (s *service) GenerateAccessToken(ctx context.Context,
 		handle := utils.GenerateHandle()
 		tokenHandle, err = s.ReferenceTokenStore.StoreToken(ctx, handle, &models.TokenInfo{
 			Metadata: models.TokenMetadata{
-				Type:       models.TokenTypeReferenceToken,
-				ClientID:   client.ClientID,
-				Subject:    subject,
-				Expiration: expiresAt,
-				IssedAt:    now,
+				Type:        models.TokenTypeReferenceToken,
+				ClientID:    client.ClientID,
+				Subject:     subject,
+				Expiration:  expiresAt,
+				IssedAt:     now,
+				Issuer:      s.issuer,
+				OrgID:       "TODO", // TODO pull this from the claims as it is integral to the subject
+				IntegrityID: "TODO", // TODO pull this from the claims as it is integral to the subject
 			},
 			Data: claims.Claims(),
 		})
@@ -352,6 +355,7 @@ func (s *service) GenerateAccessToken(ctx context.Context,
 					Subject:    subject,
 					Expiration: expiration,
 					IssedAt:    now,
+					Issuer:     s.issuer,
 				},
 				Data: data,
 			})

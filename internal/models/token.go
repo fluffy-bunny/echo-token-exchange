@@ -7,11 +7,14 @@ import (
 
 type (
 	TokenMetadata struct {
-		Type       string    `json:"type" mapstructure:"type"` // refresh_token, reference_token
-		ClientID   string    `json:"client_id" mapstructure:"client_id"`
-		Subject    string    `json:"subject" mapstructure:"subject"`
-		Expiration time.Time `json:"expiration" mapstructure:"expiration"`
-		IssedAt    time.Time `json:"issued_at" mapstructure:"issued_at"`
+		Type        string    `json:"type" mapstructure:"type"` // refresh_token, reference_token
+		ClientID    string    `json:"client_id" mapstructure:"client_id"`
+		Subject     string    `json:"subject" mapstructure:"subject"`
+		IntegrityID string    `json:"integrity_id" mapstructure:"integrity_id"`
+		OrgID       string    `json:"org_id" mapstructure:"org_id"`
+		Expiration  time.Time `json:"expiration" mapstructure:"expiration"`
+		IssedAt     time.Time `json:"issued_at" mapstructure:"issued_at"`
+		Issuer      string    `json:"issuer" mapstructure:"issuer"`
 	}
 
 	TokenInfo struct {

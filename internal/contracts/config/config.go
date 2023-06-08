@@ -3,6 +3,8 @@ package config
 import (
 	"reflect"
 
+	contracts_jwtvalidator "echo-starter/internal/contracts/jwtvalidator"
+
 	"github.com/go-oauth2/oauth2/v4"
 )
 
@@ -51,12 +53,13 @@ type (
 
 		SigningKeys string `json:"signingKeys" mapstructure:"SIGNING_KEYS" redact:"true"`
 
-		ClientStoreProvider string             `json:"clientStoreProvider" mapstructure:"CLIENT_STORE_PROVIDER"`
-		TokenStoreProvider  string             `json:"tokenStoreProvider" mapstructure:"TOKEN_STORE_PROVIDER"`
-		AllowedGrantTypes   []oauth2.GrantType `json:"allowedGrantTypes" mapstructure:"ALLOWED_GRANT_TYPES"`
-		TokenType           string             `json:"tokenType" mapstructure:"TOKEN_TYPE"`
-		RedisUseMiniRedis   bool               `json:"redisUseMiniRedis" mapstructure:"REDIS_USE_MINIREDIS"`
-		RedisOptions        RedisOptions       `json:"redisOptions" mapstructure:"REDIS_OPTIONS"`
+		ClientStoreProvider string                                     `json:"clientStoreProvider" mapstructure:"CLIENT_STORE_PROVIDER"`
+		TokenStoreProvider  string                                     `json:"tokenStoreProvider" mapstructure:"TOKEN_STORE_PROVIDER"`
+		AllowedGrantTypes   []oauth2.GrantType                         `json:"allowedGrantTypes" mapstructure:"ALLOWED_GRANT_TYPES"`
+		TokenType           string                                     `json:"tokenType" mapstructure:"TOKEN_TYPE"`
+		RedisUseMiniRedis   bool                                       `json:"redisUseMiniRedis" mapstructure:"REDIS_USE_MINIREDIS"`
+		RedisOptions        RedisOptions                               `json:"redisOptions" mapstructure:"REDIS_OPTIONS"`
+		JWTValidatorOptions contracts_jwtvalidator.JWTValidatorOptions `json:"jwtValidatorOptions" mapstructure:"JWT_VALIDATOR_OPTIONS"`
 	}
 )
 
@@ -91,8 +94,13 @@ var (
 		"NAMESPACE": "a,b,c",
 		"USERNAME": "",
 		"PASSWORD": ""
+	},
+	"JWT_VALIDATOR_OPTIONS": {
+		"CLOCK_SKEW_MINUTES": 5,
+		"VALIDATE_SIGNATURE": true,
+		"VALIDATE_ISSUER": true
+		"ISSUER": "http://localhost:1523/"
 	} 
-
 }
 `)
 )

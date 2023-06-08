@@ -11,6 +11,7 @@ import (
 
 	linq "github.com/ahmetb/go-linq"
 	di "github.com/dozm/di"
+	jwk "github.com/lestrrat-go/jwx/v2/jwk"
 )
 
 type (
@@ -102,6 +103,36 @@ func (s *service) GetSigningKey() (*models.SigningKey, error) {
 	//--~--~--~--~--~-- BARBED WIRE --~--~--~--~--~--~--
 
 	return s.signingKey, nil
+}
+func (s *service) GetSigningKeys() ([]*models.SigningKey, error) {
+	s._reloadKeys()
+	//--~--~--~--~--~-- BARBED WIRE --~--~--~--~--~--~--
+	s.lock.RLock()
+	defer s.lock.RUnlock()
+	//--~--~--~--~--~-- BARBED WIRE --~--~--~--~--~--~--
+
+	return s.signingKeys, nil
+}
+
+func (s *service) CreateKeySet() (jwk.Set, error) {
+	keys, err := s.GetSigningKeys()
+	if err != nil {
+		return nil, err
+	}
+	set := jwk.NewSet()
+	for _, key := range keys {
+		keyB, _ := json.Marshal(key.PrivateJwk)
+		privkey, err := jwk.ParseKey(keyB)
+		if err != nil {
+			return nil, err
+		}
+		pubkey, err := jwk.PublicKeyOf(privkey)
+		if err != nil {
+			return nil, err
+		}
+		set.AddKey(pubkey)
+	}
+	return set, nil
 }
 
 func (s *service) GetPublicWebKeys() ([]*models.PublicJwk, error) {
