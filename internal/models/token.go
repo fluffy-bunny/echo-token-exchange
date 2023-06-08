@@ -50,6 +50,12 @@ const (
 	TokenTypeReferenceToken   = "reference_token"
 	TokenTypeSubjectToken     = "subject_token"
 	TokenTypeSubjectTokenType = "subject_token_type"
+
+	TokenExchangeHint         = "token_exchange_hint"
+	TokenExchangeHintOBO      = "urn:ietf:params:oauth:token-exchange:hint:obo"
+	TokenExchangeHintORG      = "urn:ietf:params:oauth:token-exchange:hint:org"
+	TokenExchangeHintOBO_ORG  = "org"
+	TokenExchangeHintOBO_USER = "user"
 )
 
 func (s *RefreshTokenInfo) UnmarshalJSON(data []byte) error {
