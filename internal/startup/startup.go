@@ -33,6 +33,7 @@ import (
 	// OAuth2
 	//----------------------------------------------------------------------------------------------------------------------
 
+	services_jwtvalidator "echo-starter/internal/services/jwtvalidator"
 	services_stores_jwttoken "echo-starter/internal/services/stores/jwttoken"
 	services_stores_keymaterial "echo-starter/internal/services/stores/keymaterial"
 	services_stores_tokenstore_inmemory "echo-starter/internal/services/stores/tokenstore/inmemory"
@@ -256,6 +257,8 @@ func (s *Startup) addAppHandlers(builder di.ContainerBuilder) {
 	default:
 		panic("client store provider not supported")
 	}
+
+	services_jwtvalidator.AddSingletonIJwtValidator(builder)
 
 	services_tokenhandlers_ClientCredentialsTokenHandler.AddScopedIClientCredentialsTokenHandler(builder)
 	services_tokenhandlers_TokenExchangeTokenHandler.AddScopedITokenExchangeTokenHandler(builder)

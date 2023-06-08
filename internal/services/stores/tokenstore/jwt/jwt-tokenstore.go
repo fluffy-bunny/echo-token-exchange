@@ -10,21 +10,24 @@ import (
 	"sync"
 	"time"
 
+	contracts_jwtvalidator "echo-starter/internal/contracts/jwtvalidator"
+
 	di "github.com/dozm/di"
 	fluffycore_contracts_common "github.com/fluffy-bunny/fluffycore/contracts/common"
 	core_hashset "github.com/fluffy-bunny/fluffycore/gods/sets/hashset"
 	core_utils "github.com/fluffy-bunny/fluffycore/utils"
+	"github.com/gogo/status"
 	"github.com/golang-jwt/jwt"
 	"github.com/rs/xid"
+	"google.golang.org/grpc/codes"
 )
 
 type (
 	service struct {
 		JWTTokenStore contracts_stores_tokenstore.IJwtTokenStore `inject:""`
 		Now           fluffycore_contracts_common.TimeNow        `inject:""`
-
-		lock   *sync.RWMutex
-		tokens map[string]*models.TokenInfo
+		JwtValidator  contracts_jwtvalidator.IJwtValidator       `inject:""`
+		lock          *sync.RWMutex
 	}
 	validated struct {
 		scopes []string
@@ -34,13 +37,14 @@ type (
 var stemService *service = new(service)
 
 func (s *service) Ctor(
+	jwtValidator contracts_jwtvalidator.IJwtValidator,
 	now fluffycore_contracts_common.TimeNow,
 	jwtTokenStore contracts_stores_tokenstore.IJwtTokenStore) (*service, error) {
 	obj := &service{
 		Now:           now,
+		JwtValidator:  jwtValidator,
 		JWTTokenStore: jwtTokenStore,
 		lock:          &sync.RWMutex{},
-		tokens:        make(map[string]*models.TokenInfo),
 	}
 	return obj, nil
 }
@@ -129,129 +133,62 @@ func (s *service) StoreToken(ctx context.Context, handle string, info *models.To
 func (s *service) GetToken(ctx context.Context, handle string) (*models.TokenInfo, error) {
 
 	if core_utils.IsEmptyOrNil(handle) {
-		return nil, errors.New("handle is empty")
+		return nil, status.Error(codes.InvalidArgument, "handle is empty")
 	}
 
 	//--~--~--~--~--~-- BARBED WIRE --~--~--~--~--~--~--
 	s.lock.RLock()
 	defer s.lock.RUnlock()
 	//--~--~--~--~--~-- BARBED WIRE --~--~--~--~--~--~--
-	h, ok := s.tokens[handle]
-	if !ok {
-		return nil, nil
+	tt, err := s.JwtValidator.ParseTokenRaw(ctx, handle)
+	if err != nil {
+		return nil, err
 	}
-	return h, nil
+	claims, err := tt.AsMap(ctx)
+	if err != nil {
+		return nil, err
+	}
+	info, ok := claims["token_info"]
+	if !ok {
+		return nil, status.Error(codes.InvalidArgument, "token_info not found")
+	}
+	infoMap, ok := info.(map[string]interface{})
+	if !ok {
+		return nil, status.Error(codes.InvalidArgument, "token_info is not a map")
+	}
+	jb, err := json.Marshal(infoMap)
+	if err != nil {
+		return nil, err
+	}
+	tokenInfo := &models.TokenInfo{}
+	err = json.Unmarshal(jb, tokenInfo)
+	if err != nil {
+		return nil, err
+	}
+	return tokenInfo, nil
 
 }
 func (s *service) UpdateToken(ctx context.Context, handle string, info *models.TokenInfo) error {
 
-	if core_utils.IsEmptyOrNil(handle) {
-		return errors.New("handle is empty")
-	}
-
-	//--~--~--~--~--~-- BARBED WIRE --~--~--~--~--~--~--
-	s.lock.Lock()
-	defer s.lock.Unlock()
-	//--~--~--~--~--~-- BARBED WIRE --~--~--~--~--~--~--
-	_, ok := s.tokens[handle]
-	if !ok {
-		return nil
-	}
-
-	s.tokens[handle] = info
 	return nil
 }
 func (s *service) RemoveToken(ctx context.Context, handle string) error {
 
-	if core_utils.IsEmptyOrNil(handle) {
-		return errors.New("handle is empty")
-	}
-	//--~--~--~--~--~-- BARBED WIRE --~--~--~--~--~--~--
-	s.lock.Lock()
-	defer s.lock.Unlock()
-	//--~--~--~--~--~-- BARBED WIRE --~--~--~--~--~--~--
-	_, ok := s.tokens[handle]
-	if !ok {
-		return nil
-	}
-	delete(s.tokens, handle)
 	return nil
 }
 func (s *service) RemoveTokenByClientID(ctx context.Context, clientID string) error {
 
-	if core_utils.IsEmptyOrNil(clientID) {
-		return errors.New("client_id is empty")
-	}
-	//--~--~--~--~--~-- BARBED WIRE --~--~--~--~--~--~--
-	s.lock.Lock()
-	defer s.lock.Unlock()
-	//--~--~--~--~--~-- BARBED WIRE --~--~--~--~--~--~--
-	for k, v := range s.tokens {
-		if v.Metadata.ClientID == clientID {
-			delete(s.tokens, k)
-		}
-	}
 	return nil
 }
 func (s *service) RemoveTokenBySubject(ctx context.Context, subject string) error {
 
-	if core_utils.IsEmptyOrNil(subject) {
-		return errors.New("subject is empty")
-	}
-	//--~--~--~--~--~-- BARBED WIRE --~--~--~--~--~--~--
-	s.lock.Lock()
-	defer s.lock.Unlock()
-	//--~--~--~--~--~-- BARBED WIRE --~--~--~--~--~--~--
-
-	for k, v := range s.tokens {
-		if v.Metadata.Subject == subject {
-			delete(s.tokens, k)
-		}
-	}
 	return nil
 }
 func (s *service) RemoveTokenByClientIdAndSubject(ctx context.Context, clientID string, subject string) error {
 
-	if core_utils.IsEmptyOrNil(clientID) {
-		return errors.New("client_id is empty")
-	}
-	if core_utils.IsEmptyOrNil(subject) {
-		return errors.New("subject is empty")
-	}
-	//--~--~--~--~--~-- BARBED WIRE --~--~--~--~--~--~--
-	s.lock.Lock()
-	defer s.lock.Unlock()
-	//--~--~--~--~--~-- BARBED WIRE --~--~--~--~--~--~--
-	for k, v := range s.tokens {
-		if v.Metadata.ClientID == clientID && v.Metadata.Subject == subject {
-			delete(s.tokens, k)
-		}
-	}
 	return nil
 }
 func (s *service) RemoveExpired(ctx context.Context) error {
 
-	//--~--~--~--~--~-- BARBED WIRE --~--~--~--~--~--~--
-	s.lock.RLock()
-	defer s.lock.RUnlock()
-	//--~--~--~--~--~-- BARBED WIRE --~--~--~--~--~--~--
-	now := time.Now()
-	var handles []string
-	for k, v := range s.tokens {
-		if now.After(v.Metadata.Expiration) {
-			handles = append(handles, k)
-		}
-	}
-	if len(handles) > 0 {
-		go func() {
-			//--~--~--~--~--~-- BARBED WIRE --~--~--~--~--~--~--
-			s.lock.Lock()
-			defer s.lock.Unlock()
-			//--~--~--~--~--~-- BARBED WIRE --~--~--~--~--~--~--
-			for _, v := range handles {
-				delete(s.tokens, v)
-			}
-		}()
-	}
 	return nil
 }

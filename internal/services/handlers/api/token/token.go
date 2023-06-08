@@ -45,7 +45,6 @@ type (
 		TokenHandler         contracts_tokenhandlers.ITokenHandler
 		accessGenerate       echo_oauth2.AccessGenerate
 		signingKey           *models.SigningKey
-		issuer               string
 	}
 )
 
@@ -101,9 +100,6 @@ func (s *service) GetMiddleware() []echo.MiddlewareFunc {
 }
 
 func (s *service) Do(c echo.Context) error {
-	rootPath := utils.GetMyRootPath(c)
-	s.issuer = rootPath + "/"
-
 	return s.processRequest(c)
 }
 func getMyRootPath(c echo.Context) string {
@@ -259,7 +255,7 @@ func (s *service) GenerateAccessToken(ctx context.Context,
 	standardClaims := &jwt.StandardClaims{
 		IssuedAt:  createAt.Unix(),
 		ExpiresAt: expiresAt.Unix(),
-		Issuer:    s.issuer,
+		Issuer:    s.Config.JWTValidatorOptions.Issuer,
 		Audience:  client.ClientID,
 		Subject:   subject,
 		Id:        xid.New().String(),
@@ -303,7 +299,7 @@ func (s *service) GenerateAccessToken(ctx context.Context,
 				Subject:     subject,
 				Expiration:  expiresAt,
 				IssedAt:     now,
-				Issuer:      s.issuer,
+				Issuer:      s.Config.JWTValidatorOptions.Issuer,
 				OrgID:       "TODO", // TODO pull this from the claims as it is integral to the subject
 				IntegrityID: "TODO", // TODO pull this from the claims as it is integral to the subject
 			},
@@ -355,7 +351,7 @@ func (s *service) GenerateAccessToken(ctx context.Context,
 					Subject:    subject,
 					Expiration: expiration,
 					IssedAt:    now,
-					Issuer:     s.issuer,
+					Issuer:     s.Config.JWTValidatorOptions.Issuer,
 				},
 				Data: data,
 			})

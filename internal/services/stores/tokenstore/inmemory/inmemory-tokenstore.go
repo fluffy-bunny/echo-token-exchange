@@ -11,6 +11,8 @@ import (
 
 	di "github.com/dozm/di"
 	core_utils "github.com/fluffy-bunny/fluffycore/utils"
+	"github.com/gogo/status"
+	"google.golang.org/grpc/codes"
 )
 
 type (
@@ -73,7 +75,7 @@ func (s *service) GetToken(ctx context.Context, handle string) (*models.TokenInf
 	//--~--~--~--~--~-- BARBED WIRE --~--~--~--~--~--~--
 	h, ok := s.tokens[handle]
 	if !ok {
-		return nil, nil
+		return nil, status.Error(codes.NotFound, "not found")
 	}
 	return h, nil
 
